@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+enum Role {
+  FOUNDER
+  TESTER
+  ADMIN
+}
+enum RepTier {
+  NEWCOMER
+  RELIABLE
+  TRUSTED
+  ELITE
+}
+enum MissionStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  PAUSED
+  COMPLETED
+  REJECTED
+}
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+enum AssetType {
+  LINK
+  SCREENSHOT
+  TEXT_DESCRIPTION
+  SHORT_VIDEO
+}
+enum QuestionType {
+  TEXT_SHORT
+  TEXT_LONG
+  RATING_1_5
+  MULTIPLE_CHOICE
+  YES_NO
+}
+enum AssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  TIMED_OUT
+  MISSION_FULL
+}
+enum TxType {
+  PURCHASE
+  MISSION_DEDUCT
+  MISSION_REFUND
+  TESTER_EARN
+  TESTER_WITHDRAWAL
+  ADMIN_ADJUSTMENT
+}
+model User {
+  id             String    @id
+  email          String    @unique
+  role           Role      @default(TESTER)
+  emailVerified  Boolean   @default(false)
+  isSuspended    Boolean   @default(false)
+  suspendedAt    DateTime?
+  suspendReason  String?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  founderProfile   FounderProfile?
+  testerProfile    TesterProfile?
+  coinTransactions CoinTransaction[]
+  @@map("users")
+}
+model FounderProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName   String
+  companyName   String?
+  coinBalance   Int      @default(0)
+  totalMissions Int      @default(0)
+  stripeCustomerId String? @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  missions  Mission[]
+  ratings   TesterRating[]
+  @@map("founder_profiles")
+}
+model TesterProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName      String
+  coinBalance      Int      @default(0)
+  reputationScore  Float    @default(50.0)
+  reputationTier   RepTier  @default(RELIABLE)
+  totalCompleted   Int      @default(0)
+  totalAbandoned   Int      @default(0)
+  totalTimedOut    Int      @default(0)
+  isAvailable      Boolean  @default(true)
+  stripeAccountId  String?  @unique
+  stripeOnboarded  Boolean  @default(false)
+  lastActiveAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  assignments MissionAssignment[]
+  ratings     TesterRating[]
+  @@map("tester_profiles")
+}
+model Mission {
+  id                String        @id @default(cuid())
+  founderId         String
+  founder           FounderProfile @relation(fields: [founderId], references: [id])
+  title             String
+  goal              String
+  difficulty        Difficulty    @default(MEDIUM)
+  estimatedMinutes  Int
+  testersRequired   Int
+  testersAssigned   Int @default(0)
+  testersCompleted  Int @default(0)
+  minRepTier        RepTier @default(NEWCOMER)
+  coinPerTester     Int
+  coinPlatformFee   Int
+  coinCostTotal     Int
+  status            MissionStatus @default(DRAFT)
+  reviewNote        String?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  launchedAt        DateTime?
+  completedAt       DateTime?
+  pausedAt          DateTime?
+  reportCount       Int @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  assets      MissionAsset[]
+  questions   MissionQuestion[]
+  assignments MissionAssignment[]
+  @@index([founderId])
+  @@index([status])
+  @@index([status, difficulty])
+  @@map("missions")
+}
+model MissionAsset {
+  id        String    @id @default(cuid())
+  missionId String
+  mission   Mission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  type      AssetType
+  url       String
+  label     String?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  @@index([missionId])
+  @@map("mission_assets")
+}
+model MissionQuestion {
+  id         String       @id @default(cuid())
+  missionId  String
+  mission    Mission      @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  order      Int
+  type       QuestionType
+  text       String
+  options    String[]
+  isRequired Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  responses MissionResponse[]
+  @@index([missionId])
+  @@map("mission_questions")
+}
+model MissionAssignment {
+  id           String           @id @default(cuid())
+  missionId    String
+  mission      Mission          @relation(fields: [missionId], references: [id])
+  testerId     String
+  tester       TesterProfile    @relation(fields: [testerId], references: [id])
+  status       AssignmentStatus @default(ASSIGNED)
+  assignedAt   DateTime         @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  abandonedAt  DateTime?
+  timedOutAt   DateTime?
+  timeoutAt    DateTime
+  coinsEarned  Int @default(0)
+  responses MissionResponse[]
+  rating    TesterRating?
+  @@unique([missionId, testerId])
+  @@index([testerId])
+  @@index([missionId])
+  @@index([status])
+  @@index([timeoutAt])
+  @@map("mission_assignments")
+}
+model MissionResponse {
+  id                 String          @id @default(cuid())
+  assignmentId       String
+  assignment         MissionAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  questionId         String
+  question           MissionQuestion  @relation(fields: [questionId], references: [id])
+  responseText       String?
+  responseRating     Int?
+  responseChoice     String?
+  timeTakenSeconds   Int?
+  createdAt          DateTime @default(now())
+  @@unique([assignmentId, questionId])
+  @@index([assignmentId])
+  @@index([questionId])
+  @@map("mission_responses")
+}
+model CoinTransaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  type            TxType
+  amount          Int
+  balanceAfter    Int
+  description     String
+  missionId       String?
+  assignmentId    String?
+  stripePaymentId String?
+  adminNote       String?
+  createdAt       DateTime @default(now())
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([missionId])
+  @@map("coin_transactions")
+}
+model TesterRating {
+  id              String            @id @default(cuid())
+  assignmentId    String            @unique
+  assignment      MissionAssignment @relation(fields: [assignmentId], references: [id])
+  founderId       String
+  founder         FounderProfile    @relation(fields: [founderId], references: [id])
+  testerId        String
+  tester          TesterProfile     @relation(fields: [testerId], references: [id])
+  score           Int
+  flaggedLowEffort Boolean @default(false)
+  note            String?
+  createdAt       DateTime @default(now())
+  @@index([testerId])
+  @@index([founderId])
+  @@map("tester_ratings")
+}
+model QuestionTemplate {
+  id          String       @id @default(cuid())
+  category    String
+  text        String
+  type        QuestionType
+  options     String[]
+  usageCount  Int @default(0)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  @@index([category])
+  @@index([usageCount])
+  @@map("question_templates")
+}
+model MissionReport {
+  id          String   @id @default(cuid())
+  missionId   String
+  testerId    String
+  reason      String
+  createdAt   DateTime @default(now())
+  @@unique([missionId, testerId])
+  @@index([missionId])
+  @@map("mission_reports")
+}

@@ -1,0 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  @apply bg-neutral-bg text-text-main;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+::selection {
+  background-color: rgba(217, 119, 6, 0.22);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+  line-height: 1;
+}
+
+.icon-filled {
+  font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 24;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(95, 125, 129, 0.2);
+}
+
+.mockup-layer {
+  transition: transform 0.3s ease-out;
+}
+
+.text-contrast-high {
+  color: #1a1816;
+}
+
+.text-contrast-mid {
+  color: rgba(26, 24, 22, 0.65);
+}
+
+.text-contrast-low {
+  color: rgba(26, 24, 22, 0.45);
+}
+
+.surface-card {
+  @apply bg-surface shadow-card-soft rounded-2xl border border-border-subtle/60;
+}
+
+.pill-muted {
+  @apply inline-flex items-center rounded-pill bg-surface-elevated px-3 py-1 text-xs font-medium text-text-muted border border-border-subtle/70;
+}
+
+.heading-eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.18em] text-text-muted;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-card transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+.btn-secondary-muted {
+  @apply inline-flex items-center justify-center rounded-pill border border-border-subtle bg-surface-elevated px-5 py-2.5 text-sm font-semibold text-text-main shadow-card-soft transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+.panel-dark {
+  @apply rounded-2xl bg-gradient-to-br from-panel-dark to-panel-dark-soft text-white shadow-card;
+}
+
