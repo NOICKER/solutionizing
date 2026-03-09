@@ -1,157 +1,156 @@
-"use client";
+"use client"
 
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState
-} from "react";
+  useState,
+} from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from '@/components/ui/sonner'
+import { apiFetch } from '@/lib/api/client'
+import { registerSessionExpiredHandler } from '@/lib/auth/session'
 
-export type UserRole = "founder" | "tester";
+export type UserRole = 'FOUNDER' | 'TESTER' | 'ADMIN' | null
 
-interface AuthUser {
-  name: string;
-  role: UserRole;
-  plan: string;
+export interface User {
+  id: string
+  email: string
+  role: UserRole
+  emailVerified: boolean
+  founderProfile: {
+    id: string
+    displayName: string
+    coinBalance: number
+  } | null
+  testerProfile: {
+    id: string
+    displayName: string
+    coinBalance: number
+    reputationScore: number
+    reputationTier: 'NEWCOMER' | 'RELIABLE' | 'TRUSTED' | 'ELITE'
+    isVerified?: boolean
+  } | null
 }
 
-interface AuthState {
-  hydrated: boolean;
-  isAuthenticated: boolean;
-  user: AuthUser | null;
+export interface AuthContextValue {
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  signOut: () => Promise<void>
+  refetch: () => Promise<void>
 }
 
-interface AuthContextShape {
-  auth: AuthState;
-  signIn: (role: UserRole, nameOverride?: string) => void;
-  signOut: () => void;
-}
+type MeResponse = User | { user: User }
 
-interface PersistedAuthState {
-  isAuthenticated: boolean;
-  user: AuthUser | null;
-}
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-const STORAGE_KEY = "solutionizing_auth_v1";
-
-const defaultAuthState: AuthState = {
-  hydrated: false,
-  isAuthenticated: false,
-  user: null
-};
-
-const AuthContext = createContext<AuthContextShape | undefined>(undefined);
-
-function getDefaultUser(role: UserRole, nameOverride?: string): AuthUser {
-  if (role === "tester") {
-    return {
-      role,
-      name: nameOverride ?? "Jamie Smith",
-      plan: "Verified Panel"
-    };
+function normalizeUser(payload: MeResponse | null | undefined) {
+  if (!payload) {
+    return null
   }
 
-  return {
-    role,
-    name: nameOverride ?? "Alex Founder",
-    plan: "Pro Plan"
-  };
+  return 'user' in payload ? payload.user : payload
 }
 
-function persistAuthCookie(role: UserRole) {
-  document.cookie = `solutionizing_auth_role=${role}; Path=/; Max-Age=2592000; SameSite=Lax`;
-}
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-function clearAuthCookie() {
-  document.cookie = "solutionizing_auth_role=; Path=/; Max-Age=0; SameSite=Lax";
-}
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children
-}) => {
-  const [auth, setAuth] = useState<AuthState>(defaultAuthState);
+  const applyUser = useCallback((nextUser: User | null) => {
+    setUser(nextUser)
+    setIsAuthenticated(Boolean(nextUser))
+  }, [])
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        setAuth({ ...defaultAuthState, hydrated: true });
-        return;
+    let isMounted = true
+
+    async function bootstrap() {
+      try {
+        const response = await apiFetch<MeResponse>('/api/v1/auth/me', {
+          skipSessionHandling: true,
+        })
+
+        if (!isMounted) {
+          return
+        }
+
+        applyUser(normalizeUser(response))
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        applyUser(null)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
-
-      const parsed = JSON.parse(raw) as PersistedAuthState;
-      setAuth({
-        hydrated: true,
-        isAuthenticated: Boolean(parsed.isAuthenticated),
-        user: parsed.user ?? null
-      });
-    } catch {
-      setAuth({ ...defaultAuthState, hydrated: true });
     }
-  }, []);
 
-  const persist = useCallback((next: PersistedAuthState) => {
+    bootstrap()
+
+    return () => {
+      isMounted = false
+    }
+  }, [applyUser])
+
+  useEffect(() => {
+    return registerSessionExpiredHandler((nextPath) => {
+      applyUser(null)
+      toast.error('Your session expired. Please sign in.')
+      router.replace(`/auth?next=${encodeURIComponent(nextPath)}`)
+    })
+  }, [applyUser, router])
+
+  const refetch = useCallback(async () => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      const response = await apiFetch<MeResponse>('/api/v1/auth/me')
+      applyUser(normalizeUser(response))
     } catch {
-      // Ignore storage failures in this prototype.
+      applyUser(null)
     }
-  }, []);
+  }, [applyUser])
 
-  const signIn = useCallback(
-    (role: UserRole, nameOverride?: string) => {
-      const user = getDefaultUser(role, nameOverride);
-      const next: PersistedAuthState = {
-        isAuthenticated: true,
-        user
-      };
-
-      setAuth({
-        hydrated: true,
-        isAuthenticated: true,
-        user
-      });
-      persist(next);
-      persistAuthCookie(role);
-    },
-    [persist]
-  );
-
-  const signOut = useCallback(() => {
-    setAuth({
-      hydrated: true,
-      isAuthenticated: false,
-      user: null
-    });
-
+  const signOut = useCallback(async () => {
     try {
-      window.localStorage.removeItem(STORAGE_KEY);
+      await apiFetch('/api/v1/auth/logout', {
+        method: 'POST',
+        skipSessionHandling: true,
+      })
     } catch {
-      // Ignore storage failures in this prototype.
+      // Ignore logout failures and clear local auth state regardless.
+    } finally {
+      applyUser(null)
+      router.push('/')
     }
+  }, [applyUser, router])
 
-    clearAuthCookie();
-  }, []);
-
-  const value = useMemo<AuthContextShape>(
+  const value = useMemo<AuthContextValue>(
     () => ({
-      auth,
-      signIn,
-      signOut
+      user,
+      isAuthenticated,
+      isLoading,
+      signOut,
+      refetch,
     }),
-    [auth, signIn, signOut]
-  );
+    [isAuthenticated, isLoading, refetch, signOut, user]
+  )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export function useAuth(): AuthContextShape {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-  return ctx;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+export function useAuth() {
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useAuth must be used inside AuthProvider')
+  }
+
+  return context
+}

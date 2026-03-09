@@ -41,6 +41,7 @@ export async function GET(
             testersAssigned: true,
             testersCompleted: true,
             minRepTier: true,
+            coinPerTester: true,
             coinPlatformFee: true,
             coinCostTotal: true,
             status: true,

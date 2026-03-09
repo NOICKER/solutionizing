@@ -16,9 +16,32 @@ const MissionListQuerySchema = z.object({
 
 const MissionAssetSchema = z.object({
   type: z.nativeEnum(AssetType),
-  url: z.string().url(),
+  url: z.string().optional(),
+  text: z.string().max(500).optional(),
   label: z.string().max(100).optional(),
   order: z.number().int().default(0),
+}).superRefine((value, ctx) => {
+  if (value.type === AssetType.TEXT_DESCRIPTION) {
+    if (!value.text?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Text assets must include a description',
+        path: ['text'],
+      })
+    }
+
+    return
+  }
+
+  const urlResult = z.string().url().safeParse(value.url)
+
+  if (!urlResult.success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'This asset needs a valid URL',
+      path: ['url'],
+    })
+  }
 })
 
 const MissionQuestionSchema = z.object({
@@ -68,7 +91,7 @@ async function assertMissionIsSafe(
   title: string,
   goal: string,
   questions: Array<{ text: string }>,
-  assets: Array<{ type: AssetType; url: string }>
+  assets: Array<{ type: AssetType; url?: string }>
 ) {
   const contentResult = checkMissionContent(title, goal, questions)
   if (!contentResult.safe) {
@@ -76,7 +99,7 @@ async function assertMissionIsSafe(
   }
 
   for (const asset of assets) {
-    if (asset.type !== AssetType.LINK) continue
+    if (asset.type !== AssetType.LINK || !asset.url) continue
 
     const urlResult = await checkUrl(asset.url)
     if (!urlResult.safe) {
@@ -176,7 +199,7 @@ export async function POST(request: Request) {
             .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
             .map((asset) => ({
               type: asset.type,
-              url: asset.url,
+              url: asset.type === AssetType.TEXT_DESCRIPTION ? asset.text!.trim() : asset.url!.trim(),
               label: asset.label,
               order: asset.order,
             })),

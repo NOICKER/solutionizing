@@ -59,6 +59,8 @@ export async function GET(request: Request) {
             select: {
               title: true,
               goal: true,
+              estimatedMinutes: true,
+              coinPerTester: true,
             },
           },
         },

@@ -13,7 +13,37 @@ export async function GET(request: Request) {
 
     if (!dbUser) return notFound('User')
 
-    return ok({ user: dbUser })
+    const normalizedRole =
+      dbUser.role === 'ADMIN'
+        ? 'ADMIN'
+        : dbUser.founderProfile
+          ? 'FOUNDER'
+          : dbUser.testerProfile
+            ? 'TESTER'
+            : null
+
+    return ok({
+      id: dbUser.id,
+      email: dbUser.email,
+      role: normalizedRole,
+      emailVerified: dbUser.emailVerified,
+      founderProfile: dbUser.founderProfile
+        ? {
+            id: dbUser.founderProfile.id,
+            displayName: dbUser.founderProfile.displayName,
+            coinBalance: dbUser.founderProfile.coinBalance,
+          }
+        : null,
+      testerProfile: dbUser.testerProfile
+        ? {
+            id: dbUser.testerProfile.id,
+            displayName: dbUser.testerProfile.displayName,
+            coinBalance: dbUser.testerProfile.coinBalance,
+            reputationScore: dbUser.testerProfile.reputationScore,
+            reputationTier: dbUser.testerProfile.reputationTier,
+          }
+        : null,
+    })
   } catch (err) {
     if (err instanceof Response) return err
     console.error('[me]', err)

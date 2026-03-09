@@ -1,13 +1,5 @@
-"use client";
+import { MissionWizardPage } from '@/components/solutionizing/MissionWizardPage'
 
-import { MissionWizard } from "@/components/MissionWizard";
-import { RequireAuth } from "@/components/RequireAuth";
-
-export default function MissionWizardPage() {
-  return (
-    <RequireAuth role="founder">
-      <MissionWizard />
-    </RequireAuth>
-  );
+export default function MissionWizardRoutePage() {
+  return <MissionWizardPage />
 }
-

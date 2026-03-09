@@ -37,6 +37,7 @@ export async function GET(request: Request) {
     }
 
     return ok({
+      balance: profile.coinBalance,
       coinBalance: profile.coinBalance,
       rupeeValue: coinsToRupees(profile.coinBalance),
       role: user.role,

@@ -42,16 +42,27 @@ export async function POST(request: Request) {
       return apiError('Account suspended', 'ACCOUNT_SUSPENDED', 403)
     }
 
+    const normalizedRole =
+      dbUser.role === 'ADMIN'
+        ? 'ADMIN'
+        : dbUser.founderProfile
+          ? 'FOUNDER'
+          : dbUser.testerProfile
+            ? 'TESTER'
+            : null
+
     const redirectMap: Record<string, string> = {
-      FOUNDER: '/dashboard',
-      TESTER: '/tester/dashboard',
-      ADMIN: '/admin/dashboard',
+      FOUNDER: '/dashboard/founder',
+      TESTER: '/dashboard/tester',
+      ADMIN: '/',
     }
-    const redirectTo = redirectMap[dbUser.role] ?? '/'
+    const redirectTo =
+      normalizedRole === null ? '/select-role' : (redirectMap[normalizedRole] ?? '/')
 
     return ok({
-      user: { id: dbUser.id, email: dbUser.email, role: dbUser.role },
+      role: normalizedRole,
       redirectTo,
+      user: { id: dbUser.id, email: dbUser.email, role: normalizedRole },
     })
   } catch (err) {
     if (err instanceof Response) return err

@@ -1,13 +1,6 @@
-"use client";
-
-import { TesterDashboard } from "@/components/TesterDashboard";
-import { RequireAuth } from "@/components/RequireAuth";
+import { TesterDashboardPage as TesterDashboardAppPage } from "@/components/solutionizing/TesterDashboardPage";
 
 export default function TesterDashboardPage() {
-  return (
-    <RequireAuth role="tester">
-      <TesterDashboard />
-    </RequireAuth>
-  );
+  return <TesterDashboardAppPage />;
 }
 

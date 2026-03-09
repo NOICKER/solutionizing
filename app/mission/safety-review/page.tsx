@@ -1,12 +1,5 @@
-"use client";
+import { redirect } from 'next/navigation'
 
-import { MissionSafetyReview } from "@/components/MissionSafetyReview";
-import { RequireAuth } from "@/components/RequireAuth";
-
-export default function MissionSafetyReviewPage() {
-  return (
-    <RequireAuth role="founder">
-      <MissionSafetyReview />
-    </RequireAuth>
-  );
+export default function MissionSafetyReviewIndexPage() {
+  redirect('/dashboard/founder')
 }

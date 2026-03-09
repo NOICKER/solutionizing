@@ -3,8 +3,7 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppStateProvider } from "@/context/AppStateContext";
-import { DevControlPanel } from "@/components/DevControlPanel";
-import { ModalHost } from "@/components/modals/ModalHost";
+import { Toaster } from "@/components/ui/sonner";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -27,8 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppStateProvider>
             {children}
-            <ModalHost />
-            <DevControlPanel />
+            <Toaster />
           </AppStateProvider>
         </AuthProvider>
       </body>

@@ -6,7 +6,16 @@ export function created<T>(data: T) {
   return NextResponse.json({ data, meta: null }, { status: 201 })
 }
 export function apiError(message: string, code: string, status: number, details?: object) {
-  return NextResponse.json({ error: message, code, details: details ?? null }, { status })
+  return NextResponse.json(
+    {
+      error: {
+        code,
+        message,
+        details: details ?? null,
+      },
+    },
+    { status }
+  )
 }
 export const unauthorized = () => apiError('Unauthorized', 'UNAUTHORIZED', 401)
 export const forbidden    = () => apiError('Forbidden', 'FORBIDDEN', 403)

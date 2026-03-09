@@ -22,12 +22,12 @@ export async function middleware(request: NextRequest) {
   // Refresh session — required for Server Components to read auth state
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
-  const isAuthRoute = path.startsWith('/login') || path.startsWith('/register')
+  const isAuthRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/register')
     || path.startsWith('/select-role') || path.startsWith('/forgot-password')
     || path.startsWith('/reset-password') || path.startsWith('/verify-email')
   // Not logged in: redirect to login unless on auth or public route
   if (!user && !isAuthRoute && path !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/auth', request.url))
   }
   if (user) {
     // Logged-in users should not see auth pages
@@ -65,5 +65,5 @@ export async function middleware(request: NextRequest) {
   return response
 }
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/webhooks).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
 }

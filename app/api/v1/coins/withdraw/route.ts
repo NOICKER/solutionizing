@@ -3,7 +3,7 @@ import { TxType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
-import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { ok, apiError, notFound, serverError } from '@/lib/api/response'
 import { MIN_WITHDRAWAL_COINS, coinsToRupees } from '@/lib/business/coins'
 
 const WithdrawCoinsSchema = z.object({
@@ -20,15 +20,11 @@ export async function POST(request: Request) {
     }
 
     if (body.amount < MIN_WITHDRAWAL_COINS) {
-      return badRequest('Minimum withdrawal is 5,000 coins (₹50)', {
-        code: 'BELOW_MIN_WITHDRAWAL',
-      })
+      return apiError('Minimum withdrawal is 5,000 coins (₹50)', 'BELOW_MIN_WITHDRAWAL', 400)
     }
 
     if (tester.testerProfile.coinBalance < body.amount) {
-      return badRequest('Insufficient coin balance', {
-        code: 'INSUFFICIENT_COINS',
-      })
+      return apiError("You don't have enough coins", 'INSUFFICIENT_COINS', 400)
     }
 
     const rupeeAmount = coinsToRupees(body.amount)

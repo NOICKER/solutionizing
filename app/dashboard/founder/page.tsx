@@ -1,13 +1,6 @@
-"use client";
-
-import { FounderDashboard } from "@/components/FoundationDashboard";
-import { RequireAuth } from "@/components/RequireAuth";
+import { FounderDashboardPage as FounderDashboardAppPage } from "@/components/solutionizing/FounderDashboardPage";
 
 export default function FounderDashboardPage() {
-  return (
-    <RequireAuth role="founder">
-      <FounderDashboard />
-    </RequireAuth>
-  );
+  return <FounderDashboardAppPage />;
 }
 

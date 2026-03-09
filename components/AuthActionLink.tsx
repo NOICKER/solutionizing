@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useAuth, UserRole } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface AuthActionLinkProps {
   readonly authedHref: string;
-  readonly role: UserRole;
+  readonly role?: "founder" | "tester" | "FOUNDER" | "TESTER";
   readonly mode?: "signin" | "signup";
   readonly publicHref?: string;
   readonly className?: string;
@@ -21,16 +21,10 @@ export function AuthActionLink({
   className,
   children
 }: Readonly<AuthActionLinkProps>) {
-  const { auth } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const href = useMemo(() => {
-    const guardParams = new URLSearchParams({
-      mode,
-      role,
-      next: authedHref
-    });
-
-    if (auth.hydrated && auth.isAuthenticated) {
+    if (isAuthenticated) {
       return authedHref;
     }
 
@@ -38,8 +32,13 @@ export function AuthActionLink({
       return publicHref;
     }
 
+    const guardParams = new URLSearchParams({
+      mode,
+      next: authedHref
+    });
+
     return `/auth?${guardParams.toString()}`;
-  }, [auth.hydrated, auth.isAuthenticated, authedHref, mode, publicHref, role]);
+  }, [authedHref, isAuthenticated, mode, publicHref]);
 
   return (
     <Link href={href} className={className} prefetch={false}>
