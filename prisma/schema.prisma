@@ -63,7 +63,7 @@ model User {
   id             String    @id
   email          String    @unique
   role           Role      @default(TESTER)
-  emailVerified  Boolean   @default(false)
+  emailVerified  Boolean   @default(false) @map("email_verified")
   isSuspended    Boolean   @default(false)
   suspendedAt    DateTime?
   suspendReason  String?
