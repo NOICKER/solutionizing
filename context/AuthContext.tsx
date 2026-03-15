@@ -40,7 +40,8 @@ export interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   signOut: () => Promise<void>
-  refetch: () => Promise<void>
+  refetch: () => Promise<User | null>
+  applyRoleSelection: (role: Exclude<UserRole, 'ADMIN' | null>, displayName: string) => void
 }
 
 type MeResponse = User | { user: User }
@@ -66,27 +67,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(Boolean(nextUser))
   }, [])
 
+  const applyRoleSelection = useCallback(
+    (role: Exclude<UserRole, 'ADMIN' | null>, displayName: string) => {
+      setUser((currentUser) => {
+        if (!currentUser) {
+          return currentUser
+        }
+
+        if (role === 'FOUNDER') {
+          return {
+            ...currentUser,
+            role,
+            founderProfile: {
+              id: currentUser.founderProfile?.id ?? `pending-founder-${currentUser.id}`,
+              displayName,
+              coinBalance: currentUser.founderProfile?.coinBalance ?? 0,
+            },
+            testerProfile: null,
+          }
+        }
+
+        return {
+          ...currentUser,
+          role,
+          founderProfile: null,
+          testerProfile: {
+            id: currentUser.testerProfile?.id ?? `pending-tester-${currentUser.id}`,
+            displayName,
+            coinBalance: currentUser.testerProfile?.coinBalance ?? 0,
+            reputationScore: currentUser.testerProfile?.reputationScore ?? 50,
+            reputationTier: currentUser.testerProfile?.reputationTier ?? 'RELIABLE',
+            isVerified: currentUser.testerProfile?.isVerified,
+          },
+        }
+      })
+      setIsAuthenticated(true)
+    },
+    []
+  )
+
+  const fetchCurrentUser = useCallback(
+    async ({
+      signal,
+      skipSessionHandling = false,
+    }: {
+      signal?: AbortSignal
+      skipSessionHandling?: boolean
+    } = {}) => {
+      try {
+        const response = await apiFetch<MeResponse>('/api/v1/auth/me', {
+          cache: 'no-store',
+          signal,
+          skipSessionHandling,
+        })
+        const normalizedUser = normalizeUser(response)
+        applyUser(normalizedUser)
+        return normalizedUser
+      } catch {
+        applyUser(null)
+        return null
+      }
+    },
+    [applyUser]
+  )
+
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => controller.abort(), 8000)
 
     async function bootstrap() {
       try {
-        const response = await apiFetch<MeResponse>('/api/v1/auth/me', {
-          skipSessionHandling: true,
-        })
-
         if (!isMounted) {
           return
         }
 
-        applyUser(normalizeUser(response))
+        await fetchCurrentUser({
+          skipSessionHandling: true,
+          signal: controller.signal,
+        })
       } catch {
         if (!isMounted) {
           return
         }
-
-        applyUser(null)
       } finally {
+        window.clearTimeout(timeoutId)
         if (isMounted) {
           setIsLoading(false)
         }
@@ -97,8 +162,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       isMounted = false
+      window.clearTimeout(timeoutId)
+      controller.abort()
     }
-  }, [applyUser])
+  }, [fetchCurrentUser])
 
   useEffect(() => {
     return registerSessionExpiredHandler((nextPath) => {
@@ -109,13 +176,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [applyUser, router])
 
   const refetch = useCallback(async () => {
-    try {
-      const response = await apiFetch<MeResponse>('/api/v1/auth/me')
-      applyUser(normalizeUser(response))
-    } catch {
-      applyUser(null)
-    }
-  }, [applyUser])
+    return fetchCurrentUser()
+  }, [fetchCurrentUser])
 
   const signOut = useCallback(async () => {
     try {
@@ -138,8 +200,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       signOut,
       refetch,
+      applyRoleSelection,
     }),
-    [isAuthenticated, isLoading, refetch, signOut, user]
+    [applyRoleSelection, isAuthenticated, isLoading, refetch, signOut, user]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

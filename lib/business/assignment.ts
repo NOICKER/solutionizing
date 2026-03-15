@@ -1,23 +1,42 @@
-import { AssignmentStatus, MissionStatus, RepTier } from '@prisma/client'
-import { addHours } from 'date-fns'
+import { AssignmentStatus, MissionStatus } from '@prisma/client'
+import { addHours, differenceInHours } from 'date-fns'
 import { prisma } from '@/lib/prisma'
 import { acquireLock, releaseLock } from '@/lib/redis'
+import { OPEN_ASSIGNMENT_STATUSES } from '@/lib/business/mission-assignments'
+import { TIER_THRESHOLDS } from '@/lib/business/reputation'
 
-const REP_TIER_VALUES: Record<RepTier, number> = {
-  NEWCOMER: 0,
-  RELIABLE: 1,
-  TRUSTED: 2,
-  ELITE: 3,
+const OVERASSIGNMENT_FACTOR = 1.3
+const TESTER_LOCK_TTL_SECONDS = 30
+
+type AssignedTesterNotification = {
+  assignmentId: string
+  missionId: string
+  userId: string
 }
 
-export async function assignTestersToMission(missionId: string) {
+function getAvailabilityScore(lastActiveAt: Date, now: Date) {
+  const hoursSinceLastActive = Math.max(0, differenceInHours(now, lastActiveAt))
+
+  if (hoursSinceLastActive <= 24) return 100
+  if (hoursSinceLastActive <= 72) return 80
+  if (hoursSinceLastActive <= 7 * 24) return 60
+  if (hoursSinceLastActive <= 14 * 24) return 40
+  if (hoursSinceLastActive <= 30 * 24) return 20
+  return 0
+}
+
+export async function assignTestersToMission(
+  missionId: string
+): Promise<AssignedTesterNotification[]> {
   const lockKey = `lock:assignment:${missionId}`
   const lockAcquired = await acquireLock(lockKey, 30)
 
   if (!lockAcquired) {
     console.warn(`[assignTestersToMission] Lock not acquired for mission ${missionId}`)
-    return
+    return []
   }
+
+  const claimedTesterLocks: string[] = []
 
   try {
     const mission = await prisma.mission.findUnique({
@@ -34,7 +53,7 @@ export async function assignTestersToMission(missionId: string) {
     })
 
     if (!mission || mission.status !== MissionStatus.ACTIVE) {
-      return
+      return []
     }
 
     const remainingRequired = mission.testersRequired - mission.testersCompleted
@@ -43,78 +62,203 @@ export async function assignTestersToMission(missionId: string) {
         assignment.status === AssignmentStatus.ASSIGNED ||
         assignment.status === AssignmentStatus.IN_PROGRESS
     ).length
-    const slotsNeeded = Math.ceil(remainingRequired * 1.3) - alreadyAssignedSlots
+    const slotsNeeded = Math.ceil(remainingRequired * OVERASSIGNMENT_FACTOR) - alreadyAssignedSlots
 
     if (slotsNeeded <= 0) {
-      return
+      return []
     }
 
-    const assignedTesterIds = [...new Set(mission.assignments.map((assignment) => assignment.testerId))]
-    const minimumTierValue = REP_TIER_VALUES[mission.minRepTier]
+    const minimumReputationScore = TIER_THRESHOLDS[mission.minRepTier].min
+    const now = new Date()
 
     const testerCandidates = await prisma.testerProfile.findMany({
       where: {
-        isAvailable: true,
-        ...(assignedTesterIds.length > 0 ? { id: { notIn: assignedTesterIds } } : {}),
+        reputationScore: {
+          gte: minimumReputationScore,
+        },
         user: {
           isSuspended: false,
           deletedAt: null,
+        },
+        assignments: {
+          none: {
+            OR: [
+              {
+                missionId,
+              },
+              {
+                status: {
+                  in: [...OPEN_ASSIGNMENT_STATUSES],
+                },
+                mission: {
+                  status: MissionStatus.ACTIVE,
+                },
+              },
+            ],
+          },
         },
       },
       select: {
         id: true,
         userId: true,
-        isAvailable: true,
         reputationScore: true,
-        reputationTier: true,
+        lastActiveAt: true,
       },
     })
 
     const selectedTesters = testerCandidates
-      .filter((tester) => REP_TIER_VALUES[tester.reputationTier] >= minimumTierValue)
       .map((tester) => ({
         tester,
         score:
-          (tester.reputationScore / 100) * 0.5 +
-          (tester.isAvailable ? 1 : 0) * 0.3 +
-          Math.random() * 0.2,
+          tester.reputationScore * 0.5 +
+          getAvailabilityScore(tester.lastActiveAt, now) * 0.3 +
+          Math.random() * 100 * 0.2,
       }))
       .sort((left, right) => right.score - left.score)
-      .slice(0, slotsNeeded)
       .map(({ tester }) => tester)
 
     if (selectedTesters.length === 0) {
-      return
+      return []
     }
 
-    const selectedTesterIds = selectedTesters.map((tester) => tester.id)
-    const now = new Date()
     const timeoutAt = addHours(now, 24)
 
-    await prisma.$transaction(async (tx) => {
-      await tx.missionAssignment.createMany({
-        data: selectedTesters.map((tester) => ({
-          missionId,
-          testerId: tester.id,
-          status: AssignmentStatus.ASSIGNED,
-          assignedAt: now,
-          timeoutAt,
-        })),
-      })
+    const createdAssignments = await prisma.$transaction<AssignedTesterNotification[]>(
+      async (tx) => {
+        const latestMission = await tx.mission.findUnique({
+          where: { id: missionId },
+          select: {
+            id: true,
+            status: true,
+            testersRequired: true,
+            testersCompleted: true,
+            minRepTier: true,
+          },
+        })
 
-      await tx.testerProfile.updateMany({
-        where: { id: { in: selectedTesterIds } },
-        data: { isAvailable: false },
-      })
+        if (!latestMission || latestMission.status !== MissionStatus.ACTIVE) {
+          return []
+        }
 
-      await tx.mission.update({
-        where: { id: missionId },
-        data: {
-          testersAssigned: { increment: selectedTesters.length },
-        },
-      })
-    })
+        const currentOpenAssignments = await tx.missionAssignment.count({
+          where: {
+            missionId,
+            status: {
+              in: [...OPEN_ASSIGNMENT_STATUSES],
+            },
+          },
+        })
+
+        const currentRemainingRequired =
+          latestMission.testersRequired - latestMission.testersCompleted
+        const currentSlotsNeeded =
+          Math.ceil(currentRemainingRequired * OVERASSIGNMENT_FACTOR) - currentOpenAssignments
+
+        if (currentSlotsNeeded <= 0) {
+          return []
+        }
+
+        const latestMinimumReputationScore = TIER_THRESHOLDS[latestMission.minRepTier].min
+        const created: AssignedTesterNotification[] = []
+
+        for (const tester of selectedTesters) {
+          if (created.length >= currentSlotsNeeded) {
+            break
+          }
+
+          const testerLockKey = `lock:assignment:${missionId}:tester:${tester.id}`
+          const testerLockAcquired = await acquireLock(
+            testerLockKey,
+            TESTER_LOCK_TTL_SECONDS
+          )
+
+          if (!testerLockAcquired) {
+            continue
+          }
+
+          claimedTesterLocks.push(testerLockKey)
+
+          const eligibleTester = await tx.testerProfile.findFirst({
+            where: {
+              id: tester.id,
+              reputationScore: {
+                gte: latestMinimumReputationScore,
+              },
+              user: {
+                isSuspended: false,
+                deletedAt: null,
+              },
+              assignments: {
+                none: {
+                  OR: [
+                    {
+                      missionId,
+                    },
+                    {
+                      status: {
+                        in: [...OPEN_ASSIGNMENT_STATUSES],
+                      },
+                      mission: {
+                        status: MissionStatus.ACTIVE,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            select: {
+              id: true,
+              userId: true,
+            },
+          })
+
+          if (!eligibleTester) {
+            continue
+          }
+
+          const assignment = await tx.missionAssignment.create({
+            data: {
+              missionId,
+              testerId: eligibleTester.id,
+              status: AssignmentStatus.ASSIGNED,
+              assignedAt: now,
+              timeoutAt,
+            },
+            select: {
+              id: true,
+            },
+          })
+
+          await tx.testerProfile.update({
+            where: { id: eligibleTester.id },
+            data: { isAvailable: false },
+          })
+
+          created.push({
+            assignmentId: assignment.id,
+            missionId,
+            userId: eligibleTester.userId,
+          })
+        }
+
+        if (created.length > 0) {
+          await tx.mission.update({
+            where: { id: missionId },
+            data: {
+              testersAssigned: { increment: created.length },
+            },
+          })
+        }
+
+        return created
+      }
+    )
+
+    return createdAssignments
   } finally {
+    await Promise.allSettled(
+      claimedTesterLocks.map((claimedLockKey) => releaseLock(claimedLockKey))
+    )
     await releaseLock(lockKey)
   }
 }

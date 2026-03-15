@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
-import { SpinnerIcon, formatCoins, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -39,6 +39,15 @@ const coinRates: Record<Difficulty, number> = {
   EASY: 500,
   MEDIUM: 1500,
   HARD: 3000,
+}
+
+function isValidUrl(value: string) {
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function StepIndicator({ step }: { step: number }) {
@@ -99,11 +108,23 @@ function validateStep(step: number, state: WizardState) {
   if (step === 2) {
     state.assets.forEach((asset, index) => {
       if (asset.type === 'TEXT') {
-        if (!asset.text?.trim()) {
+        const text = asset.text?.trim() ?? ''
+        if (!text) {
           errors[`asset-${index}`] = 'Add text for this asset'
+        } else if (text.length > 500) {
+          errors[`asset-${index}`] = 'Text assets must be 500 characters or fewer'
         }
-      } else if (!asset.url?.trim()) {
-        errors[`asset-${index}`] = 'Add a valid URL'
+      } else {
+        const url = asset.url?.trim() ?? ''
+        if (!url) {
+          errors[`asset-${index}`] = 'Add a valid URL'
+        } else if (!isValidUrl(url)) {
+          errors[`asset-${index}`] = 'Enter a full URL, including https://'
+        }
+      }
+
+      if ((asset.label?.trim().length ?? 0) > 100) {
+        errors[`asset-${index}`] = 'Asset labels must be 100 characters or fewer'
       }
     })
   }
@@ -117,12 +138,61 @@ function validateStep(step: number, state: WizardState) {
         const count = (question.options ?? []).map((option) => option.trim()).filter(Boolean).length
         if (count < 2) {
           errors[`question-options-${index}`] = 'Add at least two answer choices'
+        } else if (count > 5) {
+          errors[`question-options-${index}`] = 'Use at most five answer choices'
         }
       }
     })
   }
 
   return errors
+}
+
+function getStepForFieldKey(fieldKey: string) {
+  if (fieldKey === 'title' || fieldKey === 'goal') {
+    return 1
+  }
+
+  if (fieldKey.startsWith('asset-')) {
+    return 2
+  }
+
+  return 3
+}
+
+function getValidationMessage(details: unknown) {
+  if (!details || typeof details !== 'object') {
+    return null
+  }
+
+  const candidate = details as {
+    formErrors?: unknown
+    fieldErrors?: Record<string, unknown>
+  }
+
+  if (Array.isArray(candidate.formErrors) && typeof candidate.formErrors[0] === 'string') {
+    return candidate.formErrors[0]
+  }
+
+  if (!candidate.fieldErrors || typeof candidate.fieldErrors !== 'object') {
+    return null
+  }
+
+  for (const value of Object.values(candidate.fieldErrors)) {
+    if (Array.isArray(value) && typeof value[0] === 'string') {
+      return value[0]
+    }
+  }
+
+  return null
+}
+
+function getMissionValidationErrors(state: WizardState) {
+  return {
+    ...validateStep(1, state),
+    ...validateStep(2, state),
+    ...validateStep(3, state),
+  }
 }
 
 function scrollToField(fieldKey: string) {
@@ -145,7 +215,7 @@ function MissionWizardContent() {
   const [assetChecks, setAssetChecks] = useState<Record<number, 'ok' | 'warning'>>({})
   const [coinBalance, setCoinBalance] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
   const dirtyRef = useRef(false)
   const historyReadyRef = useRef(false)
@@ -286,9 +356,18 @@ function MissionWizardContent() {
     }
   }
 
-  async function handleSave() {
+  async function handleSave(action: 'draft' | 'submit') {
     setSubmitError('')
-    setIsSaving(true)
+    const validationErrors = getMissionValidationErrors(state)
+    const firstErrorKey = Object.keys(validationErrors)[0]
+    if (firstErrorKey) {
+      setErrors(validationErrors)
+      setStep(getStepForFieldKey(firstErrorKey))
+      window.setTimeout(() => scrollToField(firstErrorKey), 0)
+      return
+    }
+
+    setPendingAction(action)
 
     try {
       const payload = {
@@ -313,22 +392,34 @@ function MissionWizardContent() {
         })),
       }
 
+      let mission: ApiMissionDetail
+
       if (isEditMode && editMissionId) {
-        await apiFetch(`/api/v1/missions/${editMissionId}`, { method: 'PATCH', body: payload })
+        mission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${editMissionId}`, { method: 'PATCH', body: payload })
       } else {
-        await apiFetch('/api/v1/missions', { method: 'POST', body: payload })
+        mission = await apiFetch<ApiMissionDetail>('/api/v1/missions', { method: 'POST', body: payload })
+      }
+
+      if (action === 'submit') {
+        await apiFetch(`/api/v1/missions/${mission.id}/submit`, { method: 'POST' })
       }
 
       sessionStorage.removeItem('solutionizing-draft-refresh')
       sessionStorage.removeItem('mission-wizard-draft')
-      toast.success(isEditMode ? 'Mission changes saved.' : 'Mission saved as draft! Submit it for review when ready.')
+      toast.success(
+        action === 'submit'
+          ? 'Mission submitted for review!'
+          : isEditMode
+            ? 'Mission changes saved.'
+            : 'Mission saved as draft!'
+      )
       router.push('/dashboard/founder')
     } catch (error) {
       if (isApiClientError(error)) {
         if (error.code === 'INSUFFICIENT_COINS') {
           setSubmitError("You don't have enough coins. Buy coins from your dashboard.")
         } else if (error.status === 400) {
-          setSubmitError(error.message)
+          setSubmitError(getValidationMessage(error.details) ?? error.message)
         } else if (error.code === 'NETWORK_ERROR') {
           setSubmitError('Check your internet connection')
         } else {
@@ -338,9 +429,26 @@ function MissionWizardContent() {
         setSubmitError('Something went wrong. Try again.')
       }
     } finally {
-      setIsSaving(false)
+      setPendingAction(null)
     }
   }
+
+  const reviewAssets = useMemo(
+    () =>
+      state.assets.map((asset, index) => (
+        <div key={`${asset.type}-${index}`} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+          <div className="mb-2 text-sm font-bold text-[#d77a57]">ASSET {index + 1}</div>
+          <div className="mb-2 text-lg font-black text-[#1a1625]">{asset.type}</div>
+          <p className="break-words text-sm text-[#6b687a]">
+            {asset.type === 'TEXT' ? asset.text : asset.url}
+          </p>
+          {asset.label?.trim() ? (
+            <p className="mt-3 text-sm font-semibold text-[#1a1625]">Label: {asset.label.trim()}</p>
+          ) : null}
+        </div>
+      )),
+    [state.assets]
+  )
 
   const reviewQuestions = useMemo(
     () =>
@@ -576,6 +684,7 @@ function MissionWizardContent() {
                 <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><span className="text-xl font-black">{formatCoins(total)} coins</span></div>
               </div>
             </div>
+            {reviewAssets}
             {reviewQuestions}
             {submitError ? <p className="text-sm text-red-600">{submitError}</p> : null}
           </div>
@@ -588,10 +697,26 @@ function MissionWizardContent() {
               CONTINUE →
             </button>
           ) : (
-            <button type="button" disabled={isSaving} className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`} onClick={() => void handleSave()}>
-              {isSaving ? <SpinnerIcon className="w-5 h-5" /> : null}
-              {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={pendingAction !== null}
+                className={`flex items-center gap-2 px-6 py-3.5 ${outlineButtonClass}`}
+                onClick={() => void handleSave('draft')}
+              >
+                {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
+                {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
+              </button>
+              <button
+                type="button"
+                disabled={pendingAction !== null}
+                className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`}
+                onClick={() => void handleSave('submit')}
+              >
+                {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
+                {isEditMode ? 'SUBMIT FOR REVIEW' : 'SAVE & SUBMIT FOR REVIEW'}
+              </button>
+            </div>
           )}
         </div>
       </div>

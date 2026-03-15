@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/api/middleware'
 import { prisma } from '@/lib/prisma'
-import { ok, notFound, serverError } from '@/lib/api/response'
+import { ok, notFound, serverError, unauthorized } from '@/lib/api/response'
 
 export async function GET(request: Request) {
   try {
@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     })
 
     if (!dbUser) return notFound('User')
+    if (dbUser.isDeleted) return unauthorized()
 
     const normalizedRole =
       dbUser.role === 'ADMIN'
@@ -29,19 +30,19 @@ export async function GET(request: Request) {
       emailVerified: dbUser.emailVerified,
       founderProfile: dbUser.founderProfile
         ? {
-            id: dbUser.founderProfile.id,
-            displayName: dbUser.founderProfile.displayName,
-            coinBalance: dbUser.founderProfile.coinBalance,
-          }
+          id: dbUser.founderProfile.id,
+          displayName: dbUser.founderProfile.displayName,
+          coinBalance: dbUser.founderProfile.coinBalance,
+        }
         : null,
       testerProfile: dbUser.testerProfile
         ? {
-            id: dbUser.testerProfile.id,
-            displayName: dbUser.testerProfile.displayName,
-            coinBalance: dbUser.testerProfile.coinBalance,
-            reputationScore: dbUser.testerProfile.reputationScore,
-            reputationTier: dbUser.testerProfile.reputationTier,
-          }
+          id: dbUser.testerProfile.id,
+          displayName: dbUser.testerProfile.displayName,
+          coinBalance: dbUser.testerProfile.coinBalance,
+          reputationScore: dbUser.testerProfile.reputationScore,
+          reputationTier: dbUser.testerProfile.reputationTier,
+        }
         : null,
     })
   } catch (err) {

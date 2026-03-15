@@ -1,7 +1,9 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
+import { enforceRateLimit } from '@/lib/api/rate-limit'
 import { validateBody } from '@/lib/api/validate'
-import { ok, unauthorized, apiError, serverError } from '@/lib/api/response'
+import { ok, apiError, serverError } from '@/lib/api/response'
 import { z } from 'zod'
 
 const LoginSchema = z.object({
@@ -11,6 +13,12 @@ const LoginSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = await enforceRateLimit(request, 'auth-login')
+
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await validateBody(request, LoginSchema)
     const supabase = createSupabaseServerClient()
 
@@ -23,12 +31,31 @@ export async function POST(request: Request) {
       return apiError('Invalid email or password', 'INVALID_CREDENTIALS', 401)
     }
 
-    const dbUser = await prisma.user.findUnique({
+    let dbUser = await prisma.user.findUnique({
       where: { id: data.user.id },
       include: { founderProfile: true, testerProfile: true },
     })
 
-    if (!dbUser) return unauthorized()
+    // Self-heal: If user exists in Supabase but not in Prisma, create them locally.
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          id: data.user.id,
+          email: data.user.email!,
+          emailVerified: !!data.user.email_confirmed_at,
+        },
+        include: { founderProfile: true, testerProfile: true },
+      })
+    }
+
+    // Sync emailVerified status if verified in Supabase
+    if (!dbUser.emailVerified && data.user.email_confirmed_at) {
+      dbUser = await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { emailVerified: true },
+        include: { founderProfile: true, testerProfile: true },
+      })
+    }
 
     if (!dbUser.emailVerified) {
       return apiError(
@@ -41,6 +68,10 @@ export async function POST(request: Request) {
     if (dbUser.isSuspended) {
       return apiError('Account suspended', 'ACCOUNT_SUSPENDED', 403)
     }
+    
+    if (dbUser.isDeleted) {
+      return apiError('Account deleted. Please contact support to reactivate.', 'ACCOUNT_DELETED', 403)
+    }
 
     const normalizedRole =
       dbUser.role === 'ADMIN'
@@ -50,6 +81,11 @@ export async function POST(request: Request) {
           : dbUser.testerProfile
             ? 'TESTER'
             : null
+
+    // Sync role to app_metadata on login
+    await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+      app_metadata: { role: normalizedRole },
+    })
 
     const redirectMap: Record<string, string> = {
       FOUNDER: '/dashboard/founder',

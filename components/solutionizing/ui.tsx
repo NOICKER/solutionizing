@@ -169,11 +169,15 @@ export function ErrorStatePanel({
 }
 
 export function EmptyStatePanel({
+  title = 'No missions yet',
+  description = "You haven't created any missions yet. Start by creating your first mission to get feedback from real testers.",
   onPrimaryAction,
   buttonLabel,
 }: {
-  onPrimaryAction: () => void
-  buttonLabel: string
+  title?: string
+  description?: string
+  onPrimaryAction?: () => void
+  buttonLabel?: string
 }) {
   return (
     <div className="rounded-2xl bg-[#faf9f7] p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
@@ -182,13 +186,13 @@ export function EmptyStatePanel({
           <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h2 className="mb-3 text-2xl font-black text-[#1a1625]">No missions yet</h2>
-      <p className="mb-8 max-w-md text-[#6b687a]">
-        You haven&apos;t created any missions yet. Start by creating your first mission to get feedback from real testers.
-      </p>
-      <button className={`mb-4 px-8 py-3.5 ${primaryButtonClass}`} onClick={onPrimaryAction}>
-        {buttonLabel}
-      </button>
+      <h2 className="mb-3 text-2xl font-black text-[#1a1625]">{title}</h2>
+      <p className="mb-8 max-w-md text-[#6b687a]">{description}</p>
+      {onPrimaryAction && buttonLabel ? (
+        <button className={`mb-4 px-8 py-3.5 ${primaryButtonClass}`} onClick={onPrimaryAction}>
+          {buttonLabel}
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -283,5 +287,111 @@ export function ConfirmationDialog({
         </div>
       </div>
     </ModalShell>
+  )
+}
+ 
+export function GlyphChip({
+  children,
+  className = '',
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={`flex h-8 w-8 items-center justify-center rounded-xl text-lg font-bold ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+export function StatCard({
+  label,
+  value,
+  glyph,
+  colorClass,
+  glyphColorClass,
+}: {
+  label: string
+  value: string | number
+  glyph: ReactNode
+  colorClass: string
+  glyphColorClass: string
+}) {
+  return (
+    <div className={`rounded-3xl border border-[#e5e4e0] bg-white p-6 transition-all hover:shadow-lg ${colorClass}`}>
+      <div className="mb-4 flex items-center gap-3">
+        <GlyphChip className={glyphColorClass}>{glyph}</GlyphChip>
+        <div className="text-sm font-bold text-[#6b687a]">{label}</div>
+      </div>
+      <div className="text-4xl font-black text-[#1a1625]">{value}</div>
+    </div>
+  )
+}
+
+export function SidebarNavItem({
+  glyph,
+  label,
+  href,
+  onClick,
+  active = false,
+  disabled = false,
+}: {
+  glyph: ReactNode
+  label: string
+  href?: string
+  onClick?: () => void
+  active?: boolean
+  disabled?: boolean
+}) {
+  const className = active
+    ? 'flex items-center gap-3 rounded-2xl bg-[#f7ede8] px-4 py-3 text-sm font-bold text-[#d77a57]'
+    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625]'
+
+  const content = (
+    <>
+      <GlyphChip className={active ? 'bg-[#f3ddd3] text-[#d77a57]' : 'bg-[#f6f1ec] text-[#8b8797]'}>
+        {glyph}
+      </GlyphChip>
+      {label}
+    </>
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className={`${className} w-full text-left ${disabled ? 'cursor-default text-[#a39ead] hover:bg-transparent hover:text-[#a39ead]' : ''}`}
+      onClick={disabled ? undefined : onClick}
+      aria-disabled={disabled ? 'true' : undefined}
+    >
+      {content}
+    </button>
+  )
+}
+
+export function PageHeader({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string
+  subtitle?: string
+  children?: ReactNode
+}) {
+  return (
+    <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+      <div>
+        <h1 className="mb-1 text-4xl font-black text-[#1a1625]">{title}</h1>
+        {subtitle ? <p className="text-lg text-[#6b687a]">{subtitle}</p> : null}
+      </div>
+      {children ? <div className="flex items-center gap-3">{children}</div> : null}
+    </header>
   )
 }

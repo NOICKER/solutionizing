@@ -332,7 +332,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           </div>
 
           <div className="mb-8 rounded-3xl border border-[#e5e4e0] bg-white p-8">
-            <h2 className="mb-6 text-xl font-black text-[#1a1625]">What you'll be testing</h2>
+            <h2 className="mb-6 text-xl font-black text-[#1a1625]">What you&apos;ll be testing</h2>
             <div className="space-y-4">
               {assignment.mission.assets.map((asset, index) => (
                 <div key={index} className="flex items-center gap-4 rounded-2xl bg-[#faf9f7] p-4">
@@ -510,7 +510,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           </div>
 
           <div className="mb-8 rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8">
-            <h3 className="mb-1 text-xl font-black text-[#1a1625]">You're about to earn</h3>
+            <h3 className="mb-1 text-xl font-black text-[#1a1625]">You&apos;re about to earn</h3>
             <p className="text-3xl font-black text-green-600">
               {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[#6b687a]">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
             </p>

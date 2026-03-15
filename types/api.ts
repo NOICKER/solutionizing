@@ -133,6 +133,11 @@ export type ApiFeedbackQuestion =
       type: 'RATING_1_5'
       responseCount: number
       averageRating: number | null
+      distribution: Array<{
+        rating: number
+        count: number
+        percentage: number
+      }>
     }
   | {
       questionId: string
@@ -153,6 +158,7 @@ export type ApiFeedbackQuestion =
       type: 'TEXT_SHORT' | 'TEXT_LONG'
       responseCount: number
       sampleResponses: string[]
+      allResponses: string[]
     }
 
 export interface ApiMissionFeedback {

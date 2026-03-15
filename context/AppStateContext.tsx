@@ -6,7 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 
 type MissionStatus = "matching" | "active" | "completed" | "needs_clarity";
@@ -63,26 +63,26 @@ const initialMissions: Mission[] = [
     name: "Homepage Usability",
     focus: "Can people find the pricing in under 3 seconds?",
     status: "active",
-    createdAt: "Today � 9:14 AM",
+    createdAt: "Today - 9:14 AM",
     clarityScore: 96,
-    matchingProgress: 72
+    matchingProgress: 72,
   },
   {
     id: "m2",
     name: "Pricing Clarity",
     focus: "Do founders understand which plan to start with?",
     status: "matching",
-    createdAt: "Yesterday � 4:02 PM",
+    createdAt: "Yesterday - 4:02 PM",
     clarityScore: 88,
-    matchingProgress: 34
-  }
+    matchingProgress: 34,
+  },
 ];
 
 const initialTester: TesterReputation = {
   name: "Jamie Smith",
   score: 982,
   previousScore: 982,
-  lastChangeReason: undefined
+  lastChangeReason: undefined,
 };
 
 const defaultState: AppState = {
@@ -92,14 +92,14 @@ const defaultState: AppState = {
     activeModal: null,
     matchingCountdown: null,
     devPanelOpen: false,
-    safetyFlaggedQuestion: undefined
-  }
+    safetyFlaggedQuestion: undefined,
+  },
 };
 
 const AppStateContext = createContext<AppContextShape | undefined>(undefined);
 
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
-  children
+  children,
 }) => {
   const [state, setState] = useState<AppState>(defaultState);
 
@@ -109,20 +109,23 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       ui: {
         ...prev.ui,
         activeModal: "matching",
-        matchingCountdown: 90
-      }
+        matchingCountdown: 90,
+      },
     }));
   }, []);
 
   const acceptMissionOffer = useCallback(() => {
     setState((prev) => {
-      const missions = prev.missions.map<Mission>((m) =>
-        m.status === "matching" ? { ...m, status: "active", matchingProgress: 100 } : m
+      const missions = prev.missions.map<Mission>((mission) =>
+        mission.status === "matching"
+          ? { ...mission, status: "active", matchingProgress: 100 }
+          : mission
       );
+
       return {
         ...prev,
         missions,
-        ui: { ...prev.ui, activeModal: null, matchingCountdown: null }
+        ui: { ...prev.ui, activeModal: null, matchingCountdown: null },
       };
     });
   }, []);
@@ -130,7 +133,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const passOnMissionOffer = useCallback(() => {
     setState((prev) => ({
       ...prev,
-      ui: { ...prev.ui, activeModal: null, matchingCountdown: null }
+      ui: { ...prev.ui, activeModal: null, matchingCountdown: null },
     }));
   }, []);
 
@@ -141,37 +144,35 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
         ...prev.tester,
         previousScore: prev.tester.score,
         score: Math.max(prev.tester.score - 48, 600),
-        lastChangeReason: "Short, low-context response"
+        lastChangeReason: "Short, low-context response",
       },
       ui: {
         ...prev.ui,
-        activeModal: "reputation"
-      }
+        activeModal: "reputation",
+      },
     }));
   }, []);
 
-  const resolveReputationResubmission = useCallback(
-    (isDeepEnough: boolean) => {
-      setState((prev) => {
-        if (!isDeepEnough) {
-          return {
-            ...prev,
-            ui: { ...prev.ui, activeModal: null }
-          };
-        }
+  const resolveReputationResubmission = useCallback((isDeepEnough: boolean) => {
+    setState((prev) => {
+      if (!isDeepEnough) {
         return {
           ...prev,
-          tester: {
-            ...prev.tester,
-            score: prev.tester.previousScore,
-            lastChangeReason: "Depth recovered via richer feedback"
-          },
-          ui: { ...prev.ui, activeModal: null }
+          ui: { ...prev.ui, activeModal: null },
         };
-      });
-    },
-    []
-  );
+      }
+
+      return {
+        ...prev,
+        tester: {
+          ...prev.tester,
+          score: prev.tester.previousScore,
+          lastChangeReason: "Depth recovered via richer feedback",
+        },
+        ui: { ...prev.ui, activeModal: null },
+      };
+    });
+  }, []);
 
   const triggerSafetyFlag = useCallback((question: string) => {
     setState((prev) => ({
@@ -179,22 +180,22 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       ui: {
         ...prev.ui,
         activeModal: "safety",
-        safetyFlaggedQuestion: question
-      }
+        safetyFlaggedQuestion: question,
+      },
     }));
   }, []);
 
   const resolveSafetyUpdate = useCallback(() => {
     setState((prev) => ({
       ...prev,
-      ui: { ...prev.ui, activeModal: null, safetyFlaggedQuestion: undefined }
+      ui: { ...prev.ui, activeModal: null, safetyFlaggedQuestion: undefined },
     }));
   }, []);
 
   const setDevPanelOpen = useCallback((open: boolean) => {
     setState((prev) => ({
       ...prev,
-      ui: { ...prev.ui, devPanelOpen: open }
+      ui: { ...prev.ui, devPanelOpen: open },
     }));
   }, []);
 
@@ -206,31 +207,32 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
     (missionId: string, amount: number) => {
       setState((prev) => ({
         ...prev,
-        missions: prev.missions.map((m) =>
-          m.id === missionId
+        missions: prev.missions.map((mission) =>
+          mission.id === missionId
             ? {
-                ...m,
-                matchingProgress: Math.min(100, m.matchingProgress + amount)
+                ...mission,
+                matchingProgress: Math.min(100, mission.matchingProgress + amount),
               }
-            : m
-        )
+            : mission
+        ),
       }));
     },
     []
   );
 
-  // Matching countdown side-effect
   useEffect(() => {
     if (state.ui.activeModal !== "matching" || state.ui.matchingCountdown == null) {
       return;
     }
+
     if (state.ui.matchingCountdown <= 0) {
       setState((prev) => ({
         ...prev,
-        ui: { ...prev.ui, matchingCountdown: 0 }
+        ui: { ...prev.ui, matchingCountdown: 0 },
       }));
       return;
     }
+
     const timer = window.setInterval(() => {
       setState((prev) => ({
         ...prev,
@@ -239,10 +241,11 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
           matchingCountdown:
             prev.ui.matchingCountdown != null && prev.ui.matchingCountdown > 0
               ? prev.ui.matchingCountdown - 1
-              : 0
-        }
+              : 0,
+        },
       }));
     }, 1000);
+
     return () => window.clearInterval(timer);
   }, [state.ui.activeModal, state.ui.matchingCountdown]);
 
@@ -258,7 +261,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       resolveSafetyUpdate,
       setDevPanelOpen,
       resetAll,
-      incrementMatchingProgress
+      incrementMatchingProgress,
     }),
     [
       state,
@@ -271,7 +274,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
       resolveSafetyUpdate,
       setDevPanelOpen,
       resetAll,
-      incrementMatchingProgress
+      incrementMatchingProgress,
     ]
   );
 
@@ -282,10 +285,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useAppState = (): AppContextShape => {
   const ctx = useContext(AppStateContext);
+
   if (!ctx) {
     throw new Error("useAppState must be used within AppStateProvider");
   }
+
   return ctx;
 };
-
-

@@ -6,16 +6,18 @@ import { ok, unauthorized, serverError } from '@/lib/api/response'
 export async function GET(request: Request) {
   try {
     const secret = request.headers.get('x-cron-secret')
+    const authorization = request.headers.get('authorization')
+    const bearerToken = authorization?.startsWith('Bearer ')
+      ? authorization.slice('Bearer '.length)
+      : null
 
-    if (secret !== process.env.CRON_SECRET) {
+    if (secret !== process.env.CRON_SECRET && bearerToken !== process.env.CRON_SECRET) {
       return unauthorized()
     }
 
     const expiredAssignments = await prisma.missionAssignment.findMany({
       where: {
-        status: {
-          in: [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS],
-        },
+        status: AssignmentStatus.ASSIGNED,
         timeoutAt: {
           lt: new Date(),
         },

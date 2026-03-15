@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { Suspense, FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { ApiClientError, apiFetch, isApiClientError } from '@/lib/api/client'
@@ -49,7 +49,7 @@ function isNetworkError(error: unknown) {
   return isApiClientError(error) && error.code === 'NETWORK_ERROR'
 }
 
-export default function AuthPage() {
+function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated, isLoading, refetch } = useAuth()
@@ -488,5 +488,29 @@ export default function AuthPage() {
         )}
       </div>
     </main>
+  )
+}
+
+function AuthPageLoading() {
+  return (
+    <div className="min-h-screen bg-[#faf9f7] p-8">
+      <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((card) => (
+          <div key={card} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+            <div className="mb-4 h-12 w-12 animate-pulse rounded-2xl bg-[#e5e4e0]" />
+            <div className="mb-3 h-6 animate-pulse rounded bg-[#e5e4e0]" />
+            <div className="h-4 w-2/3 animate-pulse rounded bg-[#e5e4e0]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<AuthPageLoading />}>
+      <AuthForm />
+    </Suspense>
   )
 }

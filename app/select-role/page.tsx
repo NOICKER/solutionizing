@@ -3,13 +3,18 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RequireAuth } from '@/components/RequireAuth'
-import { BrandMark, SpinnerIcon, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import {
+  BrandMark,
+  SpinnerIcon,
+  primaryButtonClass,
+  textFieldClass,
+} from '@/components/solutionizing/ui'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 
 function SelectRoleContent() {
   const router = useRouter()
-  const { user, refetch } = useAuth()
+  const { user, refetch, applyRoleSelection } = useAuth()
   const [founderName, setFounderName] = useState('')
   const [testerName, setTesterName] = useState('')
   const [founderNameError, setFounderNameError] = useState('')
@@ -17,6 +22,25 @@ function SelectRoleContent() {
   const [globalError, setGlobalError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [submittingRole, setSubmittingRole] = useState<'FOUNDER' | 'TESTER' | null>(null)
+  const [activeRole, setActiveRole] = useState<'FOUNDER' | 'TESTER'>('FOUNDER')
+
+  const founderIsActive = activeRole === 'FOUNDER'
+  const testerIsActive = activeRole === 'TESTER'
+
+  const founderCardClass = founderIsActive
+    ? 'border-[#d77a57] bg-[#fdf8f6] shadow-[0_28px_70px_-48px_rgba(215,122,87,0.42)]'
+    : 'border-[#e5e4e0] bg-white'
+
+  const testerCardClass = testerIsActive
+    ? 'border-blue-500 bg-[#f5f8ff] shadow-[0_28px_70px_-48px_rgba(59,130,246,0.36)]'
+    : 'border-[#e5e4e0] bg-white'
+
+  const inactiveButtonClass =
+    'rounded-[2rem] border-2 border-[#ded8d2] bg-white font-black text-[#b2a8a0] transition-all hover:border-[#cfc7c0] hover:text-[#8f857d] disabled:pointer-events-none disabled:opacity-70'
+
+  const testerButtonClass = testerIsActive
+    ? 'rounded-[2rem] bg-blue-600 text-white font-black hover:bg-blue-500 hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
+    : inactiveButtonClass
 
   useEffect(() => {
     if (user?.role === 'FOUNDER') {
@@ -29,6 +53,10 @@ function SelectRoleContent() {
     }
   }, [router, user?.role])
 
+  function getDashboardPath(role: 'FOUNDER' | 'TESTER') {
+    return role === 'FOUNDER' ? '/dashboard/founder' : '/dashboard/tester'
+  }
+
   async function handleSelectRole(role: 'FOUNDER' | 'TESTER') {
     const displayName = role === 'FOUNDER' ? founderName.trim() : testerName.trim()
 
@@ -38,11 +66,13 @@ function SelectRoleContent() {
 
     if (displayName.length < 2) {
       const message = 'Display name must be at least 2 characters'
+
       if (role === 'FOUNDER') {
         setFounderNameError(message)
       } else {
         setTesterNameError(message)
       }
+
       return
     }
 
@@ -58,27 +88,35 @@ function SelectRoleContent() {
         },
       })
 
-      await refetch()
-      router.push(role === 'FOUNDER' ? '/dashboard/founder' : '/dashboard/tester')
+      applyRoleSelection(role, displayName)
+      void refetch()
+      router.replace(getDashboardPath(role))
     } catch (error) {
       if (isApiClientError(error) && error.status === 409) {
-        router.push(role === 'FOUNDER' ? '/dashboard/founder' : '/dashboard/tester')
+        const resolvedRole =
+          user?.role === 'FOUNDER' || user?.role === 'TESTER' ? user.role : role
+
+        if (resolvedRole === role) {
+          applyRoleSelection(role, displayName)
+        }
+
+        void refetch()
+        router.replace(getDashboardPath(resolvedRole))
         return
       }
 
       setGlobalError('Something went wrong. Please try again.')
       setIsLoading(false)
       setSubmittingRole(null)
-      return
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] flex items-center justify-center p-8">
+    <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8">
       <div className="w-full max-w-5xl">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] flex items-center justify-center">
+        <div className="mb-12 text-center">
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f]">
               <BrandMark />
             </div>
             <h1 className="text-4xl font-black text-[#1a1625]">SOLUTIONIZING</h1>
@@ -86,77 +124,137 @@ function SelectRoleContent() {
           <p className="text-xl text-[#6b687a]">How will you use Solutionizing?</p>
         </div>
 
-        <div className="grid gap-6 max-w-3xl mx-auto md:grid-cols-2">
-          <div className="bg-[#fdf8f6] rounded-3xl p-8 border-2 border-[#d77a57]">
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+          <div
+            onClick={() => setActiveRole('FOUNDER')}
+            className={`cursor-pointer rounded-3xl border-2 p-8 transition-all duration-200 ${
+              founderCardClass
+            }`}
+          >
+            <div className="mb-6 flex flex-col items-center text-center">
+              <div
+                className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
+                  founderIsActive
+                    ? 'bg-gradient-to-br from-[#d77a57] to-[#c4673f]'
+                    : 'bg-[#f3f3f5] text-[#b8b0a8]'
+                }`}
+              >
+                <svg
+                  className={`h-8 w-8 ${founderIsActive ? 'text-white' : 'text-[#b8b0a8]'}`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-[#1a1625] mb-2">I&apos;m a Founder</h2>
-              <p className="text-[#6b687a] text-sm">I have a product and need real feedback from real people</p>
+              <h2 className="mb-2 text-2xl font-black text-[#1a1625]">I&apos;m a Founder</h2>
+              <p className="text-sm text-[#6b687a]">
+                I have a product and need real feedback from real people
+              </p>
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs font-semibold text-[#1a1625] mb-2 uppercase tracking-wide">DISPLAY NAME</label>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+                DISPLAY NAME
+              </label>
               <input
                 type="text"
                 value={founderName}
                 onChange={(event) => setFounderName(event.target.value)}
+                onFocus={() => setActiveRole('FOUNDER')}
                 placeholder="Your first name"
                 className={textFieldClass}
               />
-              {founderNameError ? <p className="text-sm text-red-600 mt-1">{founderNameError}</p> : null}
+              {founderNameError ? (
+                <p className="mt-1 text-sm text-red-600">{founderNameError}</p>
+              ) : null}
             </div>
 
             <button
               type="button"
               disabled={isLoading}
-              onClick={() => void handleSelectRole('FOUNDER')}
-              className={`w-full py-3.5 text-base ${primaryButtonClass} flex items-center justify-center gap-2`}
+              onClick={() => {
+                setActiveRole('FOUNDER')
+                void handleSelectRole('FOUNDER')
+              }}
+              className={`flex w-full items-center justify-center gap-2 py-3.5 text-base ${
+                founderIsActive ? primaryButtonClass : inactiveButtonClass
+              }`}
             >
-              {submittingRole === 'FOUNDER' && isLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
-              CONTINUE AS FOUNDER →
+              {submittingRole === 'FOUNDER' && isLoading ? (
+                <SpinnerIcon className="h-5 w-5" />
+              ) : null}
+              CONTINUE AS FOUNDER {'->'}
             </button>
           </div>
 
-          <div className="bg-white rounded-3xl p-8 border-2 border-[#e5e4e0]">
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <div
+            onClick={() => setActiveRole('TESTER')}
+            className={`cursor-pointer rounded-3xl border-2 p-8 transition-all duration-200 ${
+              testerCardClass
+            }`}
+          >
+            <div className="mb-6 flex flex-col items-center text-center">
+              <div
+                className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
+                  testerIsActive
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-[#f3f3f5] text-[#b8b0a8]'
+                }`}
+              >
+                <svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-[#1a1625] mb-2">I&apos;m a Tester</h2>
-              <p className="text-[#6b687a] text-sm">I want to earn by giving honest feedback on real products</p>
+              <h2 className="mb-2 text-2xl font-black text-[#1a1625]">I&apos;m a Tester</h2>
+              <p className="text-sm text-[#6b687a]">
+                I want to earn by giving honest feedback on real products
+              </p>
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs font-semibold text-[#1a1625] mb-2 uppercase tracking-wide">DISPLAY NAME</label>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+                DISPLAY NAME
+              </label>
               <input
                 type="text"
                 value={testerName}
                 onChange={(event) => setTesterName(event.target.value)}
+                onFocus={() => setActiveRole('TESTER')}
                 placeholder="Your first name"
-                className={textFieldClass}
+                className={`${textFieldClass} ${
+                  testerIsActive
+                    ? 'focus:ring-blue-500'
+                    : ''
+                }`}
               />
-              {testerNameError ? <p className="text-sm text-red-600 mt-1">{testerNameError}</p> : null}
+              {testerNameError ? (
+                <p className="mt-1 text-sm text-red-600">{testerNameError}</p>
+              ) : null}
             </div>
 
             <button
               type="button"
               disabled={isLoading}
-              onClick={() => void handleSelectRole('TESTER')}
-              className="w-full py-3.5 rounded-[2rem] bg-white border-2 border-[#d77a57] text-[#d77a57] font-black text-base hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70 flex items-center justify-center gap-2"
+              onClick={() => {
+                setActiveRole('TESTER')
+                void handleSelectRole('TESTER')
+              }}
+              className={`flex w-full items-center justify-center gap-2 py-3.5 text-base ${testerButtonClass}`}
             >
-              {submittingRole === 'TESTER' && isLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
-              CONTINUE AS TESTER →
+              {submittingRole === 'TESTER' && isLoading ? (
+                <SpinnerIcon className="h-5 w-5" />
+              ) : null}
+              CONTINUE AS TESTER {'->'}
             </button>
           </div>
         </div>
 
-        <p className="text-center text-sm text-[#9b98a8] mt-8">You can only choose once. Choose carefully.</p>
+        <p className="mt-8 text-center text-sm text-[#9b98a8]">
+          You can only choose once. Choose carefully.
+        </p>
         {globalError ? (
           <p className="mt-4 text-center text-sm text-red-600">{globalError}</p>
         ) : null}

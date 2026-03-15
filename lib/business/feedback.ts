@@ -73,6 +73,16 @@ export async function computeFeedback(missionId: string) {
         .map((response) => response.responseRating)
         .filter((value): value is number => value !== null)
 
+      const distribution = [5, 4, 3, 2, 1].map((rating) => {
+        const count = values.filter((value) => value === rating).length
+
+        return {
+          rating,
+          count,
+          percentage: percentage(count, values.length),
+        }
+      })
+
       return {
         questionId: question.id,
         order: question.order,
@@ -83,6 +93,7 @@ export async function computeFeedback(missionId: string) {
           values.length === 0
             ? null
             : roundToTwo(values.reduce((sum, value) => sum + value, 0) / values.length),
+        distribution,
       }
     }
 
@@ -132,6 +143,7 @@ export async function computeFeedback(missionId: string) {
       type: question.type,
       responseCount: textSamples.length,
       sampleResponses: textSamples.slice(0, 5),
+      allResponses: textSamples,
     }
   })
 

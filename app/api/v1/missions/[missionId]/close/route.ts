@@ -2,6 +2,7 @@ import { AssignmentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { releaseOpenAssignmentsForMission } from '@/lib/business/mission-assignments'
 
 async function findOwnedMission(missionId: string, founderId: string) {
   return prisma.mission.findFirst({
@@ -65,34 +66,11 @@ export async function POST(
         },
       })
 
-      const openAssignments = await tx.missionAssignment.findMany({
-        where: {
-          missionId: mission.id,
-          status: {
-            in: [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS],
-          },
-        },
-        select: { testerId: true },
-      })
-
-      await tx.missionAssignment.updateMany({
-        where: {
-          missionId: mission.id,
-          status: {
-            in: [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS],
-          },
-        },
-        data: { status: AssignmentStatus.MISSION_FULL },
-      })
-
-      const testerIds = [...new Set(openAssignments.map((assignment) => assignment.testerId))]
-
-      if (testerIds.length > 0) {
-        await tx.testerProfile.updateMany({
-          where: { id: { in: testerIds } },
-          data: { isAvailable: true },
-        })
-      }
+      await releaseOpenAssignmentsForMission(
+        tx,
+        mission.id,
+        AssignmentStatus.MISSION_FULL
+      )
 
       return tx.mission.update({
         where: { id: mission.id },

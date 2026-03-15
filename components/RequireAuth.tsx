@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 
 interface RequireAuthProps {
   children: React.ReactNode
-  role?: 'FOUNDER' | 'TESTER'
+  role?: 'FOUNDER' | 'TESTER' | 'ADMIN'
 }
 
 function FullPageLoadingSkeleton() {
@@ -38,42 +38,59 @@ export function RequireAuth({ children, role }: RequireAuthProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { user, isAuthenticated, isLoading } = useAuth()
+  const isRoleSelectionPage = pathname === '/select-role'
+  const isAwaitingRoleSelection = user?.role === null
+  const shouldAllowRoleSelection =
+    isAuthenticated && !role && isRoleSelectionPage && isAwaitingRoleSelection
+  const nextPath =
+    typeof window === 'undefined'
+      ? pathname
+      : `${window.location.pathname}${window.location.search}`
+
+  let redirectTarget: string | null = null
+
+  if (!isLoading) {
+    if (!isAuthenticated) {
+      redirectTarget = `/auth?next=${encodeURIComponent(nextPath)}`
+    } else if (isAwaitingRoleSelection && !shouldAllowRoleSelection) {
+      redirectTarget = '/select-role'
+    } else if (role && user?.role !== role) {
+      if (user?.role === 'FOUNDER') {
+        redirectTarget = '/dashboard/founder'
+      } else if (user?.role === 'TESTER') {
+        redirectTarget = '/dashboard/tester'
+      } else {
+        redirectTarget = '/'
+      }
+    }
+  }
 
   useEffect(() => {
-    if (isLoading) {
+    if (!redirectTarget) {
       return
     }
 
-    if (!isAuthenticated) {
-      const nextPath =
-        typeof window === 'undefined'
-          ? pathname
-          : `${window.location.pathname}${window.location.search}`
-      router.replace(`/auth?next=${encodeURIComponent(nextPath)}`)
-      return
+    router.replace(redirectTarget)
+
+    const fallbackTimer = window.setTimeout(() => {
+      window.location.replace(redirectTarget!)
+    }, 250)
+
+    return () => {
+      window.clearTimeout(fallbackTimer)
     }
+  }, [
+    redirectTarget,
+    router,
+  ])
 
-    if (user?.role === null) {
-      router.replace('/select-role')
-      return
-    }
-
-    if (role && user?.role !== role) {
-      if (user?.role === 'FOUNDER') {
-        router.replace('/dashboard/founder')
-        return
-      }
-
-      if (user?.role === 'TESTER') {
-        router.replace('/dashboard/tester')
-        return
-      }
-
-      router.replace('/')
-    }
-  }, [isAuthenticated, isLoading, pathname, role, router, user?.role])
-
-  if (isLoading || !isAuthenticated || !user || user.role === null || (role && user.role !== role)) {
+  if (
+    isLoading ||
+    !isAuthenticated ||
+    !user ||
+    (!shouldAllowRoleSelection && isAwaitingRoleSelection) ||
+    (role && user.role !== role)
+  ) {
     return <FullPageLoadingSkeleton />
   }
 

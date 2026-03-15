@@ -3,8 +3,10 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
+import { releaseOpenAssignmentsForMission } from '@/lib/business/mission-assignments'
 import { validateBody } from '@/lib/api/validate'
 import { updateReputation } from '@/lib/business/reputation'
+import { notificationQueue } from '@/lib/queue'
 
 const SubmissionResponseSchema = z.object({
   questionId: z.string().cuid(),
@@ -25,6 +27,9 @@ type SubmitAssignmentResult =
   | {
       outcome: 'completed'
       coinsEarned: number
+      missionCompleted: boolean
+      founderUserId: string | null
+      missionId: string
     }
 
 function validateSubmissionResponses(
@@ -186,6 +191,11 @@ export async function POST(
           coinPerTester: true,
           testersCompleted: true,
           testersRequired: true,
+          founder: {
+            select: {
+              userId: true,
+            },
+          },
         },
       })
 
@@ -271,11 +281,13 @@ export async function POST(
         },
       })
 
+      const missionCompleted = mission.testersCompleted + 1 >= mission.testersRequired
+
       await tx.mission.update({
         where: { id: mission.id },
         data: {
           testersCompleted: { increment: 1 },
-          ...(mission.testersCompleted + 1 >= mission.testersRequired
+          ...(missionCompleted
             ? {
                 status: MissionStatus.COMPLETED,
                 completedAt: now,
@@ -284,14 +296,33 @@ export async function POST(
         },
       })
 
+      if (missionCompleted) {
+        await releaseOpenAssignmentsForMission(
+          tx,
+          mission.id,
+          AssignmentStatus.MISSION_FULL
+        )
+      }
+
       return {
         outcome: 'completed',
         coinsEarned: mission.coinPerTester,
+        missionCompleted,
+        founderUserId: mission.founder.userId,
+        missionId: mission.id,
       }
     })
 
     if (result.outcome === 'mission_full') {
       return apiError('Mission is already full', 'MISSION_FULL', 409)
+    }
+
+    if (result.missionCompleted && result.founderUserId) {
+      await notificationQueue.add('notify', {
+        type: 'MISSION_COMPLETED',
+        userId: result.founderUserId,
+        missionId: result.missionId,
+      })
     }
 
     const reputation = await updateReputation(tester.testerProfile.id, 'COMPLETION')
