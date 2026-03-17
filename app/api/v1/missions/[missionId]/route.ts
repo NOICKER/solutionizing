@@ -158,9 +158,15 @@ export async function GET(
       assignmentCounts[assignment.status] += 1
     }
 
+    const completedAssignments = await prisma.missionAssignment.findMany({
+      where: { missionId: mission.id, status: 'COMPLETED' },
+      select: { id: true, rating: { select: { id: true } } },
+    })
+
     return ok({
       ...mission,
       assignmentCounts,
+      completedAssignments,
     })
   } catch (err) {
     if (err instanceof Response) return err

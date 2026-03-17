@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 import { enforceRateLimit } from '@/lib/api/rate-limit'
 import { validateBody } from '@/lib/api/validate'
-import { created, conflict, serverError } from '@/lib/api/response'
+import { apiError, created, conflict, serverError } from '@/lib/api/response'
 import { z } from 'zod'
 
 const RegisterSchema = z.object({
@@ -28,7 +28,14 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error('[register] Supabase signUp error:', error.message, error)
+      console.error('[register] Supabase signUp error:', error)
+      if (error.status === 429 || error.message.toLowerCase().includes('rate limit')) {
+        return apiError(
+          'Too many sign up attempts. Please wait a few minutes and try again.',
+          'EMAIL_RATE_LIMITED',
+          429
+        )
+      }
       if (error.message.toLowerCase().includes('already registered')) {
         return conflict('Email already registered')
       }

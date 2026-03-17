@@ -1,6 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function redirectWithCookies(request: NextRequest, response: NextResponse, pathname: string) {
+  const redirectResponse = NextResponse.redirect(new URL(pathname, request.url))
+
+  response.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie)
+  })
+
+  return redirectResponse
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
   const supabase = createServerClient(
@@ -14,8 +24,8 @@ export async function middleware(request: NextRequest) {
           response.cookies.set({ name, value, ...options })
         },
         remove(name, options) {
-          request.cookies.set({ name, value: '', ...options })
-          response.cookies.set({ name, value: '', ...options })
+          request.cookies.set({ name, value: '', ...options, maxAge: 0 })
+          response.cookies.set({ name, value: '', ...options, maxAge: 0 })
         },
       },
     }
@@ -31,7 +41,7 @@ export async function middleware(request: NextRequest) {
 
   // Not logged in: redirect to login unless on auth or public route
   if (!user && !isAuthRoute && path !== '/') {
-    return NextResponse.redirect(new URL('/auth', request.url))
+    return redirectWithCookies(request, response, '/auth')
   }
 
   if (user) {
@@ -41,43 +51,43 @@ export async function middleware(request: NextRequest) {
     // Logged-in users routing
     if (isAuthRoute) {
       if (path === '/select-role') {
-        if (role === 'FOUNDER') return NextResponse.redirect(new URL('/dashboard/founder', request.url))
-        if (role === 'TESTER') return NextResponse.redirect(new URL('/dashboard/tester', request.url))
-        if (role === 'ADMIN') return NextResponse.redirect(new URL('/', request.url))
+        if (role === 'FOUNDER') return redirectWithCookies(request, response, '/dashboard/founder')
+        if (role === 'TESTER') return redirectWithCookies(request, response, '/dashboard/tester')
+        if (role === 'ADMIN') return redirectWithCookies(request, response, '/')
         // If no role, allow them to stay on /select-role
         return response
       }
 
       // Other auth routes (like /login)
-      if (role === 'FOUNDER') return NextResponse.redirect(new URL('/dashboard/founder', request.url))
-      if (role === 'TESTER') return NextResponse.redirect(new URL('/dashboard/tester', request.url))
-      if (role === 'ADMIN') return NextResponse.redirect(new URL('/', request.url))
+      if (role === 'FOUNDER') return redirectWithCookies(request, response, '/dashboard/founder')
+      if (role === 'TESTER') return redirectWithCookies(request, response, '/dashboard/tester')
+      if (role === 'ADMIN') return redirectWithCookies(request, response, '/')
 
       // Logged in but no role
-      return NextResponse.redirect(new URL('/select-role', request.url))
+      return redirectWithCookies(request, response, '/select-role')
     }
 
     // Force role selection for non-auth routes
     if (!role) {
-      return NextResponse.redirect(new URL('/select-role', request.url))
+      return redirectWithCookies(request, response, '/select-role')
     }
 
     // Role-based route protection
     if (path.startsWith('/dashboard/founder') || path.startsWith('/missions') || path.startsWith('/coins')) {
       if (role !== 'FOUNDER' && role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/dashboard/tester', request.url))
+        return redirectWithCookies(request, response, '/dashboard/tester')
       }
     }
 
     if (path.startsWith('/tester') || path.startsWith('/dashboard/tester')) {
       if (role !== 'TESTER' && role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/dashboard/founder', request.url))
+        return redirectWithCookies(request, response, '/dashboard/founder')
       }
     }
 
     if (path.startsWith('/admin')) {
       if (role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/', request.url))
+        return redirectWithCookies(request, response, '/')
       }
     }
   }

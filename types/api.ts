@@ -69,6 +69,7 @@ export interface ApiMission {
 
 export interface ApiMissionDetail extends ApiMission {
   assignmentCounts?: Partial<Record<AssignmentStatus, number>>
+  completedAssignments?: Array<{ id: string, rating: { id: string } | null }>
 }
 
 export interface ApiTesterAssignmentSummary {

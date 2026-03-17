@@ -5,12 +5,16 @@ import { format } from 'date-fns'
 import { ReactNode, useCallback, useEffect, useState, useMemo } from 'react'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiFeedbackQuestion, ApiMissionDetail, ApiMissionFeedback } from '@/types/api'
-import { NotFoundPanel } from '@/components/solutionizing/ui'
+import {
+  NotFoundPanel,
+  primaryButtonClass,
+  textFieldClass,
+} from '@/components/solutionizing/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, ArrowRight, Clock, Star, 
   MessageSquare, Users, Download, Sparkles,
-  ChevronDown, ChevronUp, BarChart3,
+  ChevronUp, BarChart3,
   MessageCircle, Loader2, Target
 } from 'lucide-react'
 
@@ -47,18 +51,66 @@ function getQuestionMeasureCopy(question: ApiFeedbackQuestion) {
   return 'Open-ended responses explain the reasoning behind the headline metrics.'
 }
 
-function StarRow({ value, size = 16 }: { value: number; size?: number }) {
-  const roundedValue = Math.round(value)
+type CompletedAssignment = NonNullable<ApiMissionDetail['completedAssignments']>[number]
+
+function StarRow({
+  value,
+  size = 16,
+  onSelect,
+  disabled = false,
+}: {
+  value: number
+  size?: number
+  onSelect?: (nextValue: number) => void
+  disabled?: boolean
+}) {
+  const [hoveredValue, setHoveredValue] = useState(0)
+  const displayedValue = hoveredValue || value
+  const roundedValue = Math.round(displayedValue)
+
   return (
     <div className="flex items-center gap-1">
       {Array.from({ length: 5 }, (_, index) => {
+        const nextValue = index + 1
         const filled = index < roundedValue
-        return (
+        const star = (
           <Star
-            key={index}
             size={size}
             className={`${filled ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'} transition-all`}
           />
+        )
+
+        if (!onSelect) {
+          return <div key={index}>{star}</div>
+        }
+
+        return (
+          <button
+            key={index}
+            type="button"
+            disabled={disabled}
+            onMouseEnter={() => {
+              if (!disabled) {
+                setHoveredValue(nextValue)
+              }
+            }}
+            onMouseLeave={() => setHoveredValue(0)}
+            onFocus={() => {
+              if (!disabled) {
+                setHoveredValue(nextValue)
+              }
+            }}
+            onBlur={() => setHoveredValue(0)}
+            onClick={() => {
+              if (!disabled) {
+                onSelect(nextValue)
+              }
+            }}
+            aria-label={`Rate ${nextValue} star${nextValue === 1 ? '' : 's'}`}
+            className="rounded-full p-0.5 transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {star}
+          </button>
         )
       })}
     </div>
@@ -276,76 +328,45 @@ function QuestionBreakdown({ question }: { question: ApiFeedbackQuestion }) {
 
 /* ──────────────────────────────────── Tester-rating section ─────────────────────────────────── */
 
-function InteractiveStarInput({
-  value,
-  onChange,
-  disabled
-}: {
-  value: number
-  onChange: (v: number) => void
-  disabled: boolean
-}) {
-  const [hovered, setHovered] = useState(0)
-
-  return (
-    <div className="flex items-center gap-1">
-      {Array.from({ length: 5 }, (_, i) => {
-        const starValue = i + 1
-        const filled = starValue <= (hovered || value)
-        return (
-          <button
-            key={i}
-            type="button"
-            disabled={disabled}
-            onMouseEnter={() => !disabled && setHovered(starValue)}
-            onMouseLeave={() => setHovered(0)}
-            onClick={() => !disabled && onChange(starValue)}
-            className="p-0.5 transition-transform hover:scale-110 disabled:cursor-default disabled:opacity-70"
-          >
-            <Star
-              size={24}
-              className={`transition-all ${
-                filled
-                  ? 'fill-amber-400 text-amber-400'
-                  : 'fill-slate-200 text-slate-200'
-              }`}
-            />
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 function TesterRatingCard({
   missionId,
-  assignmentId,
-  testerIndex
+  assignment,
+  testerIndex,
+  onSubmitted,
 }: {
   missionId: string
-  assignmentId: string
+  assignment: CompletedAssignment
   testerIndex: number
+  onSubmitted: (assignmentId: string, ratingId: string) => void
 }) {
   const [score, setScore] = useState(0)
   const [flaggedLowEffort, setFlaggedLowEffort] = useState(false)
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [submitted, setSubmitted] = useState(Boolean(assignment.rating))
   const [error, setError] = useState<string | null>(null)
+  const isAlreadyRated = assignment.rating !== null
+  const formDisabled = submitting || submitted
 
   const handleSubmit = async () => {
-    if (score === 0) {
+    if (score === 0 || submitted) {
       setError('Please select a star rating')
       return
     }
     setError(null)
     setSubmitting(true)
     try {
-      await apiFetch(`/api/v1/missions/${missionId}/rate-tester`, {
+      const rating = await apiFetch<{ id: string }>(`/api/v1/missions/${missionId}/rate-tester`, {
         method: 'POST',
-        body: JSON.stringify({ assignmentId, score, flaggedLowEffort, note })
+        body: {
+          assignmentId: assignment.id,
+          score,
+          flaggedLowEffort,
+          note: note.trim(),
+        },
       })
       setSubmitted(true)
+      onSubmitted(assignment.id, rating.id)
     } catch (err: unknown) {
       setError(isApiClientError(err) ? err.message : 'Something went wrong')
     } finally {
@@ -358,48 +379,34 @@ function TesterRatingCard({
       variants={fadeInUp}
       className="group relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 p-6 shadow-xl shadow-indigo-100/30 backdrop-blur-xl transition-all hover:bg-white/90"
     >
-      {/* Header */}
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 shadow-inner">
           <Users size={18} />
         </div>
         <div>
-          <div className="text-sm font-bold text-slate-900">Tester {testerIndex}</div>
-          <div className="text-xs font-medium text-slate-500">Anonymous tester</div>
+          <h3 className="text-sm font-bold text-slate-900">Tester {testerIndex + 1} anonymous</h3>
+          <div className="text-xs font-medium text-slate-500">
+            Founders rate completed assignments one by one.
+          </div>
         </div>
       </div>
 
-      {submitted ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-3 rounded-2xl bg-emerald-50/80 py-8 text-center"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-          </div>
-          <p className="text-sm font-bold text-emerald-700">Rating submitted</p>
-          <div className="mt-1">
-            <StarRow value={score} size={18} />
-          </div>
-        </motion.div>
-      ) : (
-        <div className="space-y-5">
+      <div className="space-y-5">
           {/* Star rating */}
           <div>
-            <label className="mb-2 block text-xs font-semibold tracking-wider text-slate-500 uppercase">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
               Rating
             </label>
-            <InteractiveStarInput value={score} onChange={setScore} disabled={submitting} />
+            <StarRow value={score} size={24} onSelect={setScore} disabled={formDisabled} />
           </div>
 
           {/* Flag low effort */}
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label className="flex cursor-pointer items-center gap-3 select-none">
             <input
               type="checkbox"
               checked={flaggedLowEffort}
-              onChange={(e) => setFlaggedLowEffort(e.target.checked)}
-              disabled={submitting}
+              onChange={(event) => setFlaggedLowEffort(event.target.checked)}
+              disabled={formDisabled}
               className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-60"
             />
             <span className="text-sm font-medium text-slate-700">Flag low effort</span>
@@ -407,52 +414,58 @@ function TesterRatingCard({
 
           {/* Note */}
           <div>
-            <label className="mb-2 block text-xs font-semibold tracking-wider text-slate-500 uppercase">
-              Note <span className="normal-case tracking-normal font-normal text-slate-400">(optional)</span>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Note <span className="normal-case font-normal tracking-normal text-slate-400">(optional)</span>
             </label>
             <textarea
               value={note}
-              onChange={(e) => setNote(e.target.value)}
-              disabled={submitting}
-              rows={2}
+              onChange={(event) => setNote(event.target.value)}
+              disabled={formDisabled}
+              rows={3}
               placeholder="Add a note about this tester…"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:opacity-60 transition-colors"
+              className={`${textFieldClass} resize-none disabled:opacity-60`}
             />
           </div>
 
-          {error && (
-            <p className="text-xs font-semibold text-red-500">{error}</p>
-          )}
-
-          {/* Submit */}
           <button
             type="button"
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-indigo-600 hover:shadow-indigo-600/30 hover:scale-[1.02] disabled:opacity-60 disabled:pointer-events-none text-sm"
+            onClick={() => void handleSubmit()}
+            disabled={score === 0 || submitted || submitting}
+            className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm ${primaryButtonClass}`}
           >
             {submitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" /> Submitting…
               </>
+            ) : submitted ? (
+              'Already Submitted'
             ) : (
               'Submit Rating'
             )}
           </button>
+
+          {error ? <p className="text-xs font-semibold text-red-500">{error}</p> : null}
+          {submitted && !isAlreadyRated ? (
+            <p className="text-sm font-semibold text-emerald-600">Rating submitted successfully.</p>
+          ) : null}
+          {isAlreadyRated ? (
+            <p className="text-sm font-semibold text-slate-500">This tester was already rated.</p>
+          ) : null}
         </div>
-      )}
     </motion.div>
   )
 }
 
 function RateTestersSection({
   missionId,
-  completedCount
+  assignments,
+  onSubmitted,
 }: {
   missionId: string
-  completedCount: number
+  assignments: CompletedAssignment[]
+  onSubmitted: (assignmentId: string, ratingId: string) => void
 }) {
-  if (completedCount <= 0) return null
+  if (assignments.length === 0) return null
 
   return (
     <motion.section
@@ -477,12 +490,13 @@ function RateTestersSection({
         animate="visible"
         className="grid gap-6 p-8 sm:grid-cols-2 lg:grid-cols-3"
       >
-        {Array.from({ length: completedCount }, (_, i) => (
+        {assignments.map((assignment, index) => (
           <TesterRatingCard
-            key={`tester-${i}`}
+            key={assignment.id}
             missionId={missionId}
-            assignmentId={`slot-${i}`}
-            testerIndex={i + 1}
+            assignment={assignment}
+            testerIndex={index}
+            onSubmitted={onSubmitted}
           />
         ))}
       </motion.div>
@@ -528,6 +542,21 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   useEffect(() => {
     void loadData()
   }, [loadData])
+
+  const handleAssignmentRated = useCallback((assignmentId: string, ratingId: string) => {
+    setMission((currentMission) => {
+      if (!currentMission?.completedAssignments) {
+        return currentMission
+      }
+
+      return {
+        ...currentMission,
+        completedAssignments: currentMission.completedAssignments.map((assignment) =>
+          assignment.id === assignmentId ? { ...assignment, rating: { id: ratingId } } : assignment
+        ),
+      }
+    })
+  }, [])
 
   if (isLoading) {
     return (
@@ -577,6 +606,9 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const lastUpdatedAt = mission.completedAt ?? mission.updatedAt ?? mission.createdAt
   const reportQuestions = [...feedback.byQuestion].sort((a, b) => a.order - b.order)
   const insightQuote = feedback.summary.representativeQuote ?? 'Representative insight will appear once more written feedback is available.'
+  const completedAssignments = mission.completedAssignments ?? []
+  const shouldShowRateTesters =
+    mission.status === 'COMPLETED' && completedAssignments.length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50 pb-24 pt-8 sm:pt-12 relative overflow-hidden">
@@ -742,12 +774,13 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
         </motion.section>
 
         {/* Rate Your Testers – only for completed missions */}
-        {mission.status === 'COMPLETED' && feedback && (
+        {shouldShowRateTesters ? (
           <RateTestersSection
             missionId={missionId}
-            completedCount={feedback.summary.completedCount}
+            assignments={completedAssignments}
+            onSubmitted={handleAssignmentRated}
           />
-        )}
+        ) : null}
       </div>
     </div>
   )

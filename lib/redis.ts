@@ -1,12 +1,16 @@
+import { Redis as UpstashRedis } from '@upstash/redis'
 import IORedis from 'ioredis'
 
 type RedisGlobalState = {
   redis?: IORedis
+  upstashRedis?: UpstashRedis
   localLocks?: Map<string, number>
   loggedInlineQueueWarning?: boolean
 }
 
 const globalForRedis = global as unknown as RedisGlobalState
+const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL
+const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN
 
 const REDIS_URL_CANDIDATES = [
   process.env.BULLMQ_REDIS_URL,
@@ -38,6 +42,21 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export const isRedisConfigured = redisUrl !== null
+
+function getUpstashRedisConnection() {
+  if (!upstashRedisRestUrl || !upstashRedisRestToken) {
+    return null
+  }
+
+  if (!globalForRedis.upstashRedis) {
+    globalForRedis.upstashRedis = new UpstashRedis({
+      url: upstashRedisRestUrl,
+      token: upstashRedisRestToken,
+    })
+  }
+
+  return globalForRedis.upstashRedis
+}
 
 export function requireRedisConnection() {
   if (!redisUrl) {
@@ -83,8 +102,10 @@ function getLocalLockExpiry(key: string) {
 }
 
 export async function acquireLock(key: string, ttlSeconds: number): Promise<boolean> {
-  if (isRedisConfigured) {
-    const result = await requireRedisConnection().set(key, 'LOCKED', 'EX', ttlSeconds, 'NX')
+  const upstashRedis = getUpstashRedisConnection()
+
+  if (upstashRedis) {
+    const result = await upstashRedis.set(key, 'LOCKED', { ex: ttlSeconds, nx: true })
     return result === 'OK'
   }
 
@@ -97,8 +118,10 @@ export async function acquireLock(key: string, ttlSeconds: number): Promise<bool
 }
 
 export async function releaseLock(key: string): Promise<void> {
-  if (isRedisConfigured) {
-    await requireRedisConnection().del(key)
+  const upstashRedis = getUpstashRedisConnection()
+
+  if (upstashRedis) {
+    await upstashRedis.del(key)
     return
   }
 

@@ -11,6 +11,22 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 })
 
+function getSupabaseAuthErrorStatus(error: unknown) {
+  if (!error || typeof error !== 'object' || !('status' in error)) {
+    return null
+  }
+
+  return typeof error.status === 'number' ? error.status : null
+}
+
+function getSupabaseAuthErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object' || !('message' in error)) {
+    return ''
+  }
+
+  return typeof error.message === 'string' ? error.message.toLowerCase() : ''
+}
+
 export async function POST(request: Request) {
   try {
     const rateLimitResponse = await enforceRateLimit(request, 'auth-login')
@@ -27,7 +43,27 @@ export async function POST(request: Request) {
       password: body.password,
     })
 
-    if (error || !data.user) {
+    if (error) {
+      const errorStatus = getSupabaseAuthErrorStatus(error)
+      const errorMessage = getSupabaseAuthErrorMessage(error)
+
+      if (errorMessage.includes('email not confirmed')) {
+        return apiError(
+          'Please verify your email first',
+          'EMAIL_NOT_VERIFIED',
+          403
+        )
+      }
+
+      if (errorStatus === 400 || errorStatus === 401) {
+        return apiError('Invalid email or password', 'INVALID_CREDENTIALS', 401)
+      }
+
+      console.error('[login] Supabase signInWithPassword error:', error)
+      return serverError()
+    }
+
+    if (!data.user) {
       return apiError('Invalid email or password', 'INVALID_CREDENTIALS', 401)
     }
 

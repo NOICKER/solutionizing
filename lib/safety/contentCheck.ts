@@ -5,8 +5,33 @@ const PII_KEYWORDS = [
   'mother maiden', 'pin number', 'cvv', 'security code',
   'home address', 'phone number', 'national id',
 ]
-// Basic profanity list (expand as needed)
-const PROFANITY = ['[profanity_list]'] // populate from a library
+// Basic profanity list. Entries are lowercased because checks run on normalized input.
+const PROFANITY = [
+  'arse',
+  'asshole',
+  'bastard',
+  'bitch',
+  'bullshit',
+  'crap',
+  'cunt',
+  'dick',
+  'douche',
+  'fag',
+  'faggot',
+  'fuck',
+  'jackass',
+  'motherfucker',
+  'nigga',
+  'nigger',
+  'piss',
+  'prick',
+  'pussy',
+  'shit',
+  'slut',
+  'twat',
+  'wanker',
+  'whore',
+]
 export interface ContentCheckResult {
   safe: boolean
   reason?: string
