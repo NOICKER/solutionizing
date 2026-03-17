@@ -6,14 +6,13 @@ import { format } from 'date-fns'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
+import { motion } from 'framer-motion'
 import {
   ConfirmationDialog,
   MissionStatusBadge,
   NotFoundPanel,
-  SpinnerIcon,
   clampPercent,
   formatCoins,
-  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
 export function MissionStatusPage({ missionId }: { missionId: string }) {
@@ -106,15 +105,15 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div className="h-6 w-40 animate-pulse rounded bg-[#e5e4e0]" />
-          <div className="rounded-3xl border border-[#e5e4e0] bg-white p-8">
-            <div className="mb-4 h-8 w-1/2 animate-pulse rounded bg-[#e5e4e0]" />
-            <div className="h-4 w-2/3 animate-pulse rounded bg-[#e5e4e0]" />
-          </div>
-          <div className="h-64 animate-pulse rounded-3xl bg-white" />
-        </div>
+      <div className="min-h-screen bg-black/95 p-8 text-neutral-100 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="h-12 w-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+          <p className="text-neutral-400 font-medium">Loading mission status...</p>
+        </motion.div>
       </div>
     )
   }
@@ -125,8 +124,8 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
 
   if (!mission) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-4xl rounded-2xl bg-[#faf9f7] p-12 text-center text-sm text-red-600">
+      <div className="min-h-screen bg-black/95 p-8 flex items-center justify-center">
+        <div className="max-w-md w-full rounded-3xl border border-red-500/20 bg-red-500/5 p-8 text-center text-red-400 shadow-[0_0_30px_rgba(239,68,68,0.1)] backdrop-blur-xl">
           {error}
         </div>
       </div>
@@ -139,103 +138,166 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
   const timedOutCount = mission.assignmentCounts?.TIMED_OUT ?? 0
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
 
-  return (
-    <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/dashboard/founder" className="mb-6 inline-block font-semibold text-[#6b687a] transition-colors hover:text-[#1a1625]">
-          ← Back to dashboard
-        </Link>
+  const glassPanelClasses = "rounded-3xl border border-neutral-800 bg-neutral-900/40 p-8 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:border-neutral-700/50 hover:bg-neutral-900/60"
 
-        <div className="mb-8">
-          <div className="mb-3 flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="mb-2 text-3xl font-black text-[#1a1625]">{mission.title}</h1>
-              <p className="text-[#6b687a]">{mission.goal}</p>
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-neutral-100 p-8 relative overflow-hidden">
+      {/* Premium Background Gradients */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-br from-emerald-500/10 via-indigo-500/5 to-transparent blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-gradient-to-tl from-emerald-500/10 via-teal-500/5 to-transparent blur-[120px] rounded-full pointer-events-none" />
+
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="mx-auto max-w-4xl relative z-10"
+      >
+        <motion.div variants={itemVariants}>
+          <Link href="/dashboard/founder" className="mb-8 inline-flex items-center gap-2 font-medium text-neutral-400 transition-colors hover:text-emerald-400">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            Back to dashboard
+          </Link>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="mb-10">
+          <div className="mb-4 flex items-start justify-between">
+            <div className="flex-1 pr-8">
+              <h1 className="mb-3 text-4xl sm:text-5xl font-black tracking-tight text-white drop-shadow-sm">{mission.title}</h1>
+              <p className="text-lg text-neutral-400">{mission.goal}</p>
             </div>
             <MissionStatusBadge status={mission.status} />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mb-6 rounded-3xl border border-[#e5e4e0] bg-white p-8">
-          <h2 className="mb-6 text-xl font-black text-[#1a1625]">Mission Progress</h2>
-          <div className="mb-4 h-4 w-full overflow-hidden rounded-full bg-[#f3f3f5]">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#d77a57] to-[#c4673f]" style={{ width: `${progress}%` }} />
-          </div>
-          <div className="mb-6 text-lg font-black text-[#1a1625]">
-            {mission.testersCompleted} of {mission.testersRequired} testers
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="text-center">
-              <div className="text-2xl font-black text-blue-600">{assignedCount}</div>
-              <div className="text-sm text-[#6b687a]">Assigned</div>
+        <motion.div variants={itemVariants} className={`mb-6 ${glassPanelClasses}`}>
+          <h2 className="mb-8 text-2xl font-bold tracking-tight text-white">Mission Progress</h2>
+          
+          <div className="relative mb-8">
+            <div className="mb-4 h-6 w-full overflow-hidden rounded-full bg-neutral-800/50 inset-0 shadow-inner">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 relative"
+              >
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] opacity-30 mix-blend-overlay" />
+              </motion.div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-black text-amber-600">{inProgressCount}</div>
-              <div className="text-sm text-[#6b687a]">In Progress</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-black text-green-600">{completedCount}</div>
-              <div className="text-sm text-[#6b687a]">Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-black text-red-600">{timedOutCount}</div>
-              <div className="text-sm text-[#6b687a]">Timed Out</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-6 rounded-3xl border border-[#e5e4e0] bg-white p-6">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[#6b687a]">Mission launched:</span>
-              <span className="font-bold text-[#1a1625]">
-                {mission.launchedAt ? format(new Date(mission.launchedAt), 'MMM d, yyyy h:mm a') : 'Not launched yet'}
+            <div className="flex justify-between items-center text-sm font-semibold">
+              <span className="text-emerald-400">{progress.toFixed(0)}% Complete</span>
+              <span className="text-neutral-400">
+                {mission.testersCompleted} of {mission.testersRequired} testers
               </span>
             </div>
           </div>
 
-          {mission.status === 'ACTIVE' || mission.status === 'PAUSED' ? (
-            <div className="mt-4 flex justify-end">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#f3f3f5] px-3 py-1.5 text-xs text-[#9b98a8]">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refreshing in {countdown}s
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: 'Assigned', value: assignedCount, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+              { label: 'In Progress', value: inProgressCount, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+              { label: 'Completed', value: completedCount, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+              { label: 'Timed Out', value: timedOutCount, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+            ].map((stat, i) => (
+              <motion.div 
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className={`flex flex-col items-center justify-center rounded-2xl border ${stat.border} ${stat.bg} p-6 text-center backdrop-blur-sm transition-transform hover:scale-105`}
+              >
+                <div className={`text-4xl font-black tracking-tight mb-2 ${stat.color}`}>{stat.value}</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-neutral-400">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className={`mb-8 ${glassPanelClasses} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6`}>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div className="text-sm text-neutral-400">Mission launched</div>
+              <div className="font-semibold text-white">
+                {mission.launchedAt ? format(new Date(mission.launchedAt), 'MMM d, yyyy h:mm a') : 'Not launched yet'}
               </div>
             </div>
-          ) : null}
-        </div>
+          </div>
 
-        <div className="mb-6 flex items-center gap-4">
-          {mission.status === 'ACTIVE' ? (
+          {(mission.status === 'ACTIVE' || mission.status === 'PAUSED') && (
+            <div className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-800/50 px-4 py-2 text-sm font-medium text-neutral-300 shadow-sm backdrop-blur-md">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              </span>
+              Refreshing in {countdown}s
+            </div>
+          )}
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
+          {mission.status === 'ACTIVE' && (
             <>
-              <button className={`px-6 py-3 ${primaryButtonClass}`} onClick={() => setDialogType('pause')}>
+              <button 
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-neutral-800 px-8 py-4 font-bold tracking-wide text-white transition-all hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-black"
+                onClick={() => setDialogType('pause')}
+              >
                 PAUSE MISSION
               </button>
-              <button className="rounded-[2rem] border-2 border-red-300 px-6 py-3 font-bold text-red-600 transition-all hover:bg-red-50" onClick={() => setDialogType('close')}>
+              <button 
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-red-500/30 bg-red-500/10 px-8 py-4 font-bold tracking-wide text-red-500 transition-all hover:bg-red-500/20 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black" 
+                onClick={() => setDialogType('close')}
+              >
                 CLOSE MISSION
               </button>
             </>
-          ) : null}
+          )}
 
-          {mission.status === 'PAUSED' ? (
-            <button className="rounded-[2rem] border-2 border-red-300 px-6 py-3 font-bold text-red-600 transition-all hover:bg-red-50" onClick={() => setDialogType('close')}>
+          {mission.status === 'PAUSED' && (
+            <button 
+              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-red-500/30 bg-red-500/10 px-8 py-4 font-bold tracking-wide text-red-500 transition-all hover:bg-red-500/20 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black" 
+              onClick={() => setDialogType('close')}
+            >
               CLOSE MISSION
             </button>
-          ) : null}
+          )}
 
-          {mission.status === 'COMPLETED' ? (
-            <Link href={`/mission/insights/${mission.id}`} className={`px-6 py-3 ${primaryButtonClass}`}>
-              VIEW INSIGHTS →
+          {mission.status === 'COMPLETED' && (
+            <Link 
+              href={`/mission/insights/${mission.id}`} 
+              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-4 font-bold tracking-wide text-white transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-black"
+            >
+              <span>VIEW INSIGHTS</span>
+              <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
-          ) : null}
-        </div>
+          )}
+        </motion.div>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      </div>
+        {error && (
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            className="mt-6 text-center text-sm font-medium text-red-400"
+          >
+            {error}
+          </motion.p>
+        )}
+      </motion.div>
 
-      {dialogType ? (
+      {dialogType && (
         <ConfirmationDialog
           title={dialogType === 'pause' ? 'Pause this mission?' : 'Close this mission?'}
           body={
@@ -253,7 +315,8 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
           isLoading={dialogLoading}
           errorMessage={dialogError}
         />
-      ) : null}
+      )}
     </div>
   )
 }
+
