@@ -7,6 +7,7 @@ import { releaseOpenAssignmentsForMission } from '@/lib/business/mission-assignm
 import { validateBody } from '@/lib/api/validate'
 import { updateReputation } from '@/lib/business/reputation'
 import { notificationQueue } from '@/lib/queue'
+import { logApiRouteError } from '@/lib/api/log'
 
 const SubmissionResponseSchema = z.object({
   questionId: z.string().cuid(),
@@ -334,7 +335,7 @@ export async function POST(
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:assignments:submit]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

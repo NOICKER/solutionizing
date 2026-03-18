@@ -218,7 +218,6 @@ function MissionWizardContent() {
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
   const dirtyRef = useRef(false)
-  const historyReadyRef = useRef(false)
 
   const subtotal = coinRates[state.difficulty] * state.testersRequired
   const fee = Math.ceil(subtotal * 0.2)
@@ -291,24 +290,6 @@ function MissionWizardContent() {
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [isEditMode])
-
-  useEffect(() => {
-    if (!historyReadyRef.current) {
-      window.history.replaceState({ wizardStep: 1 }, '')
-      historyReadyRef.current = true
-    } else if (window.history.state?.wizardStep !== step) {
-      window.history.pushState({ wizardStep: step }, '')
-    }
-
-    const onPopState = (event: PopStateEvent) => {
-      if (typeof event.state?.wizardStep === 'number') {
-        setStep(event.state.wizardStep)
-      }
-    }
-
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [step])
 
   const updateState = useCallback((updater: (current: WizardState) => WizardState) => {
     dirtyRef.current = true

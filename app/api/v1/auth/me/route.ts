@@ -1,6 +1,8 @@
 import { requireAuth } from '@/lib/api/middleware'
 import { prisma } from '@/lib/prisma'
 import { ok, notFound, serverError, unauthorized } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -47,7 +49,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[me]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

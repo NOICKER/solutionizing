@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 const AdjustCoinsSchema = z.object({
   userId: z.string(),
@@ -73,7 +74,8 @@ export async function POST(request: Request) {
     return ok(transaction)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:coins:adjust]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

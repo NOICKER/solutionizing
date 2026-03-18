@@ -7,6 +7,7 @@ import { computeMissionCoinCost } from '@/lib/business/coins'
 import { checkUrl } from '@/lib/safety/urlCheck'
 import { checkMissionContent } from '@/lib/safety/contentCheck'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
 
 const MissionListQuerySchema = z.object({
   status: z.nativeEnum(MissionStatus).optional(),
@@ -159,7 +160,7 @@ export async function GET(request: Request) {
     )
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:list]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
@@ -225,7 +226,8 @@ export async function POST(request: Request) {
     return created(mission)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:create]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

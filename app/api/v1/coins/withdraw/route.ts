@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, apiError, notFound, serverError } from '@/lib/api/response'
 import { MIN_WITHDRAWAL_COINS, coinsToRupees } from '@/lib/business/coins'
+import { logApiRouteError } from '@/lib/api/log'
 
 const WithdrawCoinsSchema = z.object({
   amount: z.number().int().positive(),
@@ -68,7 +69,8 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[coins:withdraw:post]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

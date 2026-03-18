@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { notificationQueue } from '@/lib/queue'
+import { logApiRouteError } from '@/lib/api/log'
 
 export async function POST(
   request: Request,
@@ -48,7 +49,7 @@ export async function POST(
     return ok(updatedMission)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:missions:approve]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

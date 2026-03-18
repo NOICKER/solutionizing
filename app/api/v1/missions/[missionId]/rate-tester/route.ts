@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, forbidden, serverError } from '@/lib/api/response'
 import { applyRatingToReputation } from '@/lib/business/reputation'
+import { logApiRouteError } from '@/lib/api/log'
 
 type RateTesterBody = {
   assignmentId?: unknown
@@ -85,7 +86,7 @@ export async function POST(
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       return badRequest('Rating already exists for this assignment')
     }
-    console.error('[missions:rate-tester]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

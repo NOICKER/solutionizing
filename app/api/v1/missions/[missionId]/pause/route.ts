@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 async function findOwnedMission(missionId: string, founderId: string) {
   return prisma.mission.findFirst({
@@ -51,7 +53,7 @@ export async function POST(
     return ok(updatedMission)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:pause]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
 import { updateReputation } from '@/lib/business/reputation'
 import { assignmentQueue } from '@/lib/queue'
+import { logApiRouteError } from '@/lib/api/log'
 
 type StartAssignmentResult =
   | {
@@ -165,7 +166,7 @@ export async function POST(
     return ok(result.assignment)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:assignments:start]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

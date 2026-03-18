@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 const AssignmentListQuerySchema = z.object({
   status: z.nativeEnum(AssignmentStatus).optional(),
@@ -78,7 +79,8 @@ export async function GET(request: Request) {
     )
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:assignments:list]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

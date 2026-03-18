@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { COIN_PACKS } from '@/lib/business/coins'
+import { logApiRouteError } from '@/lib/api/log'
 
 const PurchaseCoinsSchema = z.object({
   packId: z.enum(['starter', 'growth', 'scale']),
@@ -62,7 +63,8 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[coins:purchase:post]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

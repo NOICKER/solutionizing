@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { notificationQueue } from '@/lib/queue'
+import { logApiRouteError } from '@/lib/api/log'
 
 const RejectMissionSchema = z.object({
   reason: z.string().min(10),
@@ -57,7 +58,7 @@ export async function POST(
     return ok(updatedMission)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:missions:reject]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -83,7 +85,8 @@ export async function GET(request: Request) {
     return ok(groupedReports)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:flags]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/api/middleware'
 import { ok, notFound, serverError, apiError } from '@/lib/api/response'
 import { coinsToRupees } from '@/lib/business/coins'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -44,7 +46,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[coins:balance:get]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

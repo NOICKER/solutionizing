@@ -5,6 +5,8 @@ import { enforceRateLimit } from '@/lib/api/rate-limit'
 import { validateBody } from '@/lib/api/validate'
 import { apiError, created, conflict, serverError } from '@/lib/api/response'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 const RegisterSchema = z.object({
   email: z.string().email().max(255).transform(v => v.toLowerCase()),
@@ -28,7 +30,7 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error('[register] Supabase signUp error:', error)
+      console.error('[register] Supabase error:', error)
       if (error.status === 429 || error.message.toLowerCase().includes('rate limit')) {
         return apiError(
           'Too many sign up attempts. Please wait a few minutes and try again.',
@@ -44,9 +46,13 @@ export async function POST(request: Request) {
 
     if (data?.user) {
       // Sync initial role to app_metadata
-      await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
-        app_metadata: { role: null },
-      })
+      try {
+        await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+          app_metadata: { role: null },
+        })
+      } catch (error) {
+        console.error('[register] Failed to sync Supabase metadata:', error)
+      }
 
       await prisma.user.upsert({
         where: { id: data.user.id },
@@ -67,7 +73,8 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[register]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

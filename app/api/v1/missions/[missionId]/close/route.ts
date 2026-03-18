@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { releaseOpenAssignmentsForMission } from '@/lib/business/mission-assignments'
+import { logApiRouteError } from '@/lib/api/log'
 
 async function findOwnedMission(missionId: string, founderId: string) {
   return prisma.mission.findFirst({
@@ -91,7 +92,7 @@ export async function POST(
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:close]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { validateBody } from '@/lib/api/validate'
 import { ok, conflict, serverError } from '@/lib/api/response'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 const SelectRoleSchema = z.object({
   role: z.enum(['FOUNDER', 'TESTER']),
@@ -74,7 +76,8 @@ export async function POST(request: Request) {
     return ok({ role: body.role, displayName: body.displayName })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[select-role]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

@@ -5,6 +5,8 @@ import { enforceRateLimit } from '@/lib/api/rate-limit'
 import { validateBody } from '@/lib/api/validate'
 import { ok, apiError, serverError } from '@/lib/api/response'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -25,6 +27,15 @@ function getSupabaseAuthErrorMessage(error: unknown) {
   }
 
   return typeof error.message === 'string' ? error.message.toLowerCase() : ''
+}
+
+function isPrismaError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientUnknownRequestError ||
+    error instanceof Prisma.PrismaClientInitializationError ||
+    error instanceof Prisma.PrismaClientRustPanicError
+  )
 }
 
 export async function POST(request: Request) {
@@ -67,10 +78,16 @@ export async function POST(request: Request) {
       return apiError('Invalid email or password', 'INVALID_CREDENTIALS', 401)
     }
 
-    let dbUser = await prisma.user.findUnique({
-      where: { id: data.user.id },
-      include: { founderProfile: true, testerProfile: true },
-    })
+    let dbUser
+    try {
+      dbUser = await prisma.user.findUnique({
+        where: { id: data.user.id },
+        include: { founderProfile: true, testerProfile: true },
+      })
+    } catch (err) {
+      console.error('[login] Database error:', err)
+      return serverError()
+    }
 
     // Self-heal: If user exists in Supabase but not in Prisma, create them locally.
     if (!dbUser) {
@@ -138,7 +155,12 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[login]', err)
+    if (isPrismaError(err)) {
+      console.error('[login] Database error:', err)
+      return serverError()
+    }
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

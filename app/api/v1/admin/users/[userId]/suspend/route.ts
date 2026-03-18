@@ -5,6 +5,8 @@ import { validateBody } from '@/lib/api/validate'
 import { ok, notFound, conflict, serverError } from '@/lib/api/response'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { resend } from '@/lib/resend'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 const SuspendUserSchema = z.object({
   reason: z.string().min(10),
@@ -63,7 +65,7 @@ export async function POST(
     return ok(updatedUser)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:users:suspend]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

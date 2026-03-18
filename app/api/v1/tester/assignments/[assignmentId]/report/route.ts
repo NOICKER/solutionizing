@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, apiError, notFound, serverError } from '@/lib/api/response'
 import { validateBody } from '@/lib/api/validate'
+import { logApiRouteError } from '@/lib/api/log'
 
 const ReportMissionSchema = z.object({
   reason: z.string().min(10).max(500),
@@ -86,7 +87,7 @@ export async function POST(
     return ok({ reported: true })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:assignments:report]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

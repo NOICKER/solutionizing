@@ -2,6 +2,7 @@ import { MissionStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 export async function GET(request: Request) {
   try {
@@ -27,7 +28,8 @@ export async function GET(request: Request) {
     return ok(missions)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:missions:pending]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

@@ -2,6 +2,7 @@ import { basename, extname } from 'node:path'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { logApiRouteError } from '@/lib/api/log'
 
 const ALLOWED_EXTENSIONS = new Set([
   '.png',
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
       .createSignedUploadUrl(path)
 
     if (error || !data) {
-      console.error('[uploads:sign]', error)
+      logApiRouteError(request, error)
       return serverError()
     }
 
@@ -67,7 +68,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[uploads:sign]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

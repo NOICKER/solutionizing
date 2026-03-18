@@ -13,6 +13,7 @@ import { computeMissionCoinCost } from '@/lib/business/coins'
 import { checkUrl } from '@/lib/safety/urlCheck'
 import { checkMissionContent } from '@/lib/safety/contentCheck'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
 
 const MissionAssetSchema = z.object({
   type: z.nativeEnum(AssetType),
@@ -170,7 +171,7 @@ export async function GET(
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:get]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
@@ -293,7 +294,7 @@ export async function PATCH(
     return ok(updatedMission)
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:update]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
@@ -332,7 +333,7 @@ export async function DELETE(
     return ok({ deleted: true })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[missions:delete]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

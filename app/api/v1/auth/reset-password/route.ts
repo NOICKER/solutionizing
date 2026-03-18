@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, serverError } from '@/lib/api/response'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
 
 const ResetPasswordSchema = z.object({
   password: z.string().min(8),
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
     return ok({ message: 'Password updated successfully' })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[reset-password]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

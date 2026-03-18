@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError, apiError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 const CoinTransactionListQuerySchema = z.object({
   type: z.nativeEnum(TxType).optional(),
@@ -71,7 +72,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[coins:transactions:get]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

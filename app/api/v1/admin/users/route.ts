@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 const AdminUserListQuerySchema = z.object({
   role: z.enum(['FOUNDER', 'TESTER']).optional(),
@@ -63,7 +64,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[admin:users:list]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

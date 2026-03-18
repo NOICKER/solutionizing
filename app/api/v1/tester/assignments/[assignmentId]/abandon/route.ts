@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { updateReputation } from '@/lib/business/reputation'
 import { assignmentQueue } from '@/lib/queue'
+import { logApiRouteError } from '@/lib/api/log'
 
 type AbandonAssignmentResult = {
   missionId: string
@@ -90,7 +91,7 @@ export async function POST(
     return ok({ penaltyApplied: -4 })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:assignments:abandon]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }

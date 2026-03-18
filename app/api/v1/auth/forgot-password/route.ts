@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { validateBody } from '@/lib/api/validate'
 import { ok, serverError } from '@/lib/api/response'
 import { z } from 'zod'
+import { logApiRouteError } from '@/lib/api/log'
 
 const ForgotPasswordSchema = z.object({
   email: z.string().email(),
@@ -22,7 +23,8 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[forgot-password]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

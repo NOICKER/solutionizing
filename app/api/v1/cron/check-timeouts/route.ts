@@ -2,6 +2,7 @@ import { AssignmentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { timeoutQueue } from '@/lib/queue'
 import { ok, unauthorized, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 export async function GET(request: Request) {
   try {
@@ -35,7 +36,8 @@ export async function GET(request: Request) {
 
     return ok({ processed: expiredAssignments.length })
   } catch (err) {
-    console.error('[cron:check-timeouts]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

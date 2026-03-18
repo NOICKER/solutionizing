@@ -2,6 +2,7 @@ import { AssignmentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, notFound, serverError } from '@/lib/api/response'
+import { logApiRouteError } from '@/lib/api/log'
 
 function roundToTwo(value: number) {
   return Math.round(value * 100) / 100
@@ -77,7 +78,8 @@ export async function GET(request: Request) {
     })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[tester:stats:get]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+

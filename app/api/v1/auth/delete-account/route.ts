@@ -2,6 +2,8 @@ import { requireAuth } from '@/lib/api/middleware'
 import { prisma } from '@/lib/prisma'
 import { ok, serverError } from '@/lib/api/response'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { logApiRouteError } from '@/lib/api/log'
+import { Prisma } from '@prisma/client'
 
 export async function DELETE(request: Request) {
   try {
@@ -49,7 +51,8 @@ export async function DELETE(request: Request) {
     return ok({ message: 'Account deleted successfully' })
   } catch (err) {
     if (err instanceof Response) return err
-    console.error('[delete-account]', err)
+    logApiRouteError(request, err)
     return serverError()
   }
 }
+
