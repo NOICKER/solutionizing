@@ -143,10 +143,20 @@ export async function POST(request: Request) {
     const redirectMap: Record<string, string> = {
       FOUNDER: '/dashboard/founder',
       TESTER: '/dashboard/tester',
-      ADMIN: '/',
+      ADMIN: '/dashboard/admin',
     }
+    const onboardingCompleted =
+      normalizedRole === 'FOUNDER'
+        ? Boolean(dbUser.founderProfile?.onboardingCompleted)
+        : normalizedRole === 'TESTER'
+          ? Boolean(dbUser.testerProfile?.onboardingCompleted)
+          : true
     const redirectTo =
-      normalizedRole === null ? '/select-role' : (redirectMap[normalizedRole] ?? '/')
+      normalizedRole === null
+        ? '/select-role'
+        : !onboardingCompleted
+          ? '/onboarding'
+          : (redirectMap[normalizedRole] ?? '/')
 
     return ok({
       role: normalizedRole,

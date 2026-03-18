@@ -44,17 +44,17 @@ function SelectRoleContent() {
 
   useEffect(() => {
     if (user?.role === 'FOUNDER') {
-      router.replace('/dashboard/founder')
+      router.replace('/onboarding')
       return
     }
 
     if (user?.role === 'TESTER') {
-      router.replace('/dashboard/tester')
+      router.replace('/onboarding')
     }
   }, [router, user?.role])
 
-  function getDashboardPath(role: 'FOUNDER' | 'TESTER') {
-    return role === 'FOUNDER' ? '/dashboard/founder' : '/dashboard/tester'
+  function getPostSelectionPath() {
+    return '/onboarding'
   }
 
   async function handleSelectRole(role: 'FOUNDER' | 'TESTER') {
@@ -90,7 +90,7 @@ function SelectRoleContent() {
 
       applyRoleSelection(role, displayName)
       void refetch()
-      router.replace(getDashboardPath(role))
+      router.replace(getPostSelectionPath())
     } catch (error) {
       if (isApiClientError(error) && error.status === 409) {
         const resolvedRole =
@@ -101,7 +101,7 @@ function SelectRoleContent() {
         }
 
         void refetch()
-        router.replace(getDashboardPath(resolvedRole))
+        router.replace(getPostSelectionPath())
         return
       }
 

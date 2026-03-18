@@ -672,7 +672,19 @@ function MissionWizardContent() {
         ) : null}
 
         <div className="mt-8 flex items-center justify-between border-t border-[#e5e4e0] pt-6">
-          <button type="button" className="font-semibold text-[#6b687a] hover:text-[#1a1625] disabled:opacity-40" disabled={step === 1} onClick={() => setStep((current) => Math.max(1, current - 1))}>← Back</button>
+          <button
+            type="button"
+            className="font-semibold text-[#6b687a] hover:text-[#1a1625]"
+            onClick={() => {
+              if (step === 1) {
+                router.push('/dashboard/founder')
+              } else {
+                setStep((current) => current - 1)
+              }
+            }}
+          >
+            ← Back
+          </button>
           {step < 4 ? (
             <button type="button" className={`px-8 py-3.5 ${primaryButtonClass}`} onClick={handleNext}>
               CONTINUE →

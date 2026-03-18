@@ -30,19 +30,11 @@ function sanitizeNextPath(value: string | null) {
 }
 
 function getFallbackPath(role: LoginResponse['role']) {
-  if (role === 'FOUNDER') {
-    return '/dashboard/founder'
-  }
-
-  if (role === 'TESTER') {
-    return '/dashboard/tester'
-  }
-
   if (role === null) {
     return '/select-role'
   }
 
-  return '/'
+  return '/dashboard'
 }
 
 function isNetworkError(error: unknown) {

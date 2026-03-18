@@ -1,8 +1,6 @@
 "use client"
 
-import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { differenceInHours } from 'date-fns'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -12,15 +10,16 @@ import { ApiTesterAssignmentSummary, ApiTesterStats } from '@/types/api'
 import {
   BrandMark,
   ConfirmationDialog,
-  ErrorStatePanel,
-  ReputationTierBadge,
   SpinnerIcon,
   formatCoins,
   formatRupeesFromCoins,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
-
-const minimumWithdrawalCoins = 5000
+import { SupportPage } from '@/components/solutionizing/shared/SupportPage'
+import { ThemeToggleButton } from '@/components/solutionizing/shared/ThemeToggleButton'
+import { minimumWithdrawalCoins } from '@/components/solutionizing/tester/constants'
+import { TesterMissionsTab } from '@/components/solutionizing/tester/TesterMissionsTab'
+import { TesterSettingsTab } from '@/components/solutionizing/tester/TesterSettingsTab'
 
 function WithdrawalModal({
   balance,
@@ -78,7 +77,7 @@ function WithdrawalModal({
               max={balance}
               value={amount}
               onChange={(event) => onAmountChange(Number(event.target.value))}
-              className="w-full rounded-2xl border-2 border-[#e5e4e0] bg-[#f3f3f5] px-4 py-4 text-2xl font-black text-[#1a1625] placeholder:text-[#9b98a8] focus:border-[#d77a57] focus:outline-none transition-all"
+              className="w-full rounded-2xl border-2 border-[#e5e4e0] bg-[#f3f3f5] px-4 py-4 text-2xl font-black text-[#1a1625] placeholder:text-[#9b98a8] transition-all focus:border-[#d77a57] focus:outline-none"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#9b98a8]">coins</div>
           </div>
@@ -110,11 +109,11 @@ function WithdrawalModal({
 
         <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
-            <svg className="mt-0.5 w-5 h-5 flex-shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <div className="text-sm text-amber-900">
-              <strong>Processing time:</strong> Withdrawals are processed within 3–5 business days. You&apos;ll receive a confirmation email once complete.
+              <strong>Processing time:</strong> Withdrawals are processed within 3-5 business days. You&apos;ll receive a confirmation email once complete.
             </div>
           </div>
         </div>
@@ -143,7 +142,7 @@ function TabButton({
   className = '',
 }: {
   label: string
-  glyph: React.ReactNode
+  glyph: ReactNode
   active: boolean
   disabled?: boolean
   onClick?: () => void
@@ -152,11 +151,11 @@ function TabButton({
   return (
     <button
       type="button"
-      className={`${className} flex items-center gap-3 w-full px-4 py-3 rounded-2xl transition-all font-bold ${active ? 'bg-[#d77a57] text-white shadow-md' : 'text-[#6b687a] hover:bg-[#f3f3f5] hover:text-[#1a1625]'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`${className} flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-bold transition-all ${active ? 'bg-[#d77a57] text-white shadow-md' : 'text-[#6b687a] hover:bg-[#f3f3f5] hover:text-[#1a1625] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       onClick={disabled ? undefined : onClick}
       aria-disabled={disabled ? 'true' : undefined}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? 'bg-white/20' : 'bg-[#f3f3f5]'}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? 'bg-white/20' : 'bg-[#f3f3f5] dark:bg-gray-700'}`}>
         {glyph}
       </div>
       {label}
@@ -178,7 +177,7 @@ function TesterDashboardContent() {
   const [abandonTarget, setAbandonTarget] = useState<ApiTesterAssignmentSummary | null>(null)
   const [abandonLoading, setAbandonLoading] = useState(false)
   const [abandonError, setAbandonError] = useState('')
-  const [activeTab, setActiveTab] = useState<'missions' | 'settings'>('missions')
+  const [activeTab, setActiveTab] = useState<'missions' | 'settings' | 'support'>('missions')
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -234,7 +233,7 @@ function TesterDashboardContent() {
         body: { amount: withdrawAmount },
       })
       setWithdrawalOpen(false)
-      toast.success(`Withdrawal requested! ₹${(withdrawAmount / 100).toFixed(0)} will be processed in 3–5 days.`)
+      toast.success(`Withdrawal requested! ₹${(withdrawAmount / 100).toFixed(0)} will be processed in 3-5 days.`)
       await refetch()
     } catch (error) {
       if (isApiClientError(error)) {
@@ -301,158 +300,31 @@ function TesterDashboardContent() {
     }
   }
 
-  const assignmentCards = useMemo(() => {
-    if (isLoading) {
-      return (
-        <div className="space-y-4">
-          {[1, 2].map((card) => (
-            <div key={card} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
-              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-[#e5e4e0]" />
-              <div className="mb-4 h-20 animate-pulse rounded-2xl bg-[#f3f3f5]" />
-              <div className="h-12 animate-pulse rounded-[2rem] bg-[#e5e4e0]" />
-            </div>
-          ))}
-        </div>
-      )
-    }
+  const topBarTitle =
+    activeTab === 'support'
+      ? 'Support'
+      : activeTab === 'settings'
+        ? 'Settings'
+        : 'Tester Dashboard'
 
-    if (loadError) {
-      return (
-        <ErrorStatePanel
-          title="Couldn't load your missions"
-          body="Something went wrong while loading your data. Please check your connection and try again."
-          onRetry={() => void loadDashboard()}
-          backHref="/dashboard/tester"
-        />
-      )
-    }
-
-    if (assignments.length === 0) {
-      return (
-        <div className="py-8 text-center text-[#6b687a]">
-          No missions assigned yet. Make sure your profile is complete and check back soon.
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4">
-        {assignments.map((assignment) => {
-          const remainingHours = differenceInHours(new Date(assignment.timeoutAt), now, { roundingMethod: 'floor' })
-          const preciseHours = (new Date(assignment.timeoutAt).getTime() - now.getTime()) / 3600000
-          const remainingLabel =
-            preciseHours <= 0.5
-              ? 'Expiring soon!'
-              : preciseHours <= 2
-                ? `${Math.max(1, Math.floor(preciseHours))}h`
-                : `${Math.max(1, remainingHours)} hours`
-
-          return (
-            <div key={assignment.id} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-black text-[#1a1625]">{assignment.mission.title}</h3>
-                  <p className="text-sm text-[#6b687a]">{assignment.mission.goal}</p>
-                </div>
-                <div className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${assignment.status === 'ASSIGNED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {assignment.status.replaceAll('_', ' ')}
-                </div>
-              </div>
-
-              <div className="mb-4 grid gap-4 md:grid-cols-3">
-                <div>
-                  <div className="mb-1 text-xs text-[#9b98a8]">REWARD</div>
-                  <div className="text-lg font-black text-[#1a1625]">{formatCoins(assignment.mission.coinPerTester)} coins</div>
-                  <div className="text-xs text-[#6b687a]">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
-                </div>
-                <div>
-                  <div className="mb-1 text-xs text-[#9b98a8]">DURATION</div>
-                  <div className="text-lg font-black text-[#1a1625]">{assignment.mission.estimatedMinutes} minutes</div>
-                </div>
-                <div>
-                  <div className="mb-1 text-xs text-[#9b98a8]">EXPIRES IN</div>
-                  <div className={`text-lg font-black ${preciseHours <= 0.5 ? 'text-red-600' : preciseHours <= 2 ? 'text-amber-600' : 'text-[#6b687a]'}`}>
-                    {preciseHours <= 0.5 ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-                        {remainingLabel}
-                      </span>
-                    ) : (
-                      remainingLabel
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Link href={`/tester/workspace/${assignment.id}`} className={`flex-1 py-3 text-center ${primaryButtonClass}`}>
-                  {assignment.status === 'IN_PROGRESS' ? 'CONTINUE →' : 'START MISSION →'}
-                </Link>
-                <button className="text-sm font-semibold text-[#9b98a8] hover:text-red-600" onClick={() => setAbandonTarget(assignment)}>
-                  Abandon
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }, [assignments, isLoading, loadDashboard, loadError, now])
-
-  const settingsContent = useMemo(() => {
-    return (
-      <div className="mx-auto max-w-2xl space-y-8">
-        <section className="rounded-3xl border border-[#e5e4e0] bg-white p-8">
-          <h3 className="mb-2 text-xl font-black text-[#1a1625]">Personal Information</h3>
-          <p className="mb-6 text-[#6b687a]">General details about your tester profile.</p>
-
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-[#9b98a8]">DISPLAY NAME</label>
-              <div className="text-lg font-bold text-[#1a1625]">{user?.testerProfile?.displayName || 'N/A'}</div>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-[#9b98a8]">EMAIL ADDRESS</label>
-              <div className="text-lg font-bold text-[#1a1625]">{user?.email || 'N/A'}</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-red-100 bg-red-50 p-8">
-          <h3 className="mb-2 text-xl font-black text-red-900">Danger Zone</h3>
-          <p className="mb-6 text-red-700">Irreversible actions for your account.</p>
-
-          <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h4 className="font-bold text-[#1a1625]">Delete Account</h4>
-                <p className="text-sm text-red-700/80">Permanently remove your account and all data.</p>
-              </div>
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-red-600 px-6 font-bold text-white transition-all hover:bg-red-700 active:scale-95 shadow-sm"
-                onClick={() => setDeleteModalOpen(true)}
-              >
-                DELETE ACCOUNT
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-    )
-  }, [user])
+  const topBarDescription =
+    activeTab === 'support'
+      ? 'Find answers, check system status, and contact the team.'
+      : activeTab === 'settings'
+        ? 'Manage your profile, alerts, and device preferences.'
+        : 'Track active missions, withdrawals, and your current tester status.'
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] rounded-3xl p-8 flex flex-col lg:flex-row gap-8">
-      {/* Sidebar */}
-      <aside className="lg:w-64 flex-shrink-0">
+    <div className="flex min-h-screen flex-col gap-8 rounded-3xl bg-[#faf9f7] p-8 dark:bg-gray-900 lg:flex-row">
+      <aside className="flex-shrink-0 lg:w-64">
         <div className="sticky top-8 space-y-6">
           <div className="flex items-center gap-3 px-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#d77a57] to-[#c4673f]">
-              <BrandMark className="w-6 h-6 text-white" />
+              <BrandMark className="h-6 w-6 text-white" />
             </div>
             <div>
-              <div className="text-[10px] font-bold text-[#9b98a8] uppercase tracking-wider">Solutionizing</div>
-              <div className="font-black text-[#1a1625]">TESTER</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#9b98a8] dark:text-gray-400">Solutionizing</div>
+              <div className="font-black text-[#1a1625] dark:text-white">TESTER</div>
             </div>
           </div>
 
@@ -469,7 +341,13 @@ function TesterDashboardContent() {
               onClick={() => setActiveTab('settings')}
               glyph={<span className="material-symbols-outlined !text-xl">settings</span>}
             />
-            <div className="pt-4 border-t border-[#e5e4e0]" />
+            <TabButton
+              label="Support"
+              active={activeTab === 'support'}
+              onClick={() => setActiveTab('support')}
+              glyph={<span className="material-symbols-outlined !text-xl">help</span>}
+            />
+            <div className="border-t border-[#e5e4e0] pt-4 dark:border-gray-700" />
             <TabButton
               label="Sign Out"
               active={false}
@@ -481,122 +359,41 @@ function TesterDashboardContent() {
         </div>
       </aside>
 
-      <main className="flex-1">
-        {activeTab === 'missions' ? (
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h1 className="text-3xl font-black text-[#1a1625]">Dashboard</h1>
-                <p className="text-[#6b687a]">Welcome back! Here&apos;s your mission overview.</p>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-[#e5e4e0] bg-white px-4 py-2">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-sm font-semibold text-[#1a1625]">Ready for Missions</span>
-              </div>
-            </div>
-
-            <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
-                    <span className="material-symbols-outlined !text-xl">payments</span>
-                  </div>
-                  <div className="text-xs font-semibold text-[#9b98a8]">COIN BALANCE</div>
-                </div>
-                <div className="mb-1 text-3xl font-black text-[#1a1625]">{isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0]" /> : formatCoins(balance)}</div>
-                <div className="text-sm text-[#6b687a]">≈ {formatRupeesFromCoins(balance)}</div>
-              </div>
-
-              <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
-                    <span className="material-symbols-outlined !text-xl">stars</span>
-                  </div>
-                  <div className="text-xs font-semibold text-[#9b98a8]">REPUTATION</div>
-                </div>
-                <div className="mb-2 text-3xl font-black text-[#1a1625]">
-                  {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0]" /> : user?.testerProfile?.reputationScore ?? stats?.reputationScore ?? 0}
-                </div>
-                {user?.testerProfile?.reputationTier ? <ReputationTierBadge tier={user.testerProfile.reputationTier} /> : null}
-              </div>
-
-              <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                    <span className="material-symbols-outlined !text-xl">checklist</span>
-                  </div>
-                  <div className="text-xs font-semibold text-[#9b98a8]">COMPLETED</div>
-                </div>
-                <div className="mb-1 text-3xl font-black text-[#1a1625]">
-                  {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0]" /> : stats?.totalCompleted ?? 0}
-                </div>
-                <div className="text-sm text-[#6b687a]">missions</div>
-              </div>
-
-              <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                    <span className="material-symbols-outlined !text-xl">trending_up</span>
-                  </div>
-                  <div className="text-xs font-semibold text-[#9b98a8]">SUCCESS RATE</div>
-                </div>
-                <div className="mb-1 text-3xl font-black text-[#1a1625]">
-                  {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0]" /> : `${stats?.completionRate ?? 0}%`}
-                </div>
-                <div className="text-sm text-green-600 font-semibold">Consistency</div>
-              </div>
-            </div>
-
-            <div className="mb-8 rounded-3xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] p-8 text-white shadow-lg overflow-hidden relative">
-              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-              <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex-1">
-                  <h3 className="mb-2 text-2xl font-black">Ready for payout?</h3>
-                  <p className="mb-4 text-white/90 text-lg">
-                    You&apos;ve earned {formatCoins(balance)} coins (≈ {formatRupeesFromCoins(balance)})
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="h-3 flex-1 rounded-full bg-white/20">
-                      <div
-                        className="h-3 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                        style={{ width: `${Math.min(100, (balance / minimumWithdrawalCoins) * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-black">
-                      {Math.floor((balance / minimumWithdrawalCoins) * 100)}%
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-white/75 font-medium flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">info</span>
-                    Minimum withdrawal: 5,000 coins (₹50)
-                  </p>
-                </div>
-
-                {balance >= minimumWithdrawalCoins ? (
-                  <button className="rounded-2xl bg-white px-10 py-4 font-black text-[#d77a57] transition-all hover:shadow-xl hover:scale-105 active:scale-95" onClick={() => setWithdrawalOpen(true)}>
-                    WITHDRAW NOW →
-                  </button>
-                ) : (
-                  <button className="rounded-2xl bg-white/50 px-10 py-4 font-black text-white/70 cursor-not-allowed" disabled>
-                    COLLECT MORE COINS
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-black text-[#1a1625]">Current Missions</h2>
-              <span className="px-4 py-1 rounded-full bg-[#f3f3f5] text-sm font-bold text-[#6b687a]">{assignments.length} ACTIVE</span>
-            </div>
-
-            {assignmentCards}
+      <main className="flex-1 space-y-6">
+        <div className="flex flex-col gap-4 rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">Tester workspace</div>
+            <h1 className="mt-2 text-2xl font-black text-[#1a1625] dark:text-white">{topBarTitle}</h1>
+            <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">{topBarDescription}</p>
           </div>
+          <ThemeToggleButton />
+        </div>
+
+        {activeTab === 'missions' ? (
+          <TesterMissionsTab
+            user={user}
+            stats={stats}
+            assignments={assignments}
+            isLoading={isLoading}
+            loadError={loadError}
+            now={now}
+            balance={balance}
+            onRetry={() => void loadDashboard()}
+            onOpenWithdrawal={() => setWithdrawalOpen(true)}
+            onAbandon={(assignment) => setAbandonTarget(assignment)}
+          />
+        ) : activeTab === 'support' ? (
+          <SupportPage role="TESTER" />
         ) : (
-          settingsContent
+          <TesterSettingsTab
+            displayName={user?.testerProfile?.displayName || 'N/A'}
+            email={user?.email || 'N/A'}
+            onOpenDeleteModal={() => setDeleteModalOpen(true)}
+          />
         )}
       </main>
 
-      {withdrawalOpen && (
+      {withdrawalOpen ? (
         <WithdrawalModal
           balance={balance}
           amount={withdrawAmount}
@@ -607,9 +404,9 @@ function TesterDashboardContent() {
           onClose={() => setWithdrawalOpen(false)}
           onSubmit={() => void handleWithdraw()}
         />
-      )}
+      ) : null}
 
-      {abandonTarget && (
+      {abandonTarget ? (
         <ConfirmationDialog
           title="Abandon this mission?"
           body="This will affect your reputation score."
@@ -623,9 +420,9 @@ function TesterDashboardContent() {
           isLoading={abandonLoading}
           errorMessage={abandonError}
         />
-      )}
+      ) : null}
 
-      {deleteModalOpen && (
+      {deleteModalOpen ? (
         <ConfirmationDialog
           title="Delete your account?"
           body="This action is irreversible. All your coins, missions, and profile data will be permanently deleted."
@@ -639,7 +436,7 @@ function TesterDashboardContent() {
           isLoading={isDeleting}
           errorMessage={deleteError}
         />
-      )}
+      ) : null}
     </div>
   )
 }

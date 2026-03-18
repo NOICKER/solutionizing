@@ -8,9 +8,13 @@
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 html,
 body {
-  @apply bg-neutral-bg text-text-main;
+  @apply bg-neutral-bg text-text-main dark:bg-gray-900 dark:text-white;
   -webkit-font-smoothing: antialiased;
 }
 

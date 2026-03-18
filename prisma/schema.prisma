@@ -82,6 +82,13 @@ model FounderProfile {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName   String
   companyName   String?
+  defaultDifficulty Difficulty @default(MEDIUM)
+  defaultTestersRequired Int @default(10)
+  notifyMissionApproved Boolean @default(true)
+  notifyMissionCompleted Boolean @default(true)
+  notifyTesterFeedback Boolean @default(false)
+  darkMode      Boolean  @default(false)
+  onboardingCompleted Boolean @default(false)
   coinBalance   Int      @default(0)
   totalMissions Int      @default(0)
   stripeCustomerId String? @unique
@@ -96,6 +103,12 @@ model TesterProfile {
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName      String
+  notifyNewMission Boolean  @default(true)
+  darkMode         Boolean  @default(false)
+  onboardingCompleted Boolean @default(false)
+  expertiseTags    String[] @default([])
+  preferredDevice  String?
+  payoutDetails    String?
   coinBalance      Int      @default(0)
   reputationScore  Float    @default(50.0)
   reputationTier   RepTier  @default(RELIABLE)

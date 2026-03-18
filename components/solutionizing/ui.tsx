@@ -7,13 +7,13 @@ export const primaryButtonClass =
   'rounded-[2rem] bg-gradient-to-r from-[#d77a57] to-[#c4673f] text-white font-black hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
 
 export const outlineButtonClass =
-  'rounded-[2rem] border-2 border-[#d77a57] text-[#d77a57] font-bold hover:bg-[#d77a57] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-70'
+  'rounded-[2rem] border-2 border-[#d77a57] text-[#d77a57] font-bold hover:bg-[#d77a57] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-70 dark:border-[#d77a57]/80 dark:text-[#d77a57] dark:hover:bg-[#d77a57] dark:hover:text-white'
 
 export const mutedButtonClass =
-  'rounded-[2rem] border border-[#e5e4e0] bg-white text-[#6b687a] font-semibold hover:bg-[#f3f3f5] transition-all disabled:pointer-events-none disabled:opacity-70'
+  'rounded-[2rem] border border-[#e5e4e0] bg-white text-[#6b687a] font-semibold hover:bg-[#f3f3f5] transition-all disabled:pointer-events-none disabled:opacity-70 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
 
 export const textFieldClass =
-  'w-full px-4 py-3 rounded-2xl bg-white border border-[#e5e4e0] text-[#1a1625] placeholder:text-[#9b98a8] focus:outline-none focus:ring-2 focus:ring-[#d77a57] transition-all'
+  'w-full rounded-2xl border border-[#e5e4e0] bg-white px-4 py-3 text-[#1a1625] placeholder:text-[#9b98a8] transition-all focus:outline-none focus:ring-2 focus:ring-[#d77a57] dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400'
 
 export function SpinnerIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -115,18 +115,18 @@ export function DashboardCardSkeleton({ count }: { count: number }) {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+        <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-start justify-between">
             <div className="w-1/2">
-              <div className="mb-2 h-5 animate-pulse rounded bg-[#e5e4e0]" />
-              <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5e4e0]" />
+              <div className="mb-2 h-5 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
             </div>
-            <div className="h-6 w-20 animate-pulse rounded-full bg-[#e5e4e0]" />
+            <div className="h-6 w-20 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
           </div>
-          <div className="mb-4 h-3 animate-pulse rounded-full bg-[#f3f3f5]" />
+          <div className="mb-4 h-3 animate-pulse rounded-full bg-[#f3f3f5] dark:bg-gray-700" />
           <div className="flex gap-3">
-            <div className="h-11 flex-1 animate-pulse rounded-[2rem] bg-[#e5e4e0]" />
-            <div className="h-4 w-16 animate-pulse rounded bg-[#e5e4e0]" />
+            <div className="h-11 flex-1 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
+            <div className="h-4 w-16 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
           </div>
         </div>
       ))}
@@ -146,21 +146,21 @@ export function ErrorStatePanel({
   backHref?: string
 }) {
   return (
-    <div className="rounded-2xl bg-[#faf9f7] p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+    <div className="min-h-[400px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
       <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-red-50">
         <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h2 className="mb-3 text-2xl font-black text-[#1a1625]">{title}</h2>
-      <p className="mb-8 max-w-md text-[#6b687a]">{body}</p>
+      <h2 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
+      <p className="mb-8 max-w-md text-[#6b687a] dark:text-gray-400">{body}</p>
       {onRetry ? (
         <button className={`mb-2 px-8 py-3.5 ${primaryButtonClass}`} onClick={onRetry}>
           TRY AGAIN
         </button>
       ) : null}
       {backHref ? (
-        <Link href={backHref} className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]">
+        <Link href={backHref} className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white">
           Back to dashboard
         </Link>
       ) : null}
@@ -180,14 +180,14 @@ export function EmptyStatePanel({
   buttonLabel?: string
 }) {
   return (
-    <div className="rounded-2xl bg-[#faf9f7] p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
-      <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-[#f3f3f5]">
+    <div className="min-h-[400px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
+      <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-[#f3f3f5] dark:bg-gray-800">
         <svg className="w-16 h-16 text-[#9b98a8]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h2 className="mb-3 text-2xl font-black text-[#1a1625]">{title}</h2>
-      <p className="mb-8 max-w-md text-[#6b687a]">{description}</p>
+      <h2 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
+      <p className="mb-8 max-w-md text-[#6b687a] dark:text-gray-400">{description}</p>
       {onPrimaryAction && buttonLabel ? (
         <button className={`mb-4 px-8 py-3.5 ${primaryButtonClass}`} onClick={onPrimaryAction}>
           {buttonLabel}
@@ -207,11 +207,11 @@ export function NotFoundPanel({
   backHref: string
 }) {
   return (
-    <div className="rounded-2xl bg-[#faf9f7] p-12 text-center min-h-[500px] flex flex-col items-center justify-center">
+    <div className="min-h-[500px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
       <div className="mb-8">
         <div className="mb-4 text-9xl font-black text-[#d77a57]">404</div>
-        <h2 className="mb-3 text-3xl font-black text-[#1a1625]">{title}</h2>
-        <p className="mx-auto max-w-md text-lg text-[#6b687a]">{body}</p>
+        <h2 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">{title}</h2>
+        <p className="mx-auto max-w-md text-lg text-[#6b687a] dark:text-gray-400">{body}</p>
       </div>
       <Link href={backHref} className={`px-8 py-3.5 ${primaryButtonClass}`}>
         BACK TO DASHBOARD
@@ -261,19 +261,19 @@ export function ConfirmationDialog({
 
   return (
     <ModalShell onClose={onCancel}>
-      <div className="mx-auto max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
+      <div className="mx-auto max-w-lg rounded-3xl bg-white p-8 shadow-2xl dark:border dark:border-gray-700 dark:bg-gray-800">
         <div className="mb-6 text-center">
           <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
             <svg className="w-8 h-8 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="mb-2 text-2xl font-black text-[#1a1625]">{title}</h2>
-          <p className="text-[#6b687a]">{body}</p>
+          <h2 className="mb-2 text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
+          <p className="text-[#6b687a] dark:text-gray-400">{body}</p>
         </div>
         {errorMessage ? <p className="mb-4 text-sm text-red-600">{errorMessage}</p> : null}
         <div className="flex items-center gap-3">
-          <button className="flex-1 rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0]" onClick={onCancel}>
+          <button className="flex-1 rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0] dark:border-gray-700 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" onClick={onCancel}>
             CANCEL
           </button>
           <button
@@ -318,12 +318,12 @@ export function StatCard({
   glyphColorClass: string
 }) {
   return (
-    <div className={`rounded-3xl border border-[#e5e4e0] bg-white p-6 transition-all hover:shadow-lg ${colorClass}`}>
+    <div className={`rounded-3xl border border-[#e5e4e0] bg-white p-6 transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${colorClass}`}>
       <div className="mb-4 flex items-center gap-3">
         <GlyphChip className={glyphColorClass}>{glyph}</GlyphChip>
-        <div className="text-sm font-bold text-[#6b687a]">{label}</div>
+        <div className="text-sm font-bold text-[#6b687a] dark:text-gray-400">{label}</div>
       </div>
-      <div className="text-4xl font-black text-[#1a1625]">{value}</div>
+      <div className="text-4xl font-black text-[#1a1625] dark:text-white">{value}</div>
     </div>
   )
 }
@@ -344,12 +344,12 @@ export function SidebarNavItem({
   disabled?: boolean
 }) {
   const className = active
-    ? 'flex items-center gap-3 rounded-2xl bg-[#f7ede8] px-4 py-3 text-sm font-bold text-[#d77a57]'
-    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625]'
+    ? 'flex items-center gap-3 rounded-2xl bg-[#f7ede8] px-4 py-3 text-sm font-bold text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#d77a57]'
+    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
 
   const content = (
     <>
-      <GlyphChip className={active ? 'bg-[#f3ddd3] text-[#d77a57]' : 'bg-[#f6f1ec] text-[#8b8797]'}>
+      <GlyphChip className={active ? 'bg-[#f3ddd3] text-[#d77a57] dark:bg-[#d77a57]/30 dark:text-[#d77a57]' : 'bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400'}>
         {glyph}
       </GlyphChip>
       {label}
@@ -388,8 +388,8 @@ export function PageHeader({
   return (
     <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
       <div>
-        <h1 className="mb-1 text-4xl font-black text-[#1a1625]">{title}</h1>
-        {subtitle ? <p className="text-lg text-[#6b687a]">{subtitle}</p> : null}
+        <h1 className="mb-1 text-4xl font-black text-[#1a1625] dark:text-white">{title}</h1>
+        {subtitle ? <p className="text-lg text-[#6b687a] dark:text-gray-400">{subtitle}</p> : null}
       </div>
       {children ? <div className="flex items-center gap-3">{children}</div> : null}
     </header>
