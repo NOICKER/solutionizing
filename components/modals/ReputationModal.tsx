@@ -15,7 +15,7 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
 
   return (
     <div className={`${testerBodyFont.className} w-full max-w-5xl ${className ?? ""}`.trim()}>
-      <div className="overflow-hidden rounded-[2.5rem] border border-white/70 bg-white/90 shadow-[0_28px_60px_rgba(45,42,38,0.16)] backdrop-blur-md">
+      <div className="overflow-hidden rounded-panel border border-white/70 bg-white/90 shadow-[0_28px_60px_rgba(45,42,38,0.16)] backdrop-blur-md">
         <div className="bg-gradient-to-r from-tester-apricot/10 via-transparent to-tester-sage/10 px-8 py-8 sm:px-10 sm:py-10 lg:px-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl">
@@ -32,7 +32,7 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
               </p>
             </div>
 
-            <div className="w-full max-w-[260px] rounded-[1.5rem] border border-tester-beige bg-white p-5 shadow-tester-soft">
+            <div className="w-full max-w-[260px] rounded-card border border-tester-beige bg-white p-5 shadow-tester-soft">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black uppercase tracking-[0.18em] text-tester-muted">
                   Reputation

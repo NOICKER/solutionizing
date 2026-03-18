@@ -519,7 +519,7 @@ export default function LandingPage() {
             <Link className="transition-colors hover:text-primary" href="/contact">Contact</Link>
           </div>
 
-          <p className="text-sm font-bold text-text-main/50">&copy; 2024 Solutionizing Research Lab. Built for signal.</p>
+          <p className="text-sm font-bold text-text-main/50">&copy; {new Date().getFullYear()} Solutionizing Research Lab. Built for signal.</p>
         </div>
       </footer>
     </div>

@@ -25,7 +25,7 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
 
   return (
     <div className={`${testerBodyFont.className} w-full max-w-2xl ${className ?? ""}`.trim()}>
-      <div className="relative overflow-hidden rounded-[2rem] border border-white bg-white shadow-tester-modal">
+      <div className="relative overflow-hidden rounded-panel border border-white bg-white shadow-tester-modal">
         <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-tester-apricot/15 blur-3xl" />
         <div className="px-8 pb-8 pt-7 sm:px-10 sm:pb-10">
           <div className="flex items-start justify-between gap-4">

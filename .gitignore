@@ -42,3 +42,8 @@ dev-server*.log
 dev-server*.err.log
 snapshots/
 node_modules
+.tmp-*/
+dev-codex-*.log
+dev-codex-*.err.log
+dev-codex-*.out.log
+edge-cdp*.log

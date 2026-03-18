@@ -11,7 +11,6 @@ import {
   OnboardingStepIcon,
   onboardingGhostButtonClass,
   onboardingPrimaryButtonClass,
-  onboardingTextLinkClass,
 } from '@/components/solutionizing/onboarding/OnboardingShell'
 
 type FounderOnboardingStep = 1 | 2 | 3 | 4 | 5
@@ -217,7 +216,7 @@ export function FounderOnboarding({
             {founderHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60"
+                className="flex gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
@@ -302,6 +301,10 @@ export function FounderOnboarding({
             </p>
           </div>
 
+          <div className="mt-6 rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Coin purchases will be available soon. You can skip this step and buy coins from your dashboard later.
+          </div>
+
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {coinPacks.map((pack) => {
               const isSelected = selectedPack === pack.id
@@ -309,7 +312,7 @@ export function FounderOnboarding({
               return (
                 <div
                   key={pack.id}
-                  className={`rounded-[1.9rem] border p-6 transition-all ${
+                  className={`rounded-card border p-6 transition-all ${
                     isSelected
                       ? 'border-[#d97757] bg-[#fff4ef] shadow-[0_22px_42px_-34px_rgba(217,119,87,0.6)] dark:bg-[#d97757]/10'
                       : 'border-[#efe8e1] bg-[#fffdfa] dark:border-gray-800 dark:bg-gray-950/60'
@@ -352,7 +355,7 @@ export function FounderOnboarding({
               setErrorMessage('')
               setStep(5)
             }}
-            className={`mt-5 ${onboardingTextLinkClass}`}
+            className={`mt-5 ${onboardingGhostButtonClass}`}
           >
             Skip for now
           </button>

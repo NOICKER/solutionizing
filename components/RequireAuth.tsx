@@ -17,7 +17,7 @@ function FullPageLoadingSkeleton() {
           {[1, 2, 3, 4].map((card) => (
             <div
               key={card}
-              className="rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+              className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="mb-4 flex items-center gap-3">
                 <div className="h-12 w-12 animate-pulse rounded-2xl bg-[#e5e4e0] dark:bg-gray-700" />

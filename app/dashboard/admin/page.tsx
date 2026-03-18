@@ -1,14 +1,15 @@
 "use client"
 
 import Link from 'next/link'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ClipboardList, Flag, LayoutDashboard, Rocket, Settings, Users } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
-import { useAuth } from '@/context/AuthContext'
 import {
   BrandMark,
+  ConfirmationDialog,
   DashboardCardSkeleton,
   EmptyStatePanel,
   ErrorStatePanel,
@@ -17,6 +18,7 @@ import {
   PageHeader,
   primaryButtonClass,
   outlineButtonClass,
+  textFieldClass,
 } from '@/components/solutionizing/ui'
 
 // Types for Admin Dashboard
@@ -69,9 +71,27 @@ interface UserListResponse {
   }
 }
 
+type MissionDialogState =
+  | { type: 'approve'; missionId: string; missionTitle: string }
+  | { type: 'reject'; missionId: string; missionTitle: string }
+
+const overviewSidebarProps = { glyph: <LayoutDashboard className="h-4 w-4" /> }
+const missionsSidebarProps = { glyph: <Rocket className="h-4 w-4" /> }
+const usersSidebarProps = { glyph: <Users className="h-4 w-4" /> }
+const flagsSidebarProps = { glyph: <Flag className="h-4 w-4" /> }
+const settingsSidebarProps = { glyph: <Settings className="h-4 w-4" /> }
+
+const adminNavItems = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard, sidebarProps: overviewSidebarProps },
+  { id: 'missions', label: 'Missions', icon: Rocket, sidebarProps: missionsSidebarProps },
+  { id: 'users', label: 'Users', icon: Users, sidebarProps: usersSidebarProps },
+  { id: 'flags', label: 'Flags', icon: Flag, sidebarProps: flagsSidebarProps },
+] as const
+
+type AdminTab = (typeof adminNavItems)[number]['id']
+
 export default function AdminDashboardPage() {
   const router = useRouter()
-  const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentUsers, setRecentUsers] = useState<User[]>([])
   const [pendingMissions, setPendingMissions] = useState<any[]>([])
@@ -80,7 +100,10 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'missions' | 'users' | 'flags'>('overview')
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview')
+  const [missionDialog, setMissionDialog] = useState<MissionDialogState | null>(null)
+  const [missionDialogError, setMissionDialogError] = useState('')
+  const [rejectionReason, setRejectionReason] = useState('')
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -148,35 +171,52 @@ export default function AdminDashboardPage() {
     if (activeTab === 'flags') fetchFlaggedContent()
   }, [activeTab, fetchDashboardData, fetchPendingMissions, fetchAllUsers, fetchFlaggedContent])
 
-  const handleApproveMission = async (missionId: string) => {
-    if (!confirm('Are you sure you want to approve this mission?')) return
-    try {
-      setIsActionLoading(true)
-      await apiFetch(`/api/v1/admin/missions/${missionId}/approve`, { method: 'POST' })
-      await fetchPendingMissions()
-    } catch (err) {
-      alert('Failed to approve mission')
-    } finally {
-      setIsActionLoading(false)
-    }
+  function closeMissionDialog() {
+    setMissionDialog(null)
+    setMissionDialogError('')
+    setRejectionReason('')
   }
 
-  const handleRejectMission = async (missionId: string) => {
-    const reason = prompt('Please enter the reason for rejection (min 10 chars):')
-    if (!reason || reason.length < 10) {
-      alert('Rejection reason must be at least 10 characters')
+  const handleApproveMission = (missionId: string, missionTitle: string) => {
+    setMissionDialog({ type: 'approve', missionId, missionTitle })
+    setMissionDialogError('')
+    setRejectionReason('')
+  }
+
+  const handleRejectMission = (missionId: string, missionTitle: string) => {
+    setMissionDialog({ type: 'reject', missionId, missionTitle })
+    setMissionDialogError('')
+    setRejectionReason('')
+  }
+
+  const handleMissionDialogConfirm = async () => {
+    if (!missionDialog) {
       return
     }
-    
+
+    if (missionDialog.type === 'reject' && rejectionReason.trim().length < 10) {
+      setMissionDialogError('Rejection reason must be at least 10 characters')
+      return
+    }
+
     try {
       setIsActionLoading(true)
-      await apiFetch(`/api/v1/admin/missions/${missionId}/reject`, { 
-        method: 'POST',
-        body: JSON.stringify({ reason })
-      })
+
+      if (missionDialog.type === 'approve') {
+        await apiFetch(`/api/v1/admin/missions/${missionDialog.missionId}/approve`, { method: 'POST' })
+      } else {
+        await apiFetch(`/api/v1/admin/missions/${missionDialog.missionId}/reject`, {
+          method: 'POST',
+          body: { reason: rejectionReason.trim() },
+        })
+      }
+
       await fetchPendingMissions()
-    } catch (err) {
-      alert('Failed to reject mission')
+      closeMissionDialog()
+    } catch {
+      setMissionDialogError(
+        missionDialog.type === 'approve' ? 'Failed to approve mission' : 'Failed to reject mission'
+      )
     } finally {
       setIsActionLoading(false)
     }
@@ -198,47 +238,32 @@ export default function AdminDashboardPage() {
     <RequireAuth role="ADMIN">
       <div className="flex min-h-screen bg-[#faf9f7]">
         {/* Sidebar */}
-        <aside className="fixed bottom-0 left-0 top-0 hidden w-72 border-r border-[#e5e4e0] bg-white p-6 lg:block">
+        <aside className="fixed bottom-0 left-0 top-0 hidden w-72 border-r border-[#e5e4e0] bg-white p-6 md:block">
           <div className="mb-10 flex items-center gap-3">
             <BrandMark className="w-8 h-8 text-[#d77a57]" />
             <span className="text-xl font-black tracking-tight text-[#1a1625]">Admin Panel</span>
           </div>
 
           <nav className="flex flex-col gap-2">
-            <SidebarNavItem
-              glyph="📊"
-              label="Overview"
-              active={activeTab === 'overview'}
-              onClick={() => setActiveTab('overview')}
-            />
-            <SidebarNavItem
-              glyph="🚀"
-              label="Mission Control"
-              active={activeTab === 'missions'}
-              onClick={() => setActiveTab('missions')}
-            />
-            <SidebarNavItem
-              glyph="👥"
-              label="User Management"
-              active={activeTab === 'users'}
-              onClick={() => setActiveTab('users')}
-            />
-            <SidebarNavItem
-              glyph="🚩"
-              label="Flagged Content"
-              active={activeTab === 'flags'}
-              onClick={() => setActiveTab('flags')}
-            />
+            {adminNavItems.map((item) => (
+              <SidebarNavItem
+                key={item.id}
+                {...item.sidebarProps}
+                label={item.label}
+                active={activeTab === item.id}
+                onClick={() => setActiveTab(item.id)}
+              />
+            ))}
             <div className="my-4 border-t border-[#f0efed]" />
             <SidebarNavItem
-              glyph="⚙️"
+              {...settingsSidebarProps}
               label="Platform Settings"
               onClick={() => {}}
             />
           </nav>
 
           <div className="absolute bottom-6 left-6 right-6">
-            <div className="rounded-2xl bg-[#f6f1ec] p-4 text-center">
+            <div className="rounded-card bg-[#f6f1ec] p-4 text-center">
               <p className="mb-2 text-xs font-bold text-[#8b8797]">Solutionizing v1.2.0</p>
               <button
                 className={`${outlineButtonClass} w-full py-2 text-xs`}
@@ -251,7 +276,7 @@ export default function AdminDashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:ml-72 lg:p-10">
+        <main className="flex-1 p-6 pb-28 md:ml-72 md:p-10 md:pb-10">
           <PageHeader
             title={
               activeTab === 'overview' ? 'System Overview' :
@@ -276,11 +301,15 @@ export default function AdminDashboardPage() {
           </PageHeader>
 
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <DashboardCardSkeleton key={i} count={1} />
-              ))}
-            </div>
+            activeTab === 'overview' ? (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <DashboardCardSkeleton key={i} count={1} variant="stat" />
+                ))}
+              </div>
+            ) : (
+              <DashboardCardSkeleton count={1} variant="card" />
+            )
           ) : (
             <div className="space-y-10">
               {activeTab === 'overview' && stats && (
@@ -318,7 +347,7 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Recent Users Table */}
-                  <div className="rounded-3xl border border-[#e5e4e0] bg-white overflow-hidden">
+                  <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden">
                     <div className="border-b border-[#e5e4e0] p-6 flex items-center justify-between">
                       <h3 className="text-xl font-bold text-[#1a1625]">Newest User Registrations</h3>
                       <button className="text-sm font-bold text-[#d77a57] hover:underline" onClick={() => setActiveTab('users')}>
@@ -369,14 +398,18 @@ export default function AdminDashboardPage() {
                         </table>
                       </div>
                     ) : (
-                      <EmptyStatePanel title="No users found" description="Wait for new platform registrations." />
+                      <EmptyStatePanel
+                        title="No users found"
+                        description="Wait for new platform registrations."
+                        icon={<Users className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                      />
                     )}
                   </div>
                 </>
               )}
 
               {activeTab === 'missions' && (
-                <div className="rounded-3xl border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
                     <h3 className="text-xl font-bold">Pending Review ({pendingMissions.length})</h3>
                   </div>
@@ -413,14 +446,14 @@ export default function AdminDashboardPage() {
                                 <div className="flex items-center justify-end gap-2">
                                   <button 
                                     className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200"
-                                    onClick={() => handleApproveMission(mission.id)}
+                                    onClick={() => handleApproveMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
                                     Approve
                                   </button>
                                   <button 
                                     className="rounded-full bg-orange-100 px-4 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
-                                    onClick={() => handleRejectMission(mission.id)}
+                                    onClick={() => handleRejectMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
                                     Reject
@@ -433,13 +466,17 @@ export default function AdminDashboardPage() {
                       </table>
                     </div>
                   ) : (
-                    <EmptyStatePanel title="All missions reviewed" description="No missions are currently pending review." />
+                    <EmptyStatePanel
+                      title="All missions reviewed"
+                      description="No missions are currently pending review."
+                      icon={<ClipboardList className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                    />
                   )}
                 </div>
               )}
 
               {activeTab === 'users' && (
-                <div className="rounded-3xl border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
                     <h3 className="text-xl font-bold">All Users ({userList.length})</h3>
                   </div>
@@ -500,13 +537,17 @@ export default function AdminDashboardPage() {
                       </table>
                     </div>
                   ) : (
-                    <EmptyStatePanel title="No users found" description="Platform has no registered users." />
+                    <EmptyStatePanel
+                      title="No users found"
+                      description="Platform has no registered users."
+                      icon={<Users className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                    />
                   )}
                 </div>
               )}
 
               {activeTab === 'flags' && (
-                <div className="rounded-3xl border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
                     <h3 className="text-xl font-bold">Reports Needing Attention ({flaggedItems.length})</h3>
                   </div>
@@ -527,7 +568,7 @@ export default function AdminDashboardPage() {
                             <tr key={item.id} className="text-sm">
                               <td className="px-6 py-4">
                                 <Link 
-                                  href={`/missions/${item.missionId}`}
+                                  href={`/mission/status/${item.missionId}`}
                                   className="font-bold text-[#d77a57] hover:underline"
                                 >
                                   {item.missionTitle}
@@ -555,13 +596,82 @@ export default function AdminDashboardPage() {
                       </table>
                     </div>
                   ) : (
-                    <EmptyStatePanel title="Clear of reports" description="No content has been flagged by users recently." />
+                    <EmptyStatePanel
+                      title="Clear of reports"
+                      description="No content has been flagged by users recently."
+                      icon={<Flag className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                    />
                   )}
                 </div>
               )}
             </div>
           )}
         </main>
+
+        <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-panel border border-[#e5e4e0] bg-white/95 px-2 py-2 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.28)] backdrop-blur md:hidden">
+          {adminNavItems.map((item) => {
+            const Icon = item.icon
+            const isActive = activeTab === item.id
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
+                  isActive
+                    ? 'bg-[#f5ede7] text-[#D97757]'
+                    : 'text-[#6e6882] hover:bg-[#f8f3ef]'
+                }`}
+              >
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                    isActive ? 'bg-[#f3ddd3] text-[#D97757]' : 'bg-[#f3efe8] text-[#6b6477]'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
+        </nav>
+
+        {missionDialog ? (
+          <ConfirmationDialog
+            title={missionDialog.type === 'approve' ? 'Approve this mission?' : 'Reject this mission?'}
+            body={
+              missionDialog.type === 'approve'
+                ? `Approve "${missionDialog.missionTitle}" and make it available to testers.`
+                : `Reject "${missionDialog.missionTitle}" and send feedback to the founder.`
+            }
+            confirmLabel={missionDialog.type === 'approve' ? 'APPROVE MISSION' : 'REJECT MISSION'}
+            confirmStyle={missionDialog.type === 'approve' ? 'primary' : 'danger'}
+            onCancel={closeMissionDialog}
+            onConfirm={() => void handleMissionDialogConfirm()}
+            isLoading={isActionLoading}
+            errorMessage={missionDialogError}
+          >
+            {missionDialog.type === 'reject' ? (
+              <div className="text-left">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+                  Rejection Reason
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(event) => setRejectionReason(event.target.value)}
+                  rows={4}
+                  autoFocus
+                  className={`${textFieldClass} resize-none`}
+                  placeholder="Explain why this mission is being rejected."
+                />
+                <p className="mt-2 text-xs text-[#9b98a8]">Minimum 10 characters</p>
+              </div>
+            ) : null}
+          </ConfirmationDialog>
+        ) : null}
       </div>
     </RequireAuth>
   )

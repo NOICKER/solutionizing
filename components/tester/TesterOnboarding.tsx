@@ -48,7 +48,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
           <div className="absolute right-4 top-0 h-20 w-20 rounded-full bg-tester-apricot/20 blur-2xl" />
           <div className="absolute bottom-6 left-6 h-24 w-24 rounded-full bg-tester-sage/10 blur-2xl" />
 
-          <div className="relative flex aspect-square flex-col items-center justify-center rounded-[2.5rem] border border-tester-beige bg-gradient-to-br from-white via-white to-tester-cream/70 px-10">
+          <div className="relative flex aspect-square flex-col items-center justify-center rounded-panel border border-tester-beige bg-gradient-to-br from-white via-white to-tester-cream/70 px-10">
             <div className="flex h-28 w-28 rotate-45 items-center justify-center rounded-[2rem] bg-tester-terracotta shadow-[0_18px_40px_rgba(217,119,87,0.25)]">
               <span className="material-symbols-outlined -rotate-45 text-6xl text-white">psychology_alt</span>
             </div>
@@ -91,7 +91,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
           ))}
         </div>
 
-        <div className="mt-16 w-full max-w-4xl rounded-[2.5rem] border border-white bg-[#efe9dc] px-8 py-12 shadow-tester-soft sm:px-12">
+        <div className="mt-16 w-full max-w-4xl rounded-panel border border-white bg-[#efe9dc] px-8 py-12 shadow-tester-soft sm:px-12">
           <h3 className={`${testerDisplayFont.className} text-3xl font-extrabold tracking-tight text-tester-sage`}>
             Ready to enter the eligibility pool?
           </h3>

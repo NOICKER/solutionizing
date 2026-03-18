@@ -3,7 +3,6 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { RequireAuth } from '@/components/RequireAuth'
 import { useAuth } from '@/context/AuthContext'
 import { deleteAccount } from '@/lib/api/account'
 import { ApiTesterAssignmentSummary, ApiTesterStats } from '@/types/api'
@@ -40,13 +39,14 @@ function WithdrawalModal({
   onClose: () => void
   onSubmit: () => void
 }) {
-  const safeAllAmount = Math.max(minimumWithdrawalCoins, balance)
+  const canUseAllAmount = balance >= minimumWithdrawalCoins
+  const safeAllAmount = balance
   const middleAmount = Math.max(minimumWithdrawalCoins, balance - 1000)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
+      <div className="relative z-10 w-full max-w-lg rounded-panel bg-white p-8 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="mb-1 text-3xl font-black text-[#1a1625]">Withdraw Coins</h2>
@@ -59,7 +59,7 @@ function WithdrawalModal({
           </button>
         </div>
 
-        <div className="mb-6 rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+        <div className="mb-6 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-6">
           <div className="mb-2 text-sm text-[#6b687a]">CURRENT BALANCE</div>
           <div className="mb-2 flex items-baseline gap-3">
             <span className="text-4xl font-black text-[#1a1625]">{formatCoins(balance)}</span>
@@ -87,7 +87,7 @@ function WithdrawalModal({
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+        <div className="mb-6 rounded-card border border-blue-100 bg-blue-50 p-6">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm text-[#6b687a]">You will receive</span>
             <span className="text-3xl font-black text-[#1a1625]">₹{(amount / 100).toFixed(0)}</span>
@@ -102,12 +102,20 @@ function WithdrawalModal({
           <button className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0]" onClick={() => onQuickPick(middleAmount)}>
             {formatCoins(middleAmount)}
           </button>
-          <button className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0]" onClick={() => onQuickPick(safeAllAmount)}>
+          <button
+            className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0] disabled:cursor-not-allowed disabled:bg-[#f3f3f5]/70 disabled:text-[#9b98a8]"
+            onClick={() => onQuickPick(safeAllAmount)}
+            disabled={!canUseAllAmount}
+            title={!canUseAllAmount ? 'Minimum withdrawal is 5,000 coins' : undefined}
+          >
             All
           </button>
         </div>
+        {!canUseAllAmount ? (
+          <p className="mb-6 text-sm text-[#9b98a8]">Minimum withdrawal is 5,000 coins.</p>
+        ) : null}
 
-        <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+        <div className="mb-6 rounded-card border border-amber-100 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
             <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -315,7 +323,7 @@ function TesterDashboardContent() {
         : 'Track active missions, withdrawals, and your current tester status.'
 
   return (
-    <div className="flex min-h-screen flex-col gap-8 rounded-3xl bg-[#faf9f7] p-8 dark:bg-gray-900 lg:flex-row">
+    <div className="flex min-h-screen flex-col gap-8 rounded-panel bg-[#faf9f7] p-8 dark:bg-gray-900 lg:flex-row">
       <aside className="flex-shrink-0 lg:w-64">
         <div className="sticky top-8 space-y-6">
           <div className="flex items-center gap-3 px-2">
@@ -442,9 +450,5 @@ function TesterDashboardContent() {
 }
 
 export function TesterDashboardPage() {
-  return (
-    <RequireAuth role="TESTER">
-      <TesterDashboardContent />
-    </RequireAuth>
-  )
+  return <TesterDashboardContent />
 }

@@ -253,7 +253,7 @@ function SelectRoleContent() {
         </div>
 
         <p className="mt-8 text-center text-sm text-[#9b98a8]">
-          You can only choose once. Choose carefully.
+          Pick your path — you can always reach us if anything changes.
         </p>
         {globalError ? (
           <p className="mt-4 text-center text-sm text-red-600">{globalError}</p>

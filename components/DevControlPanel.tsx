@@ -40,7 +40,7 @@ export function DevControlPanel() {
         <span>Dev</span>
       </button>
       {isOpen ? (
-        <div className="pointer-events-auto w-[320px] rounded-2xl border border-border-subtle bg-surface/98 p-3 shadow-card-soft backdrop-blur">
+        <div className="pointer-events-auto w-[320px] rounded-card border border-border-subtle bg-surface/98 p-3 shadow-card-soft backdrop-blur">
           <div className="mb-2 flex items-center justify-between">
             <div className="text-[0.7rem] font-semibold text-text-main">
               Dev control panel

@@ -49,6 +49,8 @@ const config: Config = {
       borderRadius: {
         xl: "1.5rem",
         "2xl": "2rem",
+        card: "1.5rem",
+        panel: "2rem",
         lg: "1rem",
         DEFAULT: "0.5rem",
         pill: "999px"

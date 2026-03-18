@@ -62,7 +62,7 @@ export function OnboardingShell({
           />
         </div>
 
-        <section className="rounded-[2rem] border border-[#ece6df] bg-white/95 p-6 shadow-[0_30px_90px_-56px_rgba(26,22,37,0.45)] dark:border-gray-700 dark:bg-gray-900/95 sm:p-8 lg:p-10">
+        <section className="rounded-panel border border-[#ece6df] bg-white/95 p-6 shadow-[0_30px_90px_-56px_rgba(26,22,37,0.45)] dark:border-gray-700 dark:bg-gray-900/95 sm:p-8 lg:p-10">
           {children}
         </section>
       </div>

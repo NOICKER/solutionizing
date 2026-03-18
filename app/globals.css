@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .rounded-card {
+    border-radius: 1.5rem;
+  }
+
+  .rounded-panel {
+    border-radius: 2rem;
+  }
+}
+
 :root {
   color-scheme: light;
 }
@@ -58,7 +68,7 @@ body {
 }
 
 .surface-card {
-  @apply bg-surface shadow-card-soft rounded-2xl border border-border-subtle/60;
+  @apply rounded-card border border-border-subtle/60 bg-surface shadow-card-soft;
 }
 
 .pill-muted {
@@ -78,6 +88,6 @@ body {
 }
 
 .panel-dark {
-  @apply rounded-2xl bg-gradient-to-br from-panel-dark to-panel-dark-soft text-white shadow-card;
+  @apply rounded-panel bg-gradient-to-br from-panel-dark to-panel-dark-soft text-white shadow-card;
 }
 

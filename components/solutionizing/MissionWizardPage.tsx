@@ -1,5 +1,6 @@
 "use client"
 
+import { CheckCircle, XCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/components/ui/sonner'
@@ -212,7 +213,7 @@ function MissionWizardContent() {
   const [showDraftBanner, setShowDraftBanner] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [goalWarning, setGoalWarning] = useState('')
-  const [assetChecks, setAssetChecks] = useState<Record<number, 'ok' | 'warning'>>({})
+  const [assetChecks, setAssetChecks] = useState<Record<number, 'reachable' | 'unreachable'>>({})
   const [coinBalance, setCoinBalance] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
@@ -331,9 +332,9 @@ function MissionWizardContent() {
 
     try {
       await fetch(asset.url, { method: 'HEAD', mode: 'no-cors' })
-      setAssetChecks((current) => ({ ...current, [index]: 'ok' }))
+      setAssetChecks((current) => ({ ...current, [index]: 'reachable' }))
     } catch {
-      setAssetChecks((current) => ({ ...current, [index]: 'warning' }))
+      setAssetChecks((current) => ({ ...current, [index]: 'unreachable' }))
     }
   }
 
@@ -417,7 +418,7 @@ function MissionWizardContent() {
   const reviewAssets = useMemo(
     () =>
       state.assets.map((asset, index) => (
-        <div key={`${asset.type}-${index}`} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+        <div key={`${asset.type}-${index}`} className="rounded-card border border-[#e5e4e0] bg-white p-6">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">ASSET {index + 1}</div>
           <div className="mb-2 text-lg font-black text-[#1a1625]">{asset.type}</div>
           <p className="break-words text-sm text-[#6b687a]">
@@ -434,7 +435,7 @@ function MissionWizardContent() {
   const reviewQuestions = useMemo(
     () =>
       state.questions.map((question, index) => (
-        <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+        <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
           <div className="mb-2 text-lg font-black text-[#1a1625]">{question.text}</div>
           <div className="text-sm text-[#6b687a]">{question.type.replaceAll('_', ' ')}</div>
@@ -456,7 +457,7 @@ function MissionWizardContent() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-4xl rounded-2xl bg-[#faf9f7] p-12">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12">
         {showDraftBanner ? (
           <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4">
             <span className="text-sm font-semibold text-amber-800">You have an unsaved draft. Continue where you left off?</span>
@@ -526,7 +527,7 @@ function MissionWizardContent() {
                     key={difficulty.value}
                     type="button"
                     onClick={() => updateState((current) => ({ ...current, difficulty: difficulty.value }))}
-                    className={`rounded-3xl p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6]' : 'border-2 border-[#e5e4e0] bg-white'}`}
+                    className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6]' : 'border-2 border-[#e5e4e0] bg-white'}`}
                   >
                     <div className="mb-2 text-xl font-black text-[#1a1625]">{difficulty.value}</div>
                     <div className="text-sm font-bold text-[#d77a57]">{difficulty.price}</div>
@@ -540,7 +541,7 @@ function MissionWizardContent() {
 
         {step === 2 ? (
           <div className="space-y-8">
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">ESTIMATED MINUTES</label>
               <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
               <div className="mt-4 text-center">
@@ -549,7 +550,7 @@ function MissionWizardContent() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">NUMBER OF TESTERS</label>
               <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
               <div className="mt-4 text-center text-2xl font-black text-[#1a1625]">{state.testersRequired} testers</div>
@@ -569,7 +570,7 @@ function MissionWizardContent() {
 
             <div className="space-y-4">
               {state.assets.map((asset, index) => (
-                <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6" data-field-key={`asset-${index}`}>
+                <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6" data-field-key={`asset-${index}`}>
                   <div className="mb-4 flex flex-wrap items-center gap-3">
                     {(['LINK', 'SCREENSHOT', 'VIDEO', 'TEXT'] as const).map((type) => (
                       <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { type, url: '', text: '', label: currentAsset.label ?? '' } : currentAsset) }))} className={`rounded-full px-3 py-1 text-xs font-bold ${asset.type === type ? 'bg-blue-100 text-blue-700' : 'bg-[#f3f3f5] text-[#6b687a]'}`}>{type}</button>
@@ -582,8 +583,8 @@ function MissionWizardContent() {
                   ) : (
                     <div className="relative">
                       <input value={asset.url ?? ''} onBlur={() => void handleAssetReachability(index)} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, url: event.target.value } : currentAsset) }))} placeholder="https://example.com" className={textFieldClass} />
-                      {assetChecks[index] === 'ok' ? <span className="absolute right-4 top-1/2 -translate-y-1/2 text-green-600">✓</span> : null}
-                      {assetChecks[index] === 'warning' ? <span className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-600">!</span> : null}
+                      {assetChecks[index] === 'reachable' ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600" /> : null}
+                      {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600" /> : null}
                     </div>
                   )}
 
@@ -600,7 +601,7 @@ function MissionWizardContent() {
         {step === 3 ? (
           <div className="space-y-6">
             {state.questions.map((question, index) => (
-              <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6" data-field-key={`question-${index}`}>
+              <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6" data-field-key={`question-${index}`}>
                 <div className="mb-4 flex items-center justify-between">
                   <div className="text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
                   {state.questions.length > 1 ? <button type="button" className="text-[#9b98a8]" onClick={() => updateState((current) => ({ ...current, questions: current.questions.filter((_, questionIndex) => questionIndex !== index) }))}>×</button> : null}
@@ -648,11 +649,11 @@ function MissionWizardContent() {
 
         {step === 4 ? (
           <div className="space-y-6">
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">TITLE</div>
               <div className="text-xl font-black text-[#1a1625]">{state.title}</div>
             </div>
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">GOAL</div>
               <p className="text-[#1a1625]">{state.goal}</p>
             </div>

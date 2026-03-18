@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-neutral-bg px-6 py-14">
-      <div className="mx-auto max-w-3xl rounded-[2rem] border border-secondary/15 bg-white p-8 shadow-card-soft lg:p-10">
+      <div className="mx-auto max-w-3xl rounded-panel border border-secondary/15 bg-white p-8 shadow-card-soft lg:p-10">
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">Back to home</Link>
         <h1 className="mt-4 text-4xl font-black tracking-tight text-text-main">Privacy Policy</h1>
         <p className="mt-4 text-base leading-relaxed text-text-main/65">

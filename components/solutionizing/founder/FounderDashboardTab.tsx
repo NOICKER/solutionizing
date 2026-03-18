@@ -1,5 +1,6 @@
 "use client"
 
+import { ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
@@ -59,7 +60,7 @@ function StatCard({
   isLoading: boolean
 }) {
   return (
-    <div className="rounded-3xl border border-[#ece6df] bg-white/95 p-5 shadow-[0_20px_60px_-42px_rgba(26,22,37,0.28)] dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-card border border-[#ece6df] bg-white/95 p-5 shadow-[0_20px_60px_-42px_rgba(26,22,37,0.28)] dark:border-gray-700 dark:bg-gray-800">
       <div className="mb-4 flex items-center justify-between">
         <DashboardGlyphChip className={className}>{glyph}</DashboardGlyphChip>
         <div className="rounded-full bg-[#faf5f0] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:bg-gray-900 dark:text-gray-400">
@@ -84,7 +85,7 @@ function RecentMissionCard({
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
 
   return (
-    <div className="rounded-3xl border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-800">
       <div className="mb-4 flex items-start justify-between gap-4">
         <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{mission.title}</h3>
         <MissionStatusBadge status={mission.status} />
@@ -157,7 +158,7 @@ export function FounderDashboardTab({
   let content
 
   if (isLoading) {
-    content = <DashboardCardSkeleton count={3} />
+    content = <DashboardCardSkeleton count={3} variant="full" />
   } else if (loadError) {
     content = (
       <ErrorStatePanel
@@ -171,6 +172,7 @@ export function FounderDashboardTab({
     content = (
       <EmptyStatePanel
         buttonLabel="CREATE YOUR FIRST MISSION ->"
+        icon={<ClipboardList className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
@@ -203,7 +205,7 @@ export function FounderDashboardTab({
 
       <section
         id="missions-section"
-        className="rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6"
+        className="rounded-panel border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6"
       >
         <div className="mb-6">
           <div>

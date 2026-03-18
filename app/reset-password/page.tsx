@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="min-h-screen bg-[#faf9f7] flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl bg-[#faf9f7] p-12">
+      <div className="w-full max-w-md rounded-card bg-[#faf9f7] p-12">
         {isSuccess ? (
           <div className="text-center">
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
@@ -164,14 +164,8 @@ export default function ResetPasswordPage() {
 
             <div className="mt-8 border-t border-[#e5e4e0] pt-6 text-center">
               <p className="mb-3 text-xs text-[#9b98a8] flex items-center justify-center gap-2">
-                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Secure password update via /api/v1/auth/reset-password
+                <span aria-hidden="true">🔒</span>
+                Secure, encrypted password update
               </p>
               <Link href="/auth" className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]">
                 {'<-'} Back to sign in

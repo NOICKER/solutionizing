@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiTesterAssignmentDetail, ApiTesterStats } from '@/types/api'
-import { ConfirmationDialog, NotFoundPanel, SpinnerIcon, formatCoins, formatRupeesFromCoins, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { NotFoundPanel, SpinnerIcon, StarRow, formatCoins, formatRupeesFromCoins, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 import { useAuth } from '@/context/AuthContext'
 
 type WorkspacePhase = 'briefing' | 'questions' | 'review' | 'success'
@@ -37,12 +37,13 @@ function IssueModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
+      <div className="relative z-10 w-full max-w-lg rounded-panel bg-white p-8 shadow-2xl">
         <h2 className="mb-2 text-2xl font-black text-[#1a1625]">Report an issue with this mission</h2>
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
           rows={5}
+          autoFocus
           className={`${textFieldClass} resize-none`}
         />
         {errorMessage ? <p className="mt-2 text-sm text-red-600">{errorMessage}</p> : null}
@@ -306,7 +307,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   if (phase === 'briefing') {
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-4xl rounded-2xl bg-[#faf9f7] p-12">
+        <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12">
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-700">MISSION ASSIGNED</div>
             <h1 className="mb-3 text-4xl font-black text-[#1a1625]">{assignment.mission.title}</h1>
@@ -314,24 +315,24 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           </div>
 
           <div className="mb-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 text-center">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center">
               <div className="mb-2 text-sm text-[#9b98a8]">REWARD</div>
               <div className="mb-1 text-3xl font-black text-[#1a1625]">{formatCoins(assignment.mission.coinPerTester)}</div>
               <div className="text-sm text-[#6b687a]">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
             </div>
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 text-center">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center">
               <div className="mb-2 text-sm text-[#9b98a8]">ESTIMATED TIME</div>
               <div className="mb-1 text-3xl font-black text-[#1a1625]">{assignment.mission.estimatedMinutes}</div>
               <div className="text-sm text-[#6b687a]">minutes</div>
             </div>
-            <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 text-center">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center">
               <div className="mb-2 text-sm text-[#9b98a8]">EXPIRES IN</div>
               <div className="mb-1 text-3xl font-black text-amber-600">{hoursLeft}</div>
               <div className="text-sm text-[#6b687a]">hours</div>
             </div>
           </div>
 
-          <div className="mb-8 rounded-3xl border border-[#e5e4e0] bg-white p-8">
+          <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-8">
             <h2 className="mb-6 text-xl font-black text-[#1a1625]">What you&apos;ll be testing</h2>
             <div className="space-y-4">
               {assignment.mission.assets.map((asset, index) => (
@@ -378,11 +379,11 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
   if (phase === 'questions') {
     const answer = answers[currentQuestion]
-    const progress = (currentQuestion / Math.max(questions.length, 1)) * 100
+    const progress = ((currentQuestion + 1) / Math.max(questions.length, 1)) * 100
 
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-3xl rounded-2xl bg-[#faf9f7] p-8">
+        <div className="mx-auto max-w-3xl rounded-panel bg-[#faf9f7] p-8">
           <div className="mb-6">
             <div className="mb-2 text-sm text-[#6b687a]">Question {currentQuestion + 1} of {questions.length}</div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-[#f3f3f5]">
@@ -394,7 +395,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <div className="inline-flex rounded-full bg-[#d77a57]/10 px-3 py-1 text-sm font-bold text-[#d77a57]">{assignment.mission.title}</div>
           </div>
 
-          <div className="mb-6 rounded-3xl border border-[#e5e4e0] bg-white p-8">
+          <div className="mb-6 rounded-card border border-[#e5e4e0] bg-white p-8">
             <h2 className="mb-6 text-2xl font-black text-[#1a1625]">{current.text}</h2>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
@@ -415,18 +416,12 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
             {current.type === 'RATING_1_5' ? (
               <div className="flex flex-col items-center">
-                <div className="mb-3 flex items-center gap-2">
-                  {Array.from({ length: 5 }, (_, index) => {
-                    const value = index + 1
-                    const selected = Number(answer ?? 0) >= value
-                    return (
-                      <button key={value} type="button" onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: value }))}>
-                        <svg className={`w-12 h-12 ${selected ? 'text-amber-400 fill-current' : 'text-gray-200'}`} viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </button>
-                    )
-                  })}
+                <div className="mb-3 flex items-center justify-center">
+                  <StarRow
+                    value={Number(answer ?? 0)}
+                    size={48}
+                    onChange={(value) => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: value }))}
+                  />
                 </div>
               </div>
             ) : null}
@@ -486,7 +481,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   if (phase === 'review') {
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-5xl rounded-2xl bg-[#faf9f7] p-12">
+        <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-12">
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700">STEP 5 OF 5</div>
             <h1 className="mb-3 text-4xl font-black text-[#1a1625]">Review Your Answers</h1>
@@ -494,7 +489,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           <div className="mb-8 space-y-4">
             {questions.map((question, index) => (
-              <div key={question.id} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
+              <div key={question.id} className="rounded-card border border-[#e5e4e0] bg-white p-6">
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
                     <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
@@ -509,7 +504,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ))}
           </div>
 
-          <div className="mb-8 rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8">
+          <div className="mb-8 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8">
             <h3 className="mb-1 text-xl font-black text-[#1a1625]">You&apos;re about to earn</h3>
             <p className="text-3xl font-black text-green-600">
               {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[#6b687a]">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
@@ -534,7 +529,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
   return (
     <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-green-50 to-emerald-50 p-12 text-center">
+      <div className="mx-auto max-w-4xl rounded-panel bg-gradient-to-br from-green-50 to-emerald-50 p-12 text-center">
         <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600">
           <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -543,7 +538,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
         <h1 className="mb-3 text-4xl font-black text-[#1a1625]">Mission Complete!</h1>
         <p className="mb-8 text-lg text-[#6b687a]">Thank you for your valuable feedback</p>
 
-        <div className="mx-auto mb-8 max-w-md rounded-3xl border border-green-100 bg-white p-8 shadow-xl">
+        <div className="mx-auto mb-8 max-w-md rounded-card border border-green-100 bg-white p-8 shadow-xl">
           <div className="mb-4 flex items-center justify-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500">
               <svg className="w-9 h-9 text-amber-900" fill="currentColor" viewBox="0 0 20 20">

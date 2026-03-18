@@ -55,7 +55,7 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-2xl rounded-2xl bg-[#faf9f7] p-12">
+      <div className="mx-auto max-w-2xl rounded-panel bg-[#faf9f7] p-12">
         <Link href="/dashboard/founder" className="mb-8 inline-block font-semibold text-[#6b687a] transition-colors hover:text-[#1a1625]">
           ← Back to dashboard
         </Link>
@@ -71,12 +71,12 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
         <h1 className="mb-2 text-center text-3xl font-black text-[#1a1625]">Mission Rejected</h1>
         <p className="mb-8 text-center text-lg text-[#6b687a]">{mission.title}</p>
 
-        <div className="mb-8 rounded-3xl border border-red-200 bg-red-50 p-8">
+        <div className="mb-8 rounded-card border border-red-200 bg-red-50 p-8">
           <h2 className="mb-3 text-lg font-black text-red-900">Feedback from our team</h2>
           <p className="text-sm leading-relaxed text-red-800">{mission.reviewNote ?? 'Your mission needs updates before it can be reviewed again.'}</p>
         </div>
 
-        <div className="mb-8 rounded-2xl border border-blue-200 bg-blue-50 p-6">
+        <div className="mb-8 rounded-card border border-blue-200 bg-blue-50 p-6">
           <h3 className="mb-2 text-sm font-bold text-blue-900">What to do next</h3>
           <p className="text-sm text-blue-700">
             Review the feedback above, edit your mission to fix the issues, then resubmit for review.

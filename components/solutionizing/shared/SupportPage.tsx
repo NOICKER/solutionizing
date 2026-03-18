@@ -71,7 +71,7 @@ function SectionCard({
 }) {
   return (
     <section
-      className={`rounded-3xl border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      className={`rounded-card border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
     >
       {children}
     </section>
@@ -90,7 +90,7 @@ function FaqCard({
   onToggle: () => void
 }) {
   return (
-    <div className="rounded-2xl border border-[#efe8e1] bg-[#fffdfa] transition-colors hover:border-[#e2d7cd] dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600">
+    <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] transition-colors hover:border-[#e2d7cd] dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600">
       <button
         type="button"
         onClick={onToggle}

@@ -45,7 +45,7 @@ export function TesterMissionsTab({
       return (
         <div className="space-y-4">
           {[1, 2].map((card) => (
-            <div key={card} className="rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <div key={card} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
               <div className="mb-4 h-20 animate-pulse rounded-2xl bg-[#f3f3f5] dark:bg-gray-700" />
               <div className="h-12 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
@@ -89,7 +89,7 @@ export function TesterMissionsTab({
                 : `${Math.max(1, remainingHours)} hours`
 
           return (
-            <div key={assignment.id} className="rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <div key={assignment.id} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{assignment.mission.title}</h3>
@@ -177,7 +177,7 @@ export function TesterMissionsTab({
       </div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
               <span className="material-symbols-outlined !text-xl">payments</span>
@@ -190,7 +190,7 @@ export function TesterMissionsTab({
           <div className="text-sm text-[#6b687a] dark:text-gray-400">≈ {formatRupeesFromCoins(balance)}</div>
         </div>
 
-        <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
               <span className="material-symbols-outlined !text-xl">stars</span>
@@ -207,7 +207,7 @@ export function TesterMissionsTab({
           {user?.testerProfile?.reputationTier ? <ReputationTierBadge tier={user.testerProfile.reputationTier} /> : null}
         </div>
 
-        <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
               <span className="material-symbols-outlined !text-xl">checklist</span>
@@ -220,7 +220,7 @@ export function TesterMissionsTab({
           <div className="text-sm text-[#6b687a] dark:text-gray-400">missions</div>
         </div>
 
-        <div className="rounded-3xl border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
               <span className="material-symbols-outlined !text-xl">trending_up</span>

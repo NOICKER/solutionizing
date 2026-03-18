@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { RequireAuth } from '@/components/RequireAuth'
 import { useAuth } from '@/context/AuthContext'
 import { ApiMission } from '@/types/api'
 import { deleteAccount } from '@/lib/api/account'
@@ -45,7 +45,7 @@ function SidebarNavItem({
   onClick,
 }: {
   label: string
-  glyph: string
+  glyph: ReactNode
   active?: boolean
   disabled?: boolean
   href?: string
@@ -81,6 +81,16 @@ function SidebarNavItem({
   )
 }
 
+const founderNavItems = [
+  { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: LayoutDashboard },
+  { id: 'missions', label: 'Missions', mobileLabel: 'Missions', icon: ClipboardList },
+  { id: 'wallets', label: 'Wallets & Coins', mobileLabel: 'Wallets', icon: Wallet },
+  { id: 'settings', label: 'Settings', mobileLabel: 'Settings', icon: Settings },
+  { id: 'support', label: 'Support', mobileLabel: 'Support', icon: HelpCircle },
+] as const
+
+type FounderTab = (typeof founderNavItems)[number]['id']
+
 function FounderDashboardContent() {
   const router = useRouter()
   const { user, signOut } = useAuth()
@@ -95,7 +105,7 @@ function FounderDashboardContent() {
   const [dialogError, setDialogError] = useState('')
   const [purchaseLoadingPackId, setPurchaseLoadingPackId] = useState<string | null>(null)
   const [purchaseError, setPurchaseError] = useState('')
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'missions' | 'wallets' | 'settings' | 'support'>('dashboard')
+  const [activeTab, setActiveTab] = useState<FounderTab>('dashboard')
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -259,7 +269,7 @@ function FounderDashboardContent() {
   return (
     <div className="min-h-screen bg-[#faf9f7] px-4 py-4 dark:bg-gray-900 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-[1600px] gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-[2rem] lg:border lg:border-[#ece6df] lg:bg-white/90 lg:p-5 lg:shadow-[0_30px_80px_-52px_rgba(26,22,37,0.32)] dark:lg:border-gray-700 dark:lg:bg-gray-800">
+        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-[#ece6df] lg:bg-white/90 lg:p-5 lg:shadow-[0_30px_80px_-52px_rgba(26,22,37,0.32)] dark:lg:border-gray-700 dark:lg:bg-gray-800">
           <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-[#fcf6f2] px-4 py-4 dark:bg-gray-900/80">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] shadow-[0_18px_35px_-18px_rgba(215,122,87,0.75)]">
               <BrandMark className="h-7 w-7 text-white" />
@@ -271,36 +281,19 @@ function FounderDashboardContent() {
           </div>
 
           <nav className="space-y-2">
-            <SidebarNavItem
-              label="Dashboard"
-              glyph="D"
-              onClick={() => setActiveTab('dashboard')}
-              active={activeTab === 'dashboard'}
-            />
-            <SidebarNavItem
-              label="Missions"
-              glyph="M"
-              onClick={() => setActiveTab('missions')}
-              active={activeTab === 'missions'}
-            />
-            <SidebarNavItem
-              label="Wallets & Coins"
-              glyph="W"
-              onClick={() => setActiveTab('wallets')}
-              active={activeTab === 'wallets'}
-            />
-            <SidebarNavItem
-              label="Settings"
-              glyph="S"
-              onClick={() => setActiveTab('settings')}
-              active={activeTab === 'settings'}
-            />
-            <SidebarNavItem
-              label="Support"
-              glyph="?"
-              onClick={() => setActiveTab('support')}
-              active={activeTab === 'support'}
-            />
+            {founderNavItems.map((item) => {
+              const Icon = item.icon
+
+              return (
+                <SidebarNavItem
+                  key={item.id}
+                  label={item.label}
+                  glyph={<Icon className="h-4 w-4" />}
+                  onClick={() => setActiveTab(item.id)}
+                  active={activeTab === item.id}
+                />
+              )
+            })}
           </nav>
 
           <div className="mt-auto rounded-[1.75rem] border border-[#ece6df] bg-[#fffdfa] p-4 dark:border-gray-700 dark:bg-gray-900/70">
@@ -316,14 +309,16 @@ function FounderDashboardContent() {
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-[#ece6df] px-4 py-3 text-sm font-bold text-[#6b687a] transition-colors hover:bg-[#f5f1ed] hover:text-[#1a1625] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
               onClick={() => void signOut()}
             >
-              <GlyphChip className="h-8 w-8 bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400">O</GlyphChip>
+              <GlyphChip className="h-8 w-8 bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400">
+                <LogOut className="h-4 w-4" />
+              </GlyphChip>
               Log out
             </button>
           </div>
         </aside>
 
         <main className="min-w-0 pb-28 lg:pb-0">
-          <div className="relative overflow-hidden rounded-[2rem] border border-[#ece6df] bg-white/75 p-5 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.2)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/90 sm:p-6 lg:p-8">
+          <div className="relative overflow-hidden rounded-panel border border-[#ece6df] bg-white/75 p-5 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.2)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/90 sm:p-6 lg:p-8">
             <div className="pointer-events-none absolute -right-20 top-0 h-72 w-72 rounded-full bg-[#f7dfd3] opacity-55 blur-3xl dark:bg-[#d77a57]/20" />
             <div className="pointer-events-none absolute bottom-8 left-0 h-64 w-64 rounded-full bg-[#f5f0eb] opacity-90 blur-3xl dark:bg-gray-900" />
 
@@ -398,51 +393,37 @@ function FounderDashboardContent() {
         </main>
       </div>
 
-      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-[1.9rem] border border-[#ece6df] bg-white/95 px-2 py-2 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.3)] backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 lg:hidden">
-        <Link
-          href="/dashboard/founder"
-          className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-[1.4rem] bg-[#f5ede7] px-2 py-2 text-[#1a1625] dark:bg-[#d77a57]/20 dark:text-white"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d77a57] text-sm font-black text-white">D</div>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">Dashboard</span>
-        </Link>
-        <Link
-          href="#missions-section"
-          className="flex min-w-0 flex-1 flex-col items-center gap-2 rounded-[1.4rem] px-2 py-2 text-[#6e6882] transition hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#f3efe8] text-sm font-black text-[#6b6477] dark:bg-gray-700 dark:text-gray-300">M</div>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">Missions</span>
-        </Link>
-        <button
-          type="button"
-          onClick={() => setActiveTab('wallets')}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-[1.4rem] px-2 py-2 transition ${activeTab === 'wallets' ? 'bg-[#f5ede7] text-[#1a1625] dark:bg-[#d77a57]/20 dark:text-white' : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'}`}
-        >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black ${activeTab === 'wallets' ? 'bg-[#d77a57] text-white' : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'}`}>
-            W
-          </div>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">Wallets</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('settings')}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-[1.4rem] px-2 py-2 transition ${activeTab === 'settings' ? 'bg-[#f5ede7] text-[#1a1625] dark:bg-[#d77a57]/20 dark:text-white' : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'}`}
-        >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black ${activeTab === 'settings' ? 'bg-[#d77a57] text-white' : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'}`}>
-            S
-          </div>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">Settings</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('support')}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-[1.4rem] px-2 py-2 transition ${activeTab === 'support' ? 'bg-[#f5ede7] text-[#1a1625] dark:bg-[#d77a57]/20 dark:text-white' : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'}`}
-        >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black ${activeTab === 'support' ? 'bg-[#d77a57] text-white' : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'}`}>
-            ?
-          </div>
-          <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">Support</span>
-        </button>
+      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-panel border border-[#ece6df] bg-white/95 px-2 py-2 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.3)] backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 lg:hidden">
+        {founderNavItems.map((item) => {
+          const Icon = item.icon
+          const isActive = activeTab === item.id
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
+                isActive
+                  ? 'bg-[#f5ede7] text-[#D97757] dark:bg-[#d77a57]/20 dark:text-[#D97757]'
+                  : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'
+              }`}
+            >
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                  isActive
+                    ? 'bg-[#f3ddd3] text-[#D97757] dark:bg-[#d77a57]/30 dark:text-[#D97757]'
+                    : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">
+                {item.mobileLabel}
+              </span>
+            </button>
+          )
+        })}
       </nav>
 
       {dialogMission ? (
@@ -484,9 +465,5 @@ function FounderDashboardContent() {
 }
 
 export function FounderDashboardPage() {
-  return (
-    <RequireAuth role="FOUNDER">
-      <FounderDashboardContent />
-    </RequireAuth>
-  )
+  return <FounderDashboardContent />
 }

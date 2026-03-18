@@ -40,7 +40,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
         </p>
 
         <div className="mt-12 space-y-6 text-left">
-          <section className="rounded-[2rem] border border-white bg-white p-8 shadow-tester-soft">
+          <section className="rounded-panel border border-white bg-white p-8 shadow-tester-soft">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-tester-apricot/20 text-tester-terracotta">
                 <span className="material-symbols-outlined">search_check</span>
@@ -52,7 +52,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
                 </p>
               </div>
             </div>
-            <div className="mt-6 rounded-[1.5rem] border-l-4 border-tester-terracotta bg-[#fbf2eb] p-5">
+            <div className="mt-6 rounded-card border-l-4 border-tester-terracotta bg-[#fbf2eb] p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-tester-terracotta">
                   Question #4
@@ -67,7 +67,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-tester-sage/10 bg-[#f1eee7] p-8 shadow-sm">
+          <section className="rounded-panel border border-tester-sage/10 bg-[#f1eee7] p-8 shadow-sm">
             <h2 className="flex items-center gap-2 text-2xl font-extrabold text-tester-sage">
               <span className="material-symbols-outlined">lightbulb</span>
               How to fix this
@@ -87,7 +87,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
                   <p>Use the built-in Reward Center to distribute discounts anonymously instead.</p>
                 </div>
               </div>
-              <div className="rounded-[1.5rem] border border-white bg-white p-6 shadow-sm">
+              <div className="rounded-card border border-white bg-white p-6 shadow-sm">
                 <div className="text-xs font-black uppercase tracking-[0.18em] text-tester-sage">
                   Try this instead
                 </div>

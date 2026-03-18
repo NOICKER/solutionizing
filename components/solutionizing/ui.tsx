@@ -1,7 +1,8 @@
 "use client"
 
 import Link from 'next/link'
-import { ReactNode } from 'react'
+import { Star } from 'lucide-react'
+import { ReactNode, useState } from 'react'
 
 export const primaryButtonClass =
   'rounded-[2rem] bg-gradient-to-r from-[#d77a57] to-[#c4673f] text-white font-black hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
@@ -111,23 +112,42 @@ export function ReputationTierBadge({ tier }: { tier: string }) {
   )
 }
 
-export function DashboardCardSkeleton({ count }: { count: number }) {
+type DashboardCardSkeletonVariant = 'stat' | 'card' | 'full'
+
+export function DashboardCardSkeleton({
+  count,
+  variant = 'full',
+}: {
+  count: number
+  variant?: DashboardCardSkeletonVariant
+}) {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-          <div className="mb-4 flex items-start justify-between">
-            <div className="w-1/2">
-              <div className="mb-2 h-5 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
-              <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+        <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          {variant === 'stat' ? (
+            <div>
+              <div className="mb-3 h-4 w-24 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+              <div className="h-10 w-28 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
             </div>
-            <div className="h-6 w-20 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
-          </div>
-          <div className="mb-4 h-3 animate-pulse rounded-full bg-[#f3f3f5] dark:bg-gray-700" />
-          <div className="flex gap-3">
-            <div className="h-11 flex-1 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
-            <div className="h-4 w-16 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
-          </div>
+          ) : (
+            <>
+              <div className="mb-4 flex items-start justify-between">
+                <div className="w-1/2">
+                  <div className="mb-2 h-5 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+                </div>
+                <div className="h-6 w-20 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
+              </div>
+              {variant === 'full' ? (
+                <div className="mb-4 h-3 animate-pulse rounded-full bg-[#f3f3f5] dark:bg-gray-700" />
+              ) : null}
+              <div className="flex gap-3">
+                <div className="h-11 flex-1 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
+                <div className="h-4 w-16 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+              </div>
+            </>
+          )}
         </div>
       ))}
     </div>
@@ -146,7 +166,7 @@ export function ErrorStatePanel({
   backHref?: string
 }) {
   return (
-    <div className="min-h-[400px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
+    <div className="min-h-[400px] rounded-panel bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
       <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-red-50">
         <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -173,18 +193,22 @@ export function EmptyStatePanel({
   description = "You haven't created any missions yet. Start by creating your first mission to get feedback from real testers.",
   onPrimaryAction,
   buttonLabel,
+  icon,
 }: {
   title?: string
   description?: string
   onPrimaryAction?: () => void
   buttonLabel?: string
+  icon?: ReactNode
 }) {
   return (
-    <div className="min-h-[400px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
+    <div className="min-h-[400px] rounded-panel bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
       <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-[#f3f3f5] dark:bg-gray-800">
-        <svg className="w-16 h-16 text-[#9b98a8]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-        </svg>
+        {icon ?? (
+          <svg className="w-16 h-16 text-[#9b98a8] dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        )}
       </div>
       <h2 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
       <p className="mb-8 max-w-md text-[#6b687a] dark:text-gray-400">{description}</p>
@@ -207,7 +231,7 @@ export function NotFoundPanel({
   backHref: string
 }) {
   return (
-    <div className="min-h-[500px] rounded-2xl bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
+    <div className="min-h-[500px] rounded-panel bg-[#faf9f7] p-12 text-center dark:bg-gray-900/60 flex flex-col items-center justify-center">
       <div className="mb-8">
         <div className="mb-4 text-9xl font-black text-[#d77a57]">404</div>
         <h2 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">{title}</h2>
@@ -228,7 +252,7 @@ export function ModalShell({
   onClose: () => void
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4 dark:bg-[rgba(2,6,23,0.82)]">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative z-10 w-full">{children}</div>
     </div>
@@ -244,6 +268,8 @@ export function ConfirmationDialog({
   onCancel,
   isLoading,
   errorMessage,
+  cancelLabel = 'CANCEL',
+  children,
 }: {
   title: string
   body: string
@@ -253,6 +279,8 @@ export function ConfirmationDialog({
   onCancel: () => void
   isLoading?: boolean
   errorMessage?: string
+  cancelLabel?: string
+  children?: ReactNode
 }) {
   const confirmClass =
     confirmStyle === 'danger'
@@ -261,20 +289,21 @@ export function ConfirmationDialog({
 
   return (
     <ModalShell onClose={onCancel}>
-      <div className="mx-auto max-w-lg rounded-3xl bg-white p-8 shadow-2xl dark:border dark:border-gray-700 dark:bg-gray-800">
+      <div className="mx-auto max-w-lg rounded-card border border-[#e5e4e0] bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
         <div className="mb-6 text-center">
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
-            <svg className="w-8 h-8 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+            <svg className="w-8 h-8 text-amber-600 dark:text-amber-300" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
           <h2 className="mb-2 text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
           <p className="text-[#6b687a] dark:text-gray-400">{body}</p>
         </div>
-        {errorMessage ? <p className="mb-4 text-sm text-red-600">{errorMessage}</p> : null}
+        {children ? <div className="mb-4">{children}</div> : null}
+        {errorMessage ? <p className="mb-4 text-sm text-red-600 dark:text-red-400">{errorMessage}</p> : null}
         <div className="flex items-center gap-3">
-          <button className="flex-1 rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0] dark:border-gray-700 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" onClick={onCancel}>
-            CANCEL
+          <button className="flex-1 rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0] dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" onClick={onCancel}>
+            {cancelLabel}
           </button>
           <button
             className={`flex flex-1 items-center justify-center gap-2 rounded-[2rem] py-3.5 font-black transition-all hover:shadow-lg hover:scale-[1.02] disabled:pointer-events-none disabled:opacity-70 ${confirmClass}`}
@@ -290,6 +319,58 @@ export function ConfirmationDialog({
   )
 }
  
+export function StarRow({
+  value,
+  onChange,
+  readonly = false,
+  size = 16,
+}: {
+  value: number
+  onChange?: (nextValue: number) => void
+  readonly?: boolean
+  size?: number
+}) {
+  const [hoveredValue, setHoveredValue] = useState(0)
+  const displayedValue = hoveredValue || value
+  const roundedValue = Math.round(displayedValue)
+  const isInteractive = !readonly && typeof onChange === 'function'
+
+  return (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: 5 }, (_, index) => {
+        const nextValue = index + 1
+        const filled = index < roundedValue
+        const star = (
+          <Star
+            size={size}
+            className={`${filled ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'} transition-all`}
+          />
+        )
+
+        if (!isInteractive) {
+          return <div key={nextValue}>{star}</div>
+        }
+
+        return (
+          <button
+            key={nextValue}
+            type="button"
+            onMouseEnter={() => setHoveredValue(nextValue)}
+            onMouseLeave={() => setHoveredValue(0)}
+            onFocus={() => setHoveredValue(nextValue)}
+            onBlur={() => setHoveredValue(0)}
+            onClick={() => onChange(nextValue)}
+            aria-label={`Rate ${nextValue} star${nextValue === 1 ? '' : 's'}`}
+            className="rounded-full p-0.5 transition-transform hover:scale-110"
+          >
+            {star}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function GlyphChip({
   children,
   className = '',
@@ -318,7 +399,7 @@ export function StatCard({
   glyphColorClass: string
 }) {
   return (
-    <div className={`rounded-3xl border border-[#e5e4e0] bg-white p-6 transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${colorClass}`}>
+    <div className={`rounded-card border border-[#e5e4e0] bg-white p-6 transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 ${colorClass}`}>
       <div className="mb-4 flex items-center gap-3">
         <GlyphChip className={glyphColorClass}>{glyph}</GlyphChip>
         <div className="text-sm font-bold text-[#6b687a] dark:text-gray-400">{label}</div>

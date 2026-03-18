@@ -37,7 +37,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
             <p className="mt-2 text-lg text-tester-muted">A calm look at how your mission is gathering momentum.</p>
           </header>
 
-          <section className="rounded-[2rem] border border-white bg-white p-8 shadow-tester-soft">
+          <section className="rounded-panel border border-white bg-white p-8 shadow-tester-soft">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="text-xs font-black uppercase tracking-[0.18em] text-tester-muted">
@@ -98,7 +98,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
         </div>
 
         <aside>
-          <section className="sticky top-8 rounded-[2rem] border border-white bg-[#f2eee5] p-8 shadow-tester-soft">
+          <section className="sticky top-8 rounded-panel border border-white bg-[#f2eee5] p-8 shadow-tester-soft">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-tester-apricot/20 text-tester-terracotta">
               <span className="material-symbols-outlined">lightbulb</span>
             </div>

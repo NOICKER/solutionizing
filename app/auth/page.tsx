@@ -3,7 +3,7 @@
 import { Suspense, FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { ApiClientError, apiFetch, isApiClientError } from '@/lib/api/client'
+import { apiFetch, isApiClientError } from '@/lib/api/client'
 import {
   BrandMark,
   EyeIcon,
@@ -51,6 +51,7 @@ function AuthForm() {
     queryMode === 'signup' ? 'signup' : queryMode === 'forgot' ? 'forgot' : 'signin'
 
   const [mode, setMode] = useState<AuthMode>(initialMode)
+  const [pendingMode, setPendingMode] = useState<AuthMode>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -61,17 +62,35 @@ function AuthForm() {
   const [forgotSuccess, setForgotSuccess] = useState(false)
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isModeContentVisible, setIsModeContentVisible] = useState(true)
 
   const nextPath = sanitizeNextPath(searchParams.get('next'))
 
   useEffect(() => {
-    setMode(initialMode)
-    setFormError('')
-    setEmailError('')
-    setPasswordError('')
-    setForgotSuccess(false)
-    setSignupSuccess(false)
+    setPendingMode(initialMode)
   }, [initialMode])
+
+  useEffect(() => {
+    if (pendingMode === mode) {
+      return
+    }
+
+    setIsModeContentVisible(false)
+
+    const timer = window.setTimeout(() => {
+      setMode(pendingMode)
+      setFormError('')
+      setEmailError('')
+      setPasswordError('')
+      setForgotSuccess(false)
+      setSignupSuccess(false)
+      setIsModeContentVisible(true)
+    }, 150)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [mode, pendingMode])
 
   useEffect(() => {
     if (isLoading || !isAuthenticated) {
@@ -232,25 +251,25 @@ function AuthForm() {
     return void handleSignIn(event)
   }
 
+  function requestModeChange(nextMode: AuthMode) {
+    if (nextMode === pendingMode) {
+      return
+    }
+
+    setPendingMode(nextMode)
+
+    if (nextMode === mode) {
+      setIsModeContentVisible(true)
+    }
+  }
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[1, 2, 3, 4].map((card) => (
-            <div key={card} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
-              <div className="mb-4 h-12 w-12 animate-pulse rounded-2xl bg-[#e5e4e0]" />
-              <div className="mb-3 h-6 animate-pulse rounded bg-[#e5e4e0]" />
-              <div className="h-4 w-2/3 animate-pulse rounded bg-[#e5e4e0]" />
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+    return <AuthLoadingScreen />
   }
 
   return (
     <main className="min-h-screen bg-[#faf9f7] flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl bg-[#faf9f7] p-12">
+      <div className="w-full max-w-md rounded-card bg-[#faf9f7] p-12">
         {signupSuccess ? (
           <div className="text-center">
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
@@ -266,6 +285,7 @@ function AuthForm() {
               type="button"
               onClick={() => {
                 setMode('signin')
+                setPendingMode('signin')
                 setSignupSuccess(false)
                 setPassword('')
               }}
@@ -275,7 +295,11 @@ function AuthForm() {
             </button>
           </div>
         ) : (
-          <>
+          <div
+            className={`transition-opacity duration-200 ${
+              isModeContentVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
             <div className="mb-8 text-center">
               <div
                 className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${
@@ -327,9 +351,7 @@ function AuthForm() {
                       <button
                         type="button"
                         onClick={() => {
-                          setMode('signin')
-                          setEmailError('')
-                          setFormError('')
+                          requestModeChange('signin')
                         }}
                         className="text-[#d77a57] underline"
                       >
@@ -348,8 +370,7 @@ function AuthForm() {
                       <button
                         type="button"
                         onClick={() => {
-                          setMode('forgot')
-                          setFormError('')
+                          requestModeChange('forgot')
                         }}
                         className="text-sm font-semibold text-[#d77a57] hover:underline"
                       >
@@ -404,7 +425,7 @@ function AuthForm() {
               </button>
 
               {mode === 'signin' && formError ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <div className="rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
                   {formError}
                 </div>
               ) : null}
@@ -429,10 +450,7 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => {
-                        setMode(mode === 'signup' ? 'signin' : 'signup')
-                        setFormError('')
-                        setEmailError('')
-                        setPasswordError('')
+                        requestModeChange(mode === 'signup' ? 'signin' : 'signup')
                       }}
                       className="font-semibold text-[#d77a57] hover:underline"
                     >
@@ -443,7 +461,7 @@ function AuthForm() {
               ) : null}
 
               {mode === 'forgot' && forgotSuccess ? (
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                <div className="rounded-card border border-blue-100 bg-blue-50 p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Security notice:</strong> If that email exists, a reset link is on its way.
                   </p>
@@ -456,10 +474,7 @@ function AuthForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    setMode('signin')
-                    setForgotSuccess(false)
-                    setFormError('')
-                    setEmailError('')
+                    requestModeChange('signin')
                   }}
                   className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]"
                 >
@@ -469,34 +484,28 @@ function AuthForm() {
             ) : (
               <div className="mt-8 border-t border-[#e5e4e0] pt-6 text-center">
                 <p className="text-xs text-[#9b98a8] flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                  </svg>
-                  Secure authentication via /api/v1/auth/{mode === 'signup' ? 'register' : 'login'}
+                  <span aria-hidden="true">🔒</span>
+                  Secure, encrypted authentication
                 </p>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </main>
   )
 }
 
-function AuthPageLoading() {
+function AuthLoadingScreen() {
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[1, 2, 3, 4].map((card) => (
-          <div key={card} className="rounded-3xl border border-[#e5e4e0] bg-white p-6">
-            <div className="mb-4 h-12 w-12 animate-pulse rounded-2xl bg-[#e5e4e0]" />
-            <div className="mb-3 h-6 animate-pulse rounded bg-[#e5e4e0]" />
-            <div className="h-4 w-2/3 animate-pulse rounded bg-[#e5e4e0]" />
-          </div>
-        ))}
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-[#faf9f7]">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D97757] border-t-transparent" />
     </div>
   )
+}
+
+function AuthPageLoading() {
+  return <AuthLoadingScreen />
 }
 
 export default function AuthPage() {

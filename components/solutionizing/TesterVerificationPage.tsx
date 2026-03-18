@@ -20,7 +20,7 @@ export function TesterVerificationPage() {
                     </div>
                 </div>
 
-                <div className="rounded-[2.5rem] border border-[#e5e4e0] bg-white p-10 shadow-sm text-center">
+                <div className="rounded-panel border border-[#e5e4e0] bg-white p-10 shadow-sm text-center">
                     <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                         <span className="material-symbols-outlined text-4xl">verified_user</span>
                     </div>
@@ -56,10 +56,10 @@ export function TesterVerificationPage() {
                             className="rounded-full bg-blue-600 px-8 py-3.5 text-sm font-black text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700"
                             disabled
                         >
-                            START VERIFICATION (COMING SOON)
+                            Start Verification
                         </button>
-                        <p className="text-xs text-[#9b98a8] max-w-sm text-center mb-6">
-                            Full device verification is currently rolling out.
+                        <p className="mb-6 max-w-sm text-center text-xs text-[#9b98a8]">
+                            Coming soon — identity verification will be available shortly.
                         </p>
 
                         {/* TODO: wire to PATCH /api/v1/tester/profile/verify when device verification endpoint is ready */}

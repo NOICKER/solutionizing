@@ -63,7 +63,7 @@ function SettingsSectionCard({
 }) {
   return (
     <section
-      className={`rounded-3xl border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      className={`rounded-card border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
     >
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -116,7 +116,7 @@ function NotificationToggleRow({
   ariaLabel?: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#efe8e1] bg-[#fffdfa] px-4 py-4 dark:border-gray-700 dark:bg-gray-900/60">
+    <div className="flex items-center justify-between gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-4 dark:border-gray-700 dark:bg-gray-900/60">
       <div>
         <div className="text-sm font-bold text-[#1a1625] dark:text-white">{title}</div>
         <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">{description}</div>
@@ -405,15 +405,15 @@ export function TesterSettingsTab({
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <div className="rounded-2xl border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
             <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Coin Balance</div>
             <div className="mt-2 text-lg font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</div>
           </div>
-          <div className="rounded-2xl border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
             <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Reputation</div>
             <div className="mt-2 text-lg font-black text-[#1a1625] dark:text-white">{reputationScore.toFixed(1)}</div>
           </div>
-          <div className="rounded-2xl border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
             <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Tier</div>
             <div className="mt-2">
               <ReputationTierBadge tier={reputationTier} />

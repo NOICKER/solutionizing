@@ -1,5 +1,6 @@
 "use client"
 
+import { ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
@@ -58,7 +59,7 @@ export function FounderMissionsTab({
   let content
 
   if (isLoading) {
-    content = <DashboardCardSkeleton count={3} />
+    content = <DashboardCardSkeleton count={3} variant="full" />
   } else if (loadError) {
     content = (
       <ErrorStatePanel
@@ -72,6 +73,7 @@ export function FounderMissionsTab({
     content = (
       <EmptyStatePanel
         buttonLabel="CREATE YOUR FIRST MISSION ->"
+        icon={<ClipboardList className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
@@ -93,7 +95,7 @@ export function FounderMissionsTab({
           return (
             <div
               key={mission.id}
-              className={`rounded-3xl border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 ${isCardClickable ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}`}
+              className={`rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 ${isCardClickable ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}`}
               onClick={isCardClickable ? openMissionCard : undefined}
               onKeyDown={
                 isCardClickable

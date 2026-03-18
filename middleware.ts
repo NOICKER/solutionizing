@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const publicRoutes = new Set([
+  '/',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/tester',
+])
+
 function redirectWithCookies(request: NextRequest, response: NextResponse, pathname: string) {
   const redirectResponse = NextResponse.redirect(new URL(pathname, request.url))
 
@@ -34,13 +42,14 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
+  const isPublicRoute = publicRoutes.has(path)
 
   const isAuthRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/register')
     || path.startsWith('/select-role') || path.startsWith('/forgot-password')
     || path.startsWith('/reset-password') || path.startsWith('/verify-email')
 
   // Not logged in: redirect to login unless on auth or public route
-  if (!user && !isAuthRoute && path !== '/') {
+  if (!user && !isAuthRoute && !isPublicRoute) {
     return redirectWithCookies(request, response, '/auth')
   }
 
@@ -68,7 +77,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Force role selection for non-auth routes
-    if (!role) {
+    if (!role && !isPublicRoute) {
       return redirectWithCookies(request, response, '/select-role')
     }
 
@@ -79,7 +88,7 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    if (path.startsWith('/tester') || path.startsWith('/dashboard/tester')) {
+    if (!isPublicRoute && (path.startsWith('/tester') || path.startsWith('/dashboard/tester'))) {
       if (role !== 'TESTER' && role !== 'ADMIN') {
         return redirectWithCookies(request, response, '/dashboard/founder')
       }
