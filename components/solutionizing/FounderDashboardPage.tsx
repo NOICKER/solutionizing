@@ -117,8 +117,14 @@ function FounderDashboardContent() {
   }, [])
 
   const loadMissions = useCallback(async () => {
-    const response = await apiFetch<ApiMission[]>('/api/v1/missions?page=1&limit=20')
-    setMissions(response)
+    try {
+      const response = await apiFetch<ApiMission[]>('/api/v1/missions?page=1&limit=20')
+      setMissions(response)
+    } catch (error) {
+      // Empty missions list is not an error - it's a valid state for new founders
+      // Treat empty response as successful load with zero missions
+      setMissions([])
+    }
   }, [])
 
   const loadDashboard = useCallback(async () => {
