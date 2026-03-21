@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react'
+import { ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet, CheckCircle2, Circle } from 'lucide-react'
 import posthog from 'posthog-js'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
@@ -79,6 +79,91 @@ function SidebarNavItem({
       </GlyphChip>
       {label}
     </button>
+  )
+}
+
+function GetStartedChecklist({
+  coinBalance,
+  missionsCount,
+  onBuyCoins,
+  onCreateMission,
+}: {
+  coinBalance: number
+  missionsCount: number
+  onBuyCoins: () => void
+  onCreateMission: () => void
+}) {
+  const step1Complete = coinBalance > 0
+  const step2Complete = missionsCount > 0
+
+  return (
+    <div className="rounded-3xl border border-[#e5e4e0] bg-white p-8 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800">
+      <div className="mb-8">
+        <h2 className="mb-2 text-2xl font-black text-[#1a1625] dark:text-white">Get started with Solutionizing</h2>
+        <p className="text-[#6b687a] dark:text-gray-400">Three steps to your first insight</p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Step 1: Buy coins */}
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            {step1Complete ? (
+              <CheckCircle2 className="h-6 w-6 text-green-500" />
+            ) : (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#d77a57] bg-white text-xs font-bold text-[#d77a57]">
+                1
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-[#1a1625] dark:text-white">Buy coins</div>
+            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+              {step1Complete ? 'Coins purchased ✓' : 'Get coins to fund your first mission'}
+            </p>
+          </div>
+          {!step1Complete && (
+            <button className="mt-1 flex-shrink-0 text-sm font-bold text-[#d77a57] transition-colors hover:text-[#c4673f]" onClick={onBuyCoins}>
+              Buy Coins →
+            </button>
+          )}
+        </div>
+
+        {/* Step 2: Create your first mission */}
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            {step2Complete ? (
+              <CheckCircle2 className="h-6 w-6 text-green-500" />
+            ) : (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#d77a57] bg-white text-xs font-bold text-[#d77a57]">
+                2
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-[#1a1625] dark:text-white">Create your first mission</div>
+            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+              {step2Complete ? 'Mission created ✓' : 'Launch your first mission to get feedback'}
+            </p>
+          </div>
+          {!step2Complete && (
+            <button className={`mt-1 flex-shrink-0 text-sm font-bold text-white px-4 py-2 rounded-2xl bg-gradient-to-r from-[#d77a57] to-[#c4673f] hover:shadow-lg hover:scale-[1.02] transition-all`} onClick={onCreateMission}>
+              Create Mission →
+            </button>
+          )}
+        </div>
+
+        {/* Step 3: Get feedback */}
+        <div className="flex items-start gap-4 opacity-50">
+          <div className="flex-shrink-0">
+            <Circle className="h-6 w-6 text-[#d77a57]" />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-[#1a1625] dark:text-white">Get feedback</div>
+            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">Launches after your mission is live</p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -368,13 +453,24 @@ function FounderDashboardContent() {
               </div>
 
               {activeTab === 'dashboard' ? (
-                <FounderDashboardTab
-                  isLoading={isLoading}
-                  loadError={loadError}
-                  missions={missions}
-                  onRetry={() => void loadDashboard()}
-                  onViewAllMissions={() => setActiveTab('missions')}
-                />
+                missions.length === 0 && !isLoading ? (
+                  <>
+                    <GetStartedChecklist
+                      coinBalance={coinBalance}
+                      missionsCount={missions.length}
+                      onBuyCoins={() => setActiveTab('wallets')}
+                      onCreateMission={() => router.push('/mission/wizard')}
+                    />
+                  </>
+                ) : (
+                  <FounderDashboardTab
+                    isLoading={isLoading}
+                    loadError={loadError}
+                    missions={missions}
+                    onRetry={() => void loadDashboard()}
+                    onViewAllMissions={() => setActiveTab('missions')}
+                  />
+                )
               ) : activeTab === 'missions' ? (
                 <FounderMissionsTab
                   missions={missions}

@@ -14,7 +14,6 @@ import {
   clampPercent,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
-import { WelcomeBanner } from '@/components/solutionizing/shared/WelcomeBanner'
 
 function getMissionRecencyTimestamp(mission: ApiMission) {
   const timestamp = Date.parse(mission.completedAt ?? mission.updatedAt ?? mission.createdAt)
@@ -194,8 +193,6 @@ export function FounderDashboardTab({
 
   return (
     <>
-      <WelcomeBanner />
-
       <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {statsCards.map((card) => (
           <StatCard
