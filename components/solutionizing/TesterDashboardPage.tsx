@@ -1,6 +1,7 @@
 "use client"
 
 import { ReactNode, useCallback, useEffect, useState } from 'react'
+import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
@@ -241,6 +242,9 @@ function TesterDashboardContent() {
         body: { amount: withdrawAmount },
       })
       setWithdrawalOpen(false)
+      posthog.capture('withdrawal_requested', {
+        amount: withdrawAmount,
+      })
       toast.success(`Withdrawal requested! ₹${(withdrawAmount / 100).toFixed(0)} will be processed in 3-5 days.`)
       await refetch()
     } catch (error) {

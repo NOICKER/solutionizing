@@ -1,6 +1,7 @@
 "use client"
 
 import { CheckCircle, XCircle } from 'lucide-react'
+import posthog from 'posthog-js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/components/ui/sonner'
@@ -206,11 +207,16 @@ function scrollToField(fieldKey: string) {
 function MissionWizardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const editMissionId = searchParams.get('edit')
-  const isEditMode = Boolean(editMissionId)
+  const editParam = searchParams.get('edit')
+  const missionIdParam = searchParams.get('missionId')
+  const legacyEditMissionId = editParam && editParam !== 'true' ? editParam : null
+  const editMissionId = missionIdParam ?? legacyEditMissionId
+  const isEditMode = editParam === 'true' ? Boolean(missionIdParam) : Boolean(editMissionId)
   const [step, setStep] = useState(1)
   const [state, setState] = useState<WizardState>(initialState)
   const [showDraftBanner, setShowDraftBanner] = useState(false)
+  const [showRejectedBanner, setShowRejectedBanner] = useState(false)
+  const [rejectedReviewNote, setRejectedReviewNote] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [goalWarning, setGoalWarning] = useState('')
   const [assetChecks, setAssetChecks] = useState<Record<number, 'reachable' | 'unreachable'>>({})
@@ -252,12 +258,21 @@ function MissionWizardContent() {
 
       try {
         const mission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${editMissionId}`)
-        if (mission.status !== 'DRAFT') {
+        if (mission.status !== 'DRAFT' && mission.status !== 'REJECTED') {
           toast.info('This mission can no longer be edited.')
           router.replace('/dashboard/founder')
           return
         }
         setState(toFrontendMission(mission))
+        if (mission.status === 'REJECTED') {
+          setRejectedReviewNote(
+            mission.reviewNote ?? 'Your mission was rejected. Review the feedback and update it before resubmitting.'
+          )
+          setShowRejectedBanner(true)
+        } else {
+          setRejectedReviewNote(null)
+          setShowRejectedBanner(false)
+        }
       } catch {
         router.replace('/dashboard/founder')
       } finally {
@@ -386,6 +401,13 @@ function MissionWizardContent() {
         await apiFetch(`/api/v1/missions/${mission.id}/submit`, { method: 'POST' })
       }
 
+      if (!isEditMode) {
+        posthog.capture('mission_created', {
+          difficulty: mission.difficulty,
+          testersRequired: mission.testersRequired,
+        })
+      }
+
       sessionStorage.removeItem('solutionizing-draft-refresh')
       sessionStorage.removeItem('mission-wizard-draft')
       toast.success(
@@ -472,6 +494,25 @@ function MissionWizardContent() {
             >
               Clear draft
             </button>
+          </div>
+        ) : null}
+        {showRejectedBanner ? (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-amber-900">
+                  This mission was rejected. Review the feedback below, make your changes, and resubmit for review.
+                </p>
+                <p className="mt-2 text-sm text-amber-800">{rejectedReviewNote}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRejectedBanner(false)}
+                className="text-sm font-bold text-amber-700 underline hover:text-amber-900"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         ) : null}
         <StepIndicator step={step} />

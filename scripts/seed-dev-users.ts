@@ -51,10 +51,6 @@ async function main() {
     console.log('✅ Founder created/found:', founder.id, founder.email)
 
     console.log('\n🎉 Dev users seeded successfully!')
-    console.log('\nUse these URLs to switch roles:')
-    console.log('  Tester:  http://localhost:3000/api/dev/bypass?role=tester')
-    console.log('  Founder: http://localhost:3000/api/dev/bypass?role=founder')
-    console.log('  Clear:   http://localhost:3000/api/dev/bypass?role=none')
 }
 
 main()

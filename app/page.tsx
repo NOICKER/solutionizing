@@ -514,6 +514,8 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-8 text-sm font-black uppercase tracking-[0.2em] text-text-main/70 md:gap-10">
             <Link className="transition-colors hover:text-primary" href="/terms">Terms</Link>
             <Link className="transition-colors hover:text-primary" href="/privacy">Privacy</Link>
+            <Link className="transition-colors hover:text-primary" href="/refund">Refund Policy</Link>
+            <Link className="transition-colors hover:text-primary" href="/tester-payment-policy">Tester Payment Policy</Link>
             <a className="transition-colors hover:text-primary" href="#methodology">Methodology</a>
             <a className="transition-colors hover:text-primary" href="#testers">Testers</a>
             <Link className="transition-colors hover:text-primary" href="/contact">Contact</Link>

@@ -7,21 +7,24 @@ import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
+import { toast } from '@/components/ui/sonner'
 import {
   BrandMark,
   ConfirmationDialog,
   DashboardCardSkeleton,
   EmptyStatePanel,
   ErrorStatePanel,
+  MissionStatusBadge,
+  SpinnerIcon,
   StatCard,
   SidebarNavItem,
   PageHeader,
   primaryButtonClass,
   outlineButtonClass,
+  mutedButtonClass,
   textFieldClass,
 } from '@/components/solutionizing/ui'
 
-// Types for Admin Dashboard
 interface DashboardStats {
   totals: {
     users: number
@@ -41,39 +44,50 @@ interface DashboardStats {
   }
 }
 
+interface UserProfile {
+  displayName: string | null
+}
+
 interface User {
   id: string
-  name: string | null
   email: string
-  role: string | null
+  role: 'FOUNDER' | 'TESTER' | 'ADMIN' | null
+  isSuspended: boolean
+  suspendedAt: string | null
+  suspendReason: string | null
   createdAt: string
-  founderProfile: any
-  testerProfile: any
+  founderProfile: UserProfile | null
+  testerProfile: UserProfile | null
 }
 
-interface FlaggedItem {
+type ReportResolutionStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED'
+
+interface FlagReport {
   id: string
-  missionId: string
-  missionTitle: string
+  testerId: string
+  testerDisplayName: string | null
   reason: string
-  reporterName: string
+  status: ReportResolutionStatus
+  note: string | null
   createdAt: string
-  status: 'PENDING' | 'RESOLVED' | 'DISMISSED'
 }
 
-interface UserListResponse {
-  data: User[]
-  pagination: {
-    total: number
-    totalPages: number
-    page: number
-    limit: number
-  }
+interface FlaggedMissionGroup {
+  missionId: string
+  missionTitle: string | null
+  missionStatus: string | null
+  reports: FlagReport[]
 }
 
 type MissionDialogState =
   | { type: 'approve'; missionId: string; missionTitle: string }
   | { type: 'reject'; missionId: string; missionTitle: string }
+
+type ReportResolutionDraft = {
+  reportId: string
+  status: Exclude<ReportResolutionStatus, 'PENDING'>
+  note: string
+}
 
 const overviewSidebarProps = { glyph: <LayoutDashboard className="h-4 w-4" /> }
 const missionsSidebarProps = { glyph: <Rocket className="h-4 w-4" /> }
@@ -90,20 +104,50 @@ const adminNavItems = [
 
 type AdminTab = (typeof adminNavItems)[number]['id']
 
+function getUserDisplayName(user: User) {
+  return user.founderProfile?.displayName ?? user.testerProfile?.displayName ?? 'Incognito User'
+}
+
+function getRoleBadgeClass(role: User['role']) {
+  if (role === 'FOUNDER') return 'bg-blue-100 text-blue-700'
+  if (role === 'TESTER') return 'bg-purple-100 text-purple-700'
+  if (role === 'ADMIN') return 'bg-amber-100 text-amber-700'
+  return 'bg-gray-100 text-gray-700'
+}
+
+function ReportStatusBadge({ status }: { status: ReportResolutionStatus }) {
+  const classes =
+    status === 'RESOLVED'
+      ? 'bg-green-100 text-green-700'
+      : status === 'DISMISSED'
+        ? 'bg-gray-200 text-gray-700'
+        : 'bg-amber-100 text-amber-700'
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-[0.7rem] font-bold ${classes}`}>
+      {status}
+    </span>
+  )
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentUsers, setRecentUsers] = useState<User[]>([])
   const [pendingMissions, setPendingMissions] = useState<any[]>([])
-  const [flaggedItems, setFlaggedItems] = useState<FlaggedItem[]>([])
+  const [flaggedItems, setFlaggedItems] = useState<FlaggedMissionGroup[]>([])
   const [userList, setUserList] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isActionLoading, setIsActionLoading] = useState(false)
+  const [userActionLoadingId, setUserActionLoadingId] = useState<string | null>(null)
+  const [reportActionLoadingId, setReportActionLoadingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<AdminTab>('overview')
   const [missionDialog, setMissionDialog] = useState<MissionDialogState | null>(null)
   const [missionDialogError, setMissionDialogError] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
+  const [reportResolutionDraft, setReportResolutionDraft] = useState<ReportResolutionDraft | null>(null)
+  const [reportResolutionError, setReportResolutionError] = useState('')
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -112,11 +156,11 @@ export default function AdminDashboardPage() {
 
       const [statsRes, usersRes] = await Promise.all([
         apiFetch<DashboardStats>('/api/v1/admin/stats'),
-        apiFetch<UserListResponse>('/api/v1/admin/users?limit=5'),
+        apiFetch<User[]>('/api/v1/admin/users?limit=5'),
       ])
 
       setStats(statsRes)
-      setRecentUsers(usersRes.data)
+      setRecentUsers(usersRes)
     } catch (err) {
       if (isApiClientError(err)) {
         setError(err.message)
@@ -143,8 +187,8 @@ export default function AdminDashboardPage() {
   const fetchAllUsers = useCallback(async () => {
     try {
       setIsLoading(true)
-      const res = await apiFetch<UserListResponse>('/api/v1/admin/users')
-      setUserList(res.data)
+      const res = await apiFetch<User[]>('/api/v1/admin/users')
+      setUserList(res)
     } catch (err) {
       console.error('Failed to fetch users', err)
     } finally {
@@ -155,7 +199,7 @@ export default function AdminDashboardPage() {
   const fetchFlaggedContent = useCallback(async () => {
     try {
       setIsLoading(true)
-      const res = await apiFetch<FlaggedItem[]>('/api/v1/admin/flags')
+      const res = await apiFetch<FlaggedMissionGroup[]>('/api/v1/admin/flags')
       setFlaggedItems(res)
     } catch (err) {
       console.error('Failed to fetch flagged content', err)
@@ -165,17 +209,22 @@ export default function AdminDashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (activeTab === 'overview') fetchDashboardData()
-    if (activeTab === 'missions') fetchPendingMissions()
-    if (activeTab === 'users') fetchAllUsers()
-    if (activeTab === 'flags') fetchFlaggedContent()
+    if (activeTab === 'overview') void fetchDashboardData()
+    if (activeTab === 'missions') void fetchPendingMissions()
+    if (activeTab === 'users') void fetchAllUsers()
+    if (activeTab === 'flags') void fetchFlaggedContent()
   }, [activeTab, fetchDashboardData, fetchPendingMissions, fetchAllUsers, fetchFlaggedContent])
 
-  function closeMissionDialog() {
+  const closeMissionDialog = useCallback(() => {
     setMissionDialog(null)
     setMissionDialogError('')
     setRejectionReason('')
-  }
+  }, [])
+
+  const closeReportResolution = useCallback(() => {
+    setReportResolutionDraft(null)
+    setReportResolutionError('')
+  }, [])
 
   const handleApproveMission = (missionId: string, missionTitle: string) => {
     setMissionDialog({ type: 'approve', missionId, missionTitle })
@@ -222,13 +271,97 @@ export default function AdminDashboardPage() {
     }
   }
 
+  const updateUserInLists = useCallback((updatedUser: User) => {
+    setRecentUsers((current) => current.map((user) => (user.id === updatedUser.id ? updatedUser : user)))
+    setUserList((current) => current.map((user) => (user.id === updatedUser.id ? updatedUser : user)))
+  }, [])
+
+  const handleUnsuspendUser = useCallback(async (userId: string) => {
+    try {
+      setUserActionLoadingId(userId)
+      const updatedUser = await apiFetch<User>(`/api/v1/admin/users/${userId}/unsuspend`, {
+        method: 'POST',
+      })
+      updateUserInLists(updatedUser)
+      toast.success('Account reactivated.')
+    } catch (err) {
+      const message = isApiClientError(err) ? err.message : 'Failed to unsuspend user.'
+      toast.error(message)
+    } finally {
+      setUserActionLoadingId(null)
+    }
+  }, [updateUserInLists])
+
+  const handleOpenReportResolution = useCallback(
+    (reportId: string, status: Exclude<ReportResolutionStatus, 'PENDING'>) => {
+      setReportResolutionDraft({ reportId, status, note: '' })
+      setReportResolutionError('')
+    },
+    []
+  )
+
+  const handleConfirmReportResolution = useCallback(async () => {
+    if (!reportResolutionDraft) {
+      return
+    }
+
+    try {
+      setReportActionLoadingId(reportResolutionDraft.reportId)
+      setReportResolutionError('')
+
+      const updatedReport = await apiFetch<{
+        id: string
+        status: ReportResolutionStatus
+        note: string | null
+        createdAt: string
+      }>(`/api/v1/admin/flags/${reportResolutionDraft.reportId}/resolve`, {
+        method: 'POST',
+        body: {
+          status: reportResolutionDraft.status,
+          note: reportResolutionDraft.note.trim() || undefined,
+        },
+      })
+
+      setFlaggedItems((current) =>
+        current.map((group) => ({
+          ...group,
+          reports: group.reports.map((report) =>
+            report.id === updatedReport.id
+              ? {
+                  ...report,
+                  status: updatedReport.status,
+                  note: updatedReport.note,
+                  createdAt: updatedReport.createdAt,
+                }
+              : report
+          ),
+        }))
+      )
+
+      closeReportResolution()
+      toast.success(
+        reportResolutionDraft.status === 'RESOLVED' ? 'Report resolved.' : 'Report dismissed.'
+      )
+    } catch (err) {
+      const message = isApiClientError(err) ? err.message : 'Failed to update report.'
+      setReportResolutionError(message)
+      toast.error(message)
+    } finally {
+      setReportActionLoadingId(null)
+    }
+  }, [closeReportResolution, reportResolutionDraft])
+
+  const totalFlagReports = flaggedItems.reduce((total, group) => total + group.reports.length, 0)
+
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8">
         <ErrorStatePanel
           title="Dashboard Error"
           body={error}
-          onRetry={() => { fetchDashboardData() }}
+          onRetry={() => {
+            void fetchDashboardData()
+          }}
         />
       </div>
     )
@@ -237,10 +370,9 @@ export default function AdminDashboardPage() {
   return (
     <RequireAuth role="ADMIN">
       <div className="flex min-h-screen bg-[#faf9f7]">
-        {/* Sidebar */}
         <aside className="fixed bottom-0 left-0 top-0 hidden w-72 border-r border-[#e5e4e0] bg-white p-6 md:block">
           <div className="mb-10 flex items-center gap-3">
-            <BrandMark className="w-8 h-8 text-[#d77a57]" />
+            <BrandMark className="h-8 w-8 text-[#d77a57]" />
             <span className="text-xl font-black tracking-tight text-[#1a1625]">Admin Panel</span>
           </div>
 
@@ -275,7 +407,6 @@ export default function AdminDashboardPage() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-6 pb-28 md:ml-72 md:p-10 md:pb-10">
           <PageHeader
             title={
@@ -292,12 +423,17 @@ export default function AdminDashboardPage() {
             }
           >
             <button className={primaryButtonClass}>System Status</button>
-            <button className={outlineButtonClass} onClick={() => {
-              if (activeTab === 'overview') fetchDashboardData()
-              if (activeTab === 'missions') fetchPendingMissions()
-              if (activeTab === 'users') fetchAllUsers()
-              if (activeTab === 'flags') fetchFlaggedContent()
-            }}>Refresh Data</button>
+            <button
+              className={outlineButtonClass}
+              onClick={() => {
+                if (activeTab === 'overview') void fetchDashboardData()
+                if (activeTab === 'missions') void fetchPendingMissions()
+                if (activeTab === 'users') void fetchAllUsers()
+                if (activeTab === 'flags') void fetchFlaggedContent()
+              }}
+            >
+              Refresh Data
+            </button>
           </PageHeader>
 
           {isLoading ? (
@@ -312,104 +448,110 @@ export default function AdminDashboardPage() {
             )
           ) : (
             <div className="space-y-10">
-              {activeTab === 'overview' && stats && (
-                <>
-                  {/* Stats Grid */}
-                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                    <StatCard
-                      label="Total Missions"
-                      value={stats.totals.missions}
-                      glyph="🚀"
-                      colorClass="bg-white"
-                      glyphColorClass="bg-orange-100 text-orange-600"
-                    />
-                    <StatCard
-                      label="Active Founders"
-                      value={stats.totals.founders}
-                      glyph="🏢"
-                      colorClass="bg-white"
-                      glyphColorClass="bg-blue-100 text-blue-600"
-                    />
-                    <StatCard
-                      label="Qualified Testers"
-                      value={stats.totals.testers}
-                      glyph="⚡"
-                      colorClass="bg-white"
-                      glyphColorClass="bg-purple-100 text-purple-600"
-                    />
-                    <StatCard
-                      label="Platform Revenue"
-                      value={`₹${(stats.last30Days.platformRevenue / 100).toLocaleString()}`}
-                      glyph="💰"
-                      colorClass="bg-white"
-                      glyphColorClass="bg-emerald-100 text-emerald-600"
-                    />
-                  </div>
-
-                  {/* Recent Users Table */}
-                  <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden">
-                    <div className="border-b border-[#e5e4e0] p-6 flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-[#1a1625]">Newest User Registrations</h3>
-                      <button className="text-sm font-bold text-[#d77a57] hover:underline" onClick={() => setActiveTab('users')}>
-                        View all users
-                      </button>
-                    </div>
-                    {recentUsers.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                          <thead>
-                            <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
-                              <th className="px-6 py-4">User</th>
-                              <th className="px-6 py-4">Role</th>
-                              <th className="px-6 py-4">Joined On</th>
-                              <th className="px-6 py-4">Identity Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-[#f0efed]">
-                            {recentUsers.map((user) => (
-                              <tr key={user.id} className="text-sm">
-                                <td className="px-6 py-4 text-[#1a1625]">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold">{user.name || 'Incognito User'}</span>
-                                    <span className="text-xs text-[#8b8797]">{user.email}</span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 uppercase">
-                                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${
-                                    user.role === 'FOUNDER' ? 'bg-blue-100 text-blue-700' :
-                                    user.role === 'TESTER' ? 'bg-purple-100 text-purple-700' :
-                                    'bg-gray-100 text-gray-700'
-                                  }`}>
-                                    {user.role || 'PENDING'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-[#6b687a]">
-                                  {format(new Date(user.createdAt), 'MMM d, yyyy')}
-                                </td>
-                                <td className="px-6 py-4 text-[#6b687a]">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                    <span className="text-xs font-bold text-emerald-600">Active</span>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <EmptyStatePanel
-                        title="No users found"
-                        description="Wait for new platform registrations."
-                        icon={<Users className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+              {activeTab === 'overview' ? (
+                stats ? (
+                  <>
+                    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                      <StatCard
+                        label="Total Missions"
+                        value={stats.totals.missions}
+                        glyph="🚀"
+                        colorClass="bg-white"
+                        glyphColorClass="bg-orange-100 text-orange-600"
                       />
-                    )}
-                  </div>
-                </>
-              )}
+                      <StatCard
+                        label="Active Founders"
+                        value={stats.totals.founders}
+                        glyph="🏢"
+                        colorClass="bg-white"
+                        glyphColorClass="bg-blue-100 text-blue-600"
+                      />
+                      <StatCard
+                        label="Qualified Testers"
+                        value={stats.totals.testers}
+                        glyph="⚡"
+                        colorClass="bg-white"
+                        glyphColorClass="bg-purple-100 text-purple-600"
+                      />
+                      <StatCard
+                        label="Platform Revenue"
+                        value={`₹${(stats.last30Days.platformRevenue / 100).toLocaleString()}`}
+                        glyph="💰"
+                        colorClass="bg-white"
+                        glyphColorClass="bg-emerald-100 text-emerald-600"
+                      />
+                    </div>
 
-              {activeTab === 'missions' && (
-                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+                    <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white">
+                      <div className="flex items-center justify-between border-b border-[#e5e4e0] p-6">
+                        <h3 className="text-xl font-bold text-[#1a1625]">Newest User Registrations</h3>
+                        <button
+                          className="text-sm font-bold text-[#d77a57] hover:underline"
+                          onClick={() => setActiveTab('users')}
+                        >
+                          View all users
+                        </button>
+                      </div>
+                      {recentUsers.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left">
+                            <thead>
+                              <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
+                                <th className="px-6 py-4">User</th>
+                                <th className="px-6 py-4">Role</th>
+                                <th className="px-6 py-4">Joined On</th>
+                                <th className="px-6 py-4">Identity Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#f0efed]">
+                              {recentUsers.map((user) => (
+                                <tr key={user.id} className="text-sm">
+                                  <td className="px-6 py-4 text-[#1a1625]">
+                                    <div className="flex flex-col gap-1">
+                                      <span className="font-bold">{getUserDisplayName(user)}</span>
+                                      <span className="text-xs text-[#8b8797]">{user.email}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 uppercase">
+                                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${getRoleBadgeClass(user.role)}`}>
+                                      {user.role || 'PENDING'}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 text-[#6b687a]">
+                                    {format(new Date(user.createdAt), 'MMM d, yyyy')}
+                                  </td>
+                                  <td className="px-6 py-4 text-[#6b687a]">
+                                    {user.isSuspended ? (
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                                        <span className="text-xs font-bold text-red-600">Suspended</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                        <span className="text-xs font-bold text-emerald-600">Active</span>
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <EmptyStatePanel
+                          title="No users found"
+                          description="Wait for new platform registrations."
+                          icon={<Users className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                        />
+                      )}
+                    </div>
+                  </>
+                ) : null
+              ) : null}
+
+              {activeTab === 'missions' ? (
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
                     <h3 className="text-xl font-bold">Pending Review ({pendingMissions.length})</h3>
                   </div>
@@ -430,7 +572,7 @@ export default function AdminDashboardPage() {
                               <td className="px-6 py-4">
                                 <div className="flex flex-col">
                                   <span className="font-bold">{mission.title}</span>
-                                  <span className="text-xs text-[#8b8797] line-clamp-1">{mission.description}</span>
+                                  <span className="line-clamp-1 text-xs text-[#8b8797]">{mission.description}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4">
@@ -444,14 +586,14 @@ export default function AdminDashboardPage() {
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex items-center justify-end gap-2">
-                                  <button 
+                                  <button
                                     className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200"
                                     onClick={() => handleApproveMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
                                     Approve
                                   </button>
-                                  <button 
+                                  <button
                                     className="rounded-full bg-orange-100 px-4 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
                                     onClick={() => handleRejectMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
@@ -473,10 +615,10 @@ export default function AdminDashboardPage() {
                     />
                   )}
                 </div>
-              )}
+              ) : null}
 
-              {activeTab === 'users' && (
-                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+              {activeTab === 'users' ? (
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
                     <h3 className="text-xl font-bold">All Users ({userList.length})</h3>
                   </div>
@@ -493,46 +635,74 @@ export default function AdminDashboardPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f0efed]">
-                          {userList.map((userItem) => (
-                            <tr key={userItem.id} className="text-sm">
-                              <td className="px-6 py-4">
-                                <div className="flex flex-col">
-                                  <span className="font-bold">{userItem.name || 'Anonymous'}</span>
-                                  <span className="text-xs text-[#8b8797]">{userItem.email}</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 uppercase">
-                                <span className={`rounded-full px-3 py-1 text-xs font-bold ${
-                                  userItem.role === 'FOUNDER' ? 'bg-blue-100 text-blue-700' :
-                                  userItem.role === 'TESTER' ? 'bg-purple-100 text-purple-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
-                                  {userItem.role || 'PENDING'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 text-[#6b687a]">
-                                {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
-                              </td>
-                              <td className="px-6 py-4">
-                                {userItem.founderProfile || userItem.testerProfile ? (
-                                  <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                    Completed
+                          {userList.map((userItem) => {
+                            const isUserActionLoading = userActionLoadingId === userItem.id
+
+                            return (
+                              <tr key={userItem.id} className="text-sm">
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col gap-1">
+                                    <span className="font-bold">{getUserDisplayName(userItem)}</span>
+                                    <span className="text-xs text-[#8b8797]">{userItem.email}</span>
+                                    {userItem.isSuspended ? (
+                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-red-700">
+                                        Suspended
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 uppercase">
+                                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${getRoleBadgeClass(userItem.role)}`}>
+                                    {userItem.role || 'PENDING'}
                                   </span>
-                                ) : (
-                                  <span className="flex items-center gap-1 text-xs font-bold text-orange-600">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                                    Incomplete
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <button className="text-xs font-bold text-[#d77a57] hover:underline">
-                                  Manage Access
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                                <td className="px-6 py-4 text-[#6b687a]">
+                                  {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col gap-1">
+                                    {userItem.founderProfile || userItem.testerProfile ? (
+                                      <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                        Completed
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1 text-xs font-bold text-orange-600">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                        Incomplete
+                                      </span>
+                                    )}
+                                    {userItem.isSuspended && userItem.suspendedAt ? (
+                                      <span className="text-xs text-[#8b8797]">
+                                        Since {format(new Date(userItem.suspendedAt), 'MMM d, yyyy')}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  {userItem.isSuspended ? (
+                                    <div className="flex flex-col items-end gap-2">
+                                      <button
+                                        className={`inline-flex items-center gap-2 px-4 py-2 text-xs ${outlineButtonClass}`}
+                                        disabled={isUserActionLoading}
+                                        onClick={() => void handleUnsuspendUser(userItem.id)}
+                                      >
+                                        {isUserActionLoading ? <SpinnerIcon /> : null}
+                                        Unsuspend
+                                      </button>
+                                      {userItem.suspendReason ? (
+                                        <p className="max-w-[220px] text-right text-xs text-[#8b8797]">
+                                          Reason: {userItem.suspendReason}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs font-semibold text-[#9b98a8]">No actions</span>
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -544,56 +714,134 @@ export default function AdminDashboardPage() {
                     />
                   )}
                 </div>
-              )}
+              ) : null}
 
-              {activeTab === 'flags' && (
-                <div className="rounded-panel border border-[#e5e4e0] bg-white overflow-hidden text-[#1a1625]">
+              {activeTab === 'flags' ? (
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
                   <div className="border-b border-[#e5e4e0] p-6">
-                    <h3 className="text-xl font-bold">Reports Needing Attention ({flaggedItems.length})</h3>
+                    <h3 className="text-xl font-bold">Reports Needing Attention ({totalFlagReports})</h3>
                   </div>
                   {flaggedItems.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
-                            <th className="px-6 py-4">Reported Mission</th>
-                            <th className="px-6 py-4">Reason</th>
-                            <th className="px-6 py-4">Reporter</th>
-                            <th className="px-6 py-4">Date</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#f0efed]">
-                          {flaggedItems.map((item) => (
-                            <tr key={item.id} className="text-sm">
-                              <td className="px-6 py-4">
-                                <Link 
-                                  href={`/mission/status/${item.missionId}`}
-                                  className="font-bold text-[#d77a57] hover:underline"
+                    <div className="space-y-4 p-6">
+                      {flaggedItems.map((group) => (
+                        <article
+                          key={group.missionId}
+                          className="rounded-[1.75rem] border border-[#ece6df] bg-[#fffdfa] p-5"
+                        >
+                          <div className="flex flex-col gap-3 border-b border-[#efe7df] pb-4 md:flex-row md:items-start md:justify-between">
+                            <div className="space-y-2">
+                              <div className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8]">
+                                Mission reports
+                              </div>
+                              <Link
+                                href={`/mission/status/${group.missionId}`}
+                                className="text-lg font-black text-[#1a1625] hover:text-[#d77a57]"
+                              >
+                                {group.missionTitle ?? 'Untitled mission'}
+                              </Link>
+                            </div>
+                            {group.missionStatus ? <MissionStatusBadge status={group.missionStatus} /> : null}
+                          </div>
+
+                          <div className="mt-5 space-y-4">
+                            {group.reports.map((report) => {
+                              const isPending = report.status === 'PENDING'
+                              const isResolvingThisReport = reportResolutionDraft?.reportId === report.id
+                              const isReportActionLoading = reportActionLoadingId === report.id
+
+                              return (
+                                <div
+                                  key={report.id}
+                                  className="rounded-[1.5rem] border border-[#ece6df] bg-white p-4"
                                 >
-                                  {item.missionTitle}
-                                </Link>
-                              </td>
-                              <td className="px-6 py-4 italic text-[#6b687a]">
-                                &quot;{item.reason}&quot;
-                              </td>
-                              <td className="px-6 py-4 font-medium">
-                                {item.reporterName}
-                              </td>
-                              <td className="px-6 py-4 text-[#8b8797]">
-                                {format(new Date(item.createdAt), 'MMM d, HH:mm')}
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2 text-xs font-bold">
-                                  <button className="text-[#d77a57] hover:underline">Dismiss</button>
-                                  <span className="text-[#e5e4e0]">|</span>
-                                  <button className="text-red-600 hover:underline">Take Action</button>
+                                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div className="space-y-2">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-sm font-bold text-[#1a1625]">
+                                          {report.testerDisplayName ?? 'Unknown tester'}
+                                        </span>
+                                        <ReportStatusBadge status={report.status} />
+                                      </div>
+                                      <p className="text-sm italic text-[#6b687a]">&quot;{report.reason}&quot;</p>
+                                      <p className="text-xs text-[#8b8797]">
+                                        Reported {format(new Date(report.createdAt), 'MMM d, yyyy • HH:mm')}
+                                      </p>
+                                      {report.note ? (
+                                        <p className="text-xs text-[#6b687a]">Admin note: {report.note}</p>
+                                      ) : null}
+                                    </div>
+
+                                    {isPending ? (
+                                      <div className="flex items-center gap-2 text-xs font-bold">
+                                        <button
+                                          className="text-emerald-700 hover:underline"
+                                          onClick={() => handleOpenReportResolution(report.id, 'RESOLVED')}
+                                        >
+                                          Resolve
+                                        </button>
+                                        <span className="text-[#d9d2cb]">|</span>
+                                        <button
+                                          className="text-[#6b687a] hover:underline"
+                                          onClick={() => handleOpenReportResolution(report.id, 'DISMISSED')}
+                                        >
+                                          Dismiss
+                                        </button>
+                                      </div>
+                                    ) : null}
+                                  </div>
+
+                                  {isResolvingThisReport && reportResolutionDraft ? (
+                                    <div className="mt-4 rounded-2xl border border-[#ece6df] bg-[#faf7f3] p-4">
+                                      <div className="mb-2 text-sm font-bold text-[#1a1625]">
+                                        {reportResolutionDraft.status === 'RESOLVED'
+                                          ? 'Resolve this report?'
+                                          : 'Dismiss this report?'}
+                                      </div>
+                                      <textarea
+                                        rows={2}
+                                        value={reportResolutionDraft.note}
+                                        onChange={(event) =>
+                                          setReportResolutionDraft((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  note: event.target.value,
+                                                }
+                                              : current
+                                          )
+                                        }
+                                        className={`${textFieldClass} resize-none`}
+                                        placeholder="Optional note"
+                                      />
+                                      {reportResolutionError ? (
+                                        <p className="mt-2 text-sm text-red-600">{reportResolutionError}</p>
+                                      ) : null}
+                                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                                        <button
+                                          className={`px-4 py-2 text-xs ${mutedButtonClass}`}
+                                          onClick={closeReportResolution}
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          className={`inline-flex items-center gap-2 px-4 py-2 text-xs ${primaryButtonClass}`}
+                                          disabled={isReportActionLoading}
+                                          onClick={() => void handleConfirmReportResolution()}
+                                        >
+                                          {isReportActionLoading ? <SpinnerIcon /> : null}
+                                          {reportResolutionDraft.status === 'RESOLVED'
+                                            ? 'Confirm Resolve'
+                                            : 'Confirm Dismiss'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : null}
                                 </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              )
+                            })}
+                          </div>
+                        </article>
+                      ))}
                     </div>
                   ) : (
                     <EmptyStatePanel
@@ -603,7 +851,7 @@ export default function AdminDashboardPage() {
                     />
                   )}
                 </div>
-              )}
+              ) : null}
             </div>
           )}
         </main>

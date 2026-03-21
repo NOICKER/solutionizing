@@ -84,7 +84,7 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
         </div>
 
         <div className="space-y-3">
-          <Link href={`/mission/wizard?edit=${mission.id}`} className={`block w-full py-3.5 text-center ${primaryButtonClass}`}>
+          <Link href={`/mission/wizard?edit=true&missionId=${mission.id}`} className={`block w-full py-3.5 text-center ${primaryButtonClass}`}>
             EDIT MISSION →
           </Link>
           <div className="text-center">

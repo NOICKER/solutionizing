@@ -4,6 +4,12 @@ import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
+import {
+  getInitialPayoutDetails,
+  hasPayoutFieldErrors,
+  serializePayoutDetails,
+  validatePayoutDetails,
+} from '@/lib/payout-details'
 
 const UpdateTesterProfileSchema = z.object({
   displayName: z.string().trim().min(2).max(50).optional(),
@@ -11,7 +17,7 @@ const UpdateTesterProfileSchema = z.object({
   darkMode: z.boolean().optional(),
   expertiseTags: z.array(z.string()).max(10).optional(),
   preferredDevice: z.enum(['desktop', 'mobile', 'both']).optional(),
-  payoutDetails: z.string().trim().max(200).optional(),
+  payoutDetails: z.string().trim().min(1).max(500).optional(),
   onboardingCompleted: z.boolean().optional(),
 })
 
@@ -60,6 +66,19 @@ export async function PATCH(request: Request) {
     }
 
     const body = await validateBody(request, UpdateTesterProfileSchema)
+    const normalizedPayoutDetails =
+      body.payoutDetails !== undefined
+        ? (() => {
+            const parsedPayoutDetails = getInitialPayoutDetails(body.payoutDetails)
+            const payoutErrors = validatePayoutDetails(parsedPayoutDetails)
+
+            if (hasPayoutFieldErrors(payoutErrors)) {
+              throw badRequest('Validation failed', { fieldErrors: payoutErrors })
+            }
+
+            return serializePayoutDetails(parsedPayoutDetails)
+          })()
+        : undefined
 
     if (
       body.displayName === undefined
@@ -84,7 +103,7 @@ export async function PATCH(request: Request) {
           : {}),
         ...(body.expertiseTags !== undefined ? { expertiseTags: body.expertiseTags } : {}),
         ...(body.preferredDevice !== undefined ? { preferredDevice: body.preferredDevice } : {}),
-        ...(body.payoutDetails !== undefined ? { payoutDetails: body.payoutDetails } : {}),
+        ...(normalizedPayoutDetails !== undefined ? { payoutDetails: normalizedPayoutDetails } : {}),
       },
       select: {
         displayName: true,

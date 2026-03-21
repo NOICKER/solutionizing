@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppStateProvider } from "@/context/AppStateContext";
 import { Toaster } from "@/components/ui/sonner";
+import PostHogProvider from "@/providers/PostHogProvider";
+import { CookieConsent } from "@/components/solutionizing/CookieConsent";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -23,12 +25,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${manrope.variable} min-h-screen bg-neutral-bg text-text-main dark:bg-gray-900 dark:text-white`}>
-        <AuthProvider>
-          <AppStateProvider>
-            {children}
-            <Toaster />
-          </AppStateProvider>
-        </AuthProvider>
+        <PostHogProvider>
+          <AuthProvider>
+            <AppStateProvider>
+              {children}
+              <CookieConsent />
+              <Toaster />
+            </AppStateProvider>
+          </AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

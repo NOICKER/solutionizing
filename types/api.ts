@@ -183,6 +183,13 @@ export interface ApiMissionFeedback {
   } | null
 }
 
+export interface SynthesisResult {
+  recommendation: string
+  frictionPoints: string[]
+  signalStrength: 'HIGH' | 'MEDIUM' | 'LOW'
+  summary: string
+}
+
 export interface WizardAsset {
   type: WizardAssetType
   url?: string

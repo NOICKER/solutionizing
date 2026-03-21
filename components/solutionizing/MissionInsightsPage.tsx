@@ -10,6 +10,7 @@ import {
   ApiMissionDetail,
   ApiMissionFeedback,
   ApiMissionRetestSummary,
+  SynthesisResult,
 } from '@/types/api'
 import {
   NotFoundPanel,
@@ -878,6 +879,8 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
   const [notReady, setNotReady] = useState(false)
+  const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null)
+  const [synthesisLoading, setSynthesisLoading] = useState(false)
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -902,6 +905,18 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
       }
     } finally {
       setIsLoading(false)
+    }
+  }, [missionId])
+
+  const loadSynthesis = useCallback(async () => {
+    setSynthesisLoading(true)
+    try {
+      const synthesisResponse = await apiFetch<SynthesisResult>(`/api/v1/missions/${missionId}/synthesize`)
+      setSynthesis(synthesisResponse)
+    } catch (error) {
+      console.error('Failed to load synthesis:', error)
+    } finally {
+      setSynthesisLoading(false)
     }
   }, [missionId])
 
@@ -1090,6 +1105,83 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
             </div>
           </motion.div>
         </motion.div>
+
+        {/* AI Insights Card */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mt-8 overflow-hidden rounded-panel border border-white/60 bg-[#fdf8f6] p-8 shadow-xl shadow-[#fdf0eb]/70 backdrop-blur-xl"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
+                <Sparkles className="text-[#d77a57]" />
+                AI Insights
+              </h2>
+              <p className="mt-2 text-sm font-medium text-slate-500">
+                AI-powered analysis of your feedback data
+              </p>
+            </div>
+          </div>
+
+          {synthesis ? (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Summary</h3>
+                <p className="text-slate-700 leading-relaxed">{synthesis.summary}</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Recommended Next Action</h3>
+                <p className="text-[#d77a57] font-semibold text-lg">{synthesis.recommendation}</p>
+              </div>
+
+              {synthesis.frictionPoints.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">Key Friction Points</h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-700">
+                    {synthesis.frictionPoints.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-600">Signal Strength:</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                  synthesis.signalStrength === 'HIGH' ? 'bg-green-100 text-green-700' :
+                  synthesis.signalStrength === 'MEDIUM' ? 'bg-amber-100 text-amber-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {synthesis.signalStrength}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <button
+                onClick={() => void loadSynthesis()}
+                disabled={synthesisLoading}
+                className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+              >
+                {synthesisLoading ? (
+                  <>
+                    <SpinnerIcon /> Generating Insights…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} /> Generate Insights
+                  </>
+                )}
+              </button>
+              {synthesisLoading && (
+                <p className="mt-4 text-sm text-slate-500">This may take a few seconds...</p>
+              )}
+            </div>
+          )}
+        </motion.section>
 
         <motion.section 
           initial={{ opacity: 0, y: 20 }}

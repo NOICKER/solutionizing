@@ -1,5 +1,6 @@
 "use client"
 
+import posthog from 'posthog-js'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -118,6 +119,9 @@ export function TesterOnboarding({
         },
       })
       await refetch()
+      posthog.capture('onboarding_completed', {
+        role: 'TESTER',
+      })
       router.replace('/dashboard')
     } catch (error) {
       setErrorMessage(getRequestErrorMessage(error))

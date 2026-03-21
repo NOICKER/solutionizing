@@ -18,6 +18,10 @@ export function DevControlPanel() {
     "Ask the tester to share their email so we can follow up."
   );
 
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
+
   const isOpen = state.ui.devPanelOpen;
 
   if (

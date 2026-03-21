@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { differenceInHours } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -259,6 +260,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
       const stats = await apiFetch<ApiTesterStats>('/api/v1/tester/stats').catch(() => null)
       await refetch()
+      posthog.capture('feedback_submitted', {
+        missionId: activeAssignment.mission.id,
+      })
       setSuccessState({ coinsEarned: response.coinsEarned, newTier: response.newTier, stats })
       setPhase('success')
     } catch (error) {

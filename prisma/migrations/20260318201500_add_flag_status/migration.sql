@@ -1,0 +1,3 @@
+ALTER TABLE "mission_reports"
+ADD COLUMN "status" TEXT NOT NULL DEFAULT 'PENDING',
+ADD COLUMN "note" TEXT;

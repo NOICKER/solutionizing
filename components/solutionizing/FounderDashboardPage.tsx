@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react'
+import posthog from 'posthog-js'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -173,7 +174,7 @@ function FounderDashboardContent() {
     }
   }
 
-  async function handleMissionAction(mission: ApiMission, action: 'submit' | 'pause' | 'close') {
+  async function handleMissionAction(mission: ApiMission, action: 'submit' | 'pause' | 'resume' | 'close') {
     setCardErrors((current) => ({ ...current, [mission.id]: '' }))
     setActionLoading({ missionId: mission.id, action })
 
@@ -185,6 +186,10 @@ function FounderDashboardContent() {
       } else if (action === 'pause') {
         await apiFetch(`/api/v1/missions/${mission.id}/pause`, { method: 'POST' })
         await loadMissions()
+      } else if (action === 'resume') {
+        await apiFetch(`/api/v1/missions/${mission.id}/resume`, { method: 'POST' })
+        await loadMissions()
+        toast.success('Mission resumed.')
       } else {
         const response = await apiFetch<{ refundAmount?: number; refundCoins?: number }>(
           `/api/v1/missions/${mission.id}/close`,
@@ -234,6 +239,9 @@ function FounderDashboardContent() {
         body: { packId },
       })
       await loadBalance()
+      posthog.capture('coins_purchased', {
+        amount: response.coinsAdded ?? 0,
+      })
       toast.success(`${formatCoins(response.coinsAdded ?? 0)} coins added to your balance!`)
     } catch (error) {
       setPurchaseError(
@@ -370,6 +378,7 @@ function FounderDashboardContent() {
                   actionLoading={actionLoading}
                   onRetry={() => void loadDashboard()}
                   onSubmitMission={(mission) => void handleMissionAction(mission, 'submit')}
+                  onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
                   onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
                 />
               ) : activeTab === 'wallets' ? (

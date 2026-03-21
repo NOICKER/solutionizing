@@ -43,10 +43,22 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isPublicRoute = publicRoutes.has(path)
+  const role = user?.app_metadata?.role
 
   const isAuthRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/register')
     || path.startsWith('/select-role') || path.startsWith('/forgot-password')
     || path.startsWith('/reset-password') || path.startsWith('/verify-email')
+  const isAdminDashboardRoute = path === '/dashboard/admin' || path.startsWith('/dashboard/admin/')
+
+  if (isAdminDashboardRoute) {
+    if (!user) {
+      return redirectWithCookies(request, response, '/login')
+    }
+
+    if (role !== 'ADMIN') {
+      return redirectWithCookies(request, response, '/dashboard')
+    }
+  }
 
   // Not logged in: redirect to login unless on auth or public route
   if (!user && !isAuthRoute && !isPublicRoute) {
@@ -54,9 +66,6 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    // Role comes from app_metadata set during register/login/select-role
-    const role = user.app_metadata?.role
-
     // Logged-in users routing
     if (isAuthRoute) {
       if (path === '/select-role') {

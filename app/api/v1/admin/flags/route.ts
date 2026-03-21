@@ -2,7 +2,6 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
-import { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -51,6 +50,8 @@ export async function GET(request: Request) {
           testerId: string
           testerDisplayName: string | null
           reason: string
+          status: string
+          note: string | null
           createdAt: Date
         }>
       }>
@@ -64,6 +65,8 @@ export async function GET(request: Request) {
         testerId: report.testerId,
         testerDisplayName: tester?.displayName ?? null,
         reason: report.reason,
+        status: report.status,
+        note: report.note,
         createdAt: report.createdAt,
       }
 

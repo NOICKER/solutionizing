@@ -6,6 +6,14 @@ import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import {
+  getInitialPayoutDetails,
+  hasPayoutFieldErrors,
+  serializePayoutDetails,
+  validatePayoutDetails,
+  type PayoutField,
+  type PayoutMethod,
+} from '@/lib/payout-details'
+import {
   formatCoins,
   outlineButtonClass,
   primaryButtonClass,
@@ -39,6 +47,8 @@ type TesterProfileUpdateBody = Partial<
     'displayName' | 'notifyNewMission' | 'expertiseTags' | 'preferredDevice' | 'payoutDetails'
   >
 >
+
+type PayoutTouchedState = Partial<Record<PayoutField, boolean>>
 
 function ComingSoonBadge() {
   return (
@@ -177,7 +187,15 @@ export function TesterSettingsTab({
   const [notifyNewMission, setNotifyNewMission] = useState(true)
   const [expertiseTags, setExpertiseTags] = useState<string[]>([])
   const [preferredDevice, setPreferredDevice] = useState<PreferredDevice | null>(null)
-  const [payoutDetails, setPayoutDetails] = useState('')
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('UPI')
+  const [upiId, setUpiId] = useState('')
+  const [accountHolderName, setAccountHolderName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [ifscCode, setIfscCode] = useState('')
+  const [payoutTouched, setPayoutTouched] = useState<PayoutTouchedState>({})
+  const [payoutError, setPayoutError] = useState('')
+  const [isSavingPayout, setIsSavingPayout] = useState(false)
+  const [hasAttemptedPayoutSave, setHasAttemptedPayoutSave] = useState(false)
   const [hasLoadedProfile, setHasLoadedProfile] = useState(false)
   const [isLoadingProfile, setIsLoadingProfile] = useState(true)
   const [profileLoadError, setProfileLoadError] = useState('')
@@ -194,6 +212,19 @@ export function TesterSettingsTab({
   const [passwordResetError, setPasswordResetError] = useState('')
 
   const testerEmail = user?.email ?? email
+  const payoutDetailsDraft =
+    payoutMethod === 'UPI'
+      ? {
+          method: 'UPI' as const,
+          upiId,
+        }
+      : {
+          method: 'BANK_TRANSFER' as const,
+          accountHolderName,
+          accountNumber,
+          ifscCode,
+        }
+  const payoutFieldErrors = validatePayoutDetails(payoutDetailsDraft)
 
   const applyTesterProfile = useCallback((profile: TesterProfileResponse) => {
     setDisplayName(profile.displayName)
@@ -203,7 +234,19 @@ export function TesterSettingsTab({
     setNotifyNewMission(profile.notifyNewMission)
     setExpertiseTags(profile.expertiseTags)
     setPreferredDevice(profile.preferredDevice)
-    setPayoutDetails(profile.payoutDetails ?? '')
+    const initialPayoutDetails = getInitialPayoutDetails(profile.payoutDetails)
+    setPayoutMethod(initialPayoutDetails.method)
+    setUpiId(initialPayoutDetails.method === 'UPI' ? initialPayoutDetails.upiId : '')
+    setAccountHolderName(
+      initialPayoutDetails.method === 'BANK_TRANSFER' ? initialPayoutDetails.accountHolderName : ''
+    )
+    setAccountNumber(
+      initialPayoutDetails.method === 'BANK_TRANSFER' ? initialPayoutDetails.accountNumber : ''
+    )
+    setIfscCode(initialPayoutDetails.method === 'BANK_TRANSFER' ? initialPayoutDetails.ifscCode : '')
+    setPayoutTouched({})
+    setPayoutError('')
+    setHasAttemptedPayoutSave(false)
   }, [])
 
   const patchTesterProfile = useCallback(async (body: TesterProfileUpdateBody) => {
@@ -394,6 +437,75 @@ export function TesterSettingsTab({
     }
   }
 
+  function handlePayoutFieldChange(field: PayoutField, value: string) {
+    setPayoutTouched((current) => ({
+      ...current,
+      [field]: true,
+    }))
+    setPayoutError('')
+
+    switch (field) {
+      case 'upiId':
+        setUpiId(value)
+        break
+      case 'accountHolderName':
+        setAccountHolderName(value)
+        break
+      case 'accountNumber':
+        setAccountNumber(value.replace(/\D/g, ''))
+        break
+      case 'ifscCode':
+        setIfscCode(value.toUpperCase())
+        break
+      default:
+        break
+    }
+  }
+
+  function handlePayoutMethodChange(method: PayoutMethod) {
+    setPayoutMethod(method)
+    setPayoutTouched({})
+    setPayoutError('')
+    setHasAttemptedPayoutSave(false)
+  }
+
+  function getVisiblePayoutFieldError(field: PayoutField) {
+    if (!hasAttemptedPayoutSave && !payoutTouched[field]) {
+      return null
+    }
+
+    return payoutFieldErrors[field] ?? null
+  }
+
+  async function handleSavePayout() {
+    if (isLoadingProfile || isSavingPayout || !hasLoadedProfile) {
+      return
+    }
+
+    setHasAttemptedPayoutSave(true)
+    setPayoutError('')
+
+    if (hasPayoutFieldErrors(payoutFieldErrors)) {
+      setPayoutError('Fix the highlighted payout details and try again.')
+      return
+    }
+
+    setIsSavingPayout(true)
+
+    try {
+      const response = await patchTesterProfile({
+        payoutDetails: serializePayoutDetails(payoutDetailsDraft),
+      })
+
+      applyTesterProfile(response)
+      toast.success('Payout details updated successfully.')
+    } catch (error) {
+      setPayoutError(getRequestErrorMessage(error))
+    } finally {
+      setIsSavingPayout(false)
+    }
+  }
+
   return (
     <section className="rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6">
       <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -571,22 +683,139 @@ export function TesterSettingsTab({
 
         <SettingsSectionCard
           title="Payout Details"
-          description="Keep your preferred payout destination ready for the moment withdrawals become available."
-          comingSoon
+          description="Choose how you want to receive payouts so withdrawals can be processed without extra setup."
         >
           <div className="space-y-4">
-            <SettingsField
-              label="UPI ID Or Bank Details"
-              hint="Payout details will be configurable when withdrawals go live."
-            >
-              <input
-                type="text"
-                value={payoutDetails}
-                placeholder="Enter your UPI ID or bank details"
-                disabled
-                className={settingsFieldClass}
-              />
-            </SettingsField>
+            <div className="grid gap-3 md:grid-cols-2">
+              {(['UPI', 'BANK_TRANSFER'] as const).map((method) => {
+                const active = payoutMethod === method
+
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => handlePayoutMethodChange(method)}
+                    disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                    aria-pressed={active}
+                    className={`rounded-2xl border px-4 py-4 text-left transition-all ${
+                      active
+                        ? 'border-[#d77a57] bg-[#fff4ef] shadow-[0_20px_40px_-34px_rgba(215,122,87,0.7)] dark:bg-[#d77a57]/10'
+                        : 'border-[#efe8e1] bg-[#fffdfa] hover:border-[#dfcfc2] hover:bg-white dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600 dark:hover:bg-gray-800'
+                    } ${isLoadingProfile || isSavingPayout || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`material-symbols-outlined !text-[1.35rem] ${
+                          active ? 'text-[#d77a57]' : 'text-[#8b8797]'
+                        }`}
+                      >
+                        {method === 'UPI' ? 'qr_code_2' : 'account_balance'}
+                      </span>
+                      <div>
+                        <div className="text-sm font-black text-[#1a1625] dark:text-white">
+                          {method === 'UPI' ? 'UPI' : 'Bank Transfer'}
+                        </div>
+                        <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+                          {method === 'UPI'
+                            ? 'Use your UPI ID for fast payouts.'
+                            : 'Provide your bank account details for direct transfers.'}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            {payoutMethod === 'UPI' ? (
+              <SettingsField
+                label="UPI ID"
+                hint="Format: name@bank. This is validated before it can be saved."
+              >
+                <input
+                  type="text"
+                  value={upiId}
+                  onChange={(event) => handlePayoutFieldChange('upiId', event.target.value)}
+                  placeholder="yourname@bank"
+                  autoComplete="off"
+                  disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                  className={textFieldClass}
+                />
+                {getVisiblePayoutFieldError('upiId') ? (
+                  <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('upiId')}</p>
+                ) : null}
+              </SettingsField>
+            ) : (
+              <div className="grid gap-4">
+                <SettingsField
+                  label="Account Holder Name"
+                  hint="Enter the full account holder name exactly as registered with your bank."
+                >
+                  <input
+                    type="text"
+                    value={accountHolderName}
+                    onChange={(event) => handlePayoutFieldChange('accountHolderName', event.target.value)}
+                    placeholder="Aarav Sharma"
+                    autoComplete="name"
+                    disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                    className={textFieldClass}
+                  />
+                  {getVisiblePayoutFieldError('accountHolderName') ? (
+                    <p className="text-sm text-[#c4673f]">
+                      {getVisiblePayoutFieldError('accountHolderName')}
+                    </p>
+                  ) : null}
+                </SettingsField>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <SettingsField label="Account Number" hint="Only digits are allowed, between 9 and 18 characters.">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={accountNumber}
+                      onChange={(event) => handlePayoutFieldChange('accountNumber', event.target.value)}
+                      placeholder="123456789012"
+                      autoComplete="off"
+                      disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                      className={textFieldClass}
+                    />
+                    {getVisiblePayoutFieldError('accountNumber') ? (
+                      <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('accountNumber')}</p>
+                    ) : null}
+                  </SettingsField>
+
+                  <SettingsField label="IFSC Code" hint="Example: HDFC0123456">
+                    <input
+                      type="text"
+                      value={ifscCode}
+                      onChange={(event) => handlePayoutFieldChange('ifscCode', event.target.value)}
+                      placeholder="HDFC0123456"
+                      autoComplete="off"
+                      disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                      className={textFieldClass}
+                    />
+                    {getVisiblePayoutFieldError('ifscCode') ? (
+                      <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('ifscCode')}</p>
+                    ) : null}
+                  </SettingsField>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-[#8c8897] dark:text-gray-400">
+                Your payout details are saved securely and used when withdrawals are processed.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleSavePayout()}
+                disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
+                className={`px-5 py-3 text-sm ${primaryButtonClass}`}
+              >
+                {isSavingPayout ? 'Saving Payout Details...' : 'Save Payout Details'}
+              </button>
+            </div>
+            {payoutError ? <p className="text-sm text-[#c4673f]">{payoutError}</p> : null}
           </div>
         </SettingsSectionCard>
 

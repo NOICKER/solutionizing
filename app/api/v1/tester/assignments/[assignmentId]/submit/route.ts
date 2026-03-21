@@ -31,6 +31,7 @@ type SubmitAssignmentResult =
       missionCompleted: boolean
       founderUserId: string | null
       missionId: string
+      shortTextPenaltyApplied: boolean
     }
 
 function validateSubmissionResponses(
@@ -236,6 +237,7 @@ export async function POST(
       validateSubmissionResponses(questions, body.responses)
 
       const now = new Date()
+      const questionMap = new Map(questions.map((question) => [question.id, question]))
 
       await tx.missionResponse.createMany({
         data: body.responses.map((response) => ({
@@ -247,6 +249,18 @@ export async function POST(
           timeTakenSeconds: response.timeTakenSeconds ?? null,
         })),
       })
+
+      const textResponses = body.responses.filter((response) => {
+        const question = questionMap.get(response.questionId)
+        return question?.type === QuestionType.TEXT_SHORT || question?.type === QuestionType.TEXT_LONG
+      })
+      const shortTextResponses = textResponses.filter((response) => {
+        const trimmedResponse = response.responseText?.trim() ?? ''
+        return trimmedResponse.length < 20
+      })
+      const shortTextPenaltyApplied =
+        textResponses.length > 0 &&
+        shortTextResponses.length > textResponses.length / 2
 
       await tx.missionAssignment.update({
         where: { id: assignment.id },
@@ -311,6 +325,7 @@ export async function POST(
         missionCompleted,
         founderUserId: mission.founder.userId,
         missionId: mission.id,
+        shortTextPenaltyApplied,
       }
     })
 
@@ -323,6 +338,14 @@ export async function POST(
         type: 'MISSION_COMPLETED',
         userId: result.founderUserId,
         missionId: result.missionId,
+      })
+    }
+
+    if (result.shortTextPenaltyApplied) {
+      await updateReputation(tester.testerProfile.id, 'SHORT_TEXT_RESPONSE')
+      console.info('Applied SHORT_TEXT_RESPONSE penalty', {
+        assignmentId: context.params.assignmentId,
+        testerId: tester.testerProfile.id,
       })
     }
 

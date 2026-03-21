@@ -150,6 +150,9 @@ model Mission {
   reportCount       Int @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  parentMissionId   String?
+  parentMission     Mission?  @relation("MissionRetests", fields: [parentMissionId], references: [id])
+  retests           Mission[] @relation("MissionRetests")
   assets      MissionAsset[]
   questions   MissionQuestion[]
   assignments MissionAssignment[]
@@ -275,6 +278,8 @@ model MissionReport {
   missionId   String
   testerId    String
   reason      String
+  status      String   @default("PENDING")
+  note        String?
   createdAt   DateTime @default(now())
   @@unique([missionId, testerId])
   @@index([missionId])

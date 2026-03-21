@@ -9,8 +9,10 @@ import {
   useState,
 } from 'react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch } from '@/lib/api/client'
+import { identifyUser } from '@/lib/analytics/identify'
 import { registerSessionExpiredHandler } from '@/lib/auth/session'
 
 export type UserRole = 'FOUNDER' | 'TESTER' | 'ADMIN' | null
@@ -174,6 +176,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.replace(`/auth?next=${encodeURIComponent(nextPath)}`)
     })
   }, [applyUser, router])
+
+  useEffect(() => {
+    if (!user) {
+      posthog.reset()
+      return
+    }
+
+    identifyUser(user.id, {
+      role: user.role ?? 'UNASSIGNED',
+      email: user.email,
+    })
+  }, [user])
 
   const refetch = useCallback(async () => {
     return fetchCurrentUser()
