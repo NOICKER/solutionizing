@@ -3,9 +3,9 @@
 import { SpinnerIcon, formatCoins } from '@/components/solutionizing/ui'
 
 const coinPacks = [
-  { packId: 'starter', name: 'Starter', coins: 10000, price: 'Rs 90', discount: '10% OFF', popular: false },
-  { packId: 'growth', name: 'Growth', coins: 25000, price: 'Rs 200', discount: '20% OFF', popular: true },
-  { packId: 'scale', name: 'Scale', coins: 60000, price: 'Rs 420', discount: '30% OFF', popular: false },
+  { packId: 'starter', name: 'Starter', coins: 14900, price: '₹149', discount: '10% OFF', popular: false },
+  { packId: 'growth', name: 'Growth', coins: 34900, price: '₹349', discount: '20% OFF', popular: true },
+  { packId: 'scale', name: 'Scale', coins: 79900, price: '₹799', discount: '30% OFF', popular: false },
 ] as const
 
 function CoinPackCard({

@@ -46,9 +46,9 @@ const founderHowItWorks = [
 ] as const
 
 const coinPacks = [
-  { id: 'starter', name: 'Starter', coins: '1000 coins' },
-  { id: 'growth', name: 'Growth', coins: '5000 coins' },
-  { id: 'pro', name: 'Pro', coins: '10000 coins' },
+  { id: 'starter', name: 'Starter', coins: '14900 coins' },
+  { id: 'growth', name: 'Growth', coins: '34900 coins' },
+  { id: 'scale', name: 'Scale', coins: '79900 coins' },
 ] as const satisfies ReadonlyArray<{
   id: CoinPackId
   name: string
