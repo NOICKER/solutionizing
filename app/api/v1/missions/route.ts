@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { AssetType, Difficulty, MissionStatus, QuestionType, RepTier } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'

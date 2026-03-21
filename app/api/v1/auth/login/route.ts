@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'

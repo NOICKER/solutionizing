@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { validateBody } from '@/lib/api/validate'
 import { ok, serverError } from '@/lib/api/response'

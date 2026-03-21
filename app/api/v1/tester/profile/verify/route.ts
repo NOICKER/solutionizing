@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { z } from 'zod'
 import { requireAuth, requireRole } from '@/lib/api/middleware'
 import { prisma } from '@/lib/prisma'

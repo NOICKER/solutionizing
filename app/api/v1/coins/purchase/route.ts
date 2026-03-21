@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { z } from 'zod'
 import { TxType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'

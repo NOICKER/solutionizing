@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { basename, extname } from 'node:path'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'

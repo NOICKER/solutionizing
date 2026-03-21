@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { requireAuth } from '@/lib/api/middleware'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'

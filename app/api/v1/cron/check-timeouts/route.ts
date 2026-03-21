@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { AssignmentStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { timeoutQueue } from '@/lib/queue'

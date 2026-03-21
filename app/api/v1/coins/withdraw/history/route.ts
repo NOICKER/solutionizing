@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { TxType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'

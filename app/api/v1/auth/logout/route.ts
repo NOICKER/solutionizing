@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { requireAuth } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'

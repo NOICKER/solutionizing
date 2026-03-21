@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { requireAuth } from '@/lib/api/middleware'
 import { prisma } from '@/lib/prisma'
 import { ok, notFound, serverError, unauthorized } from '@/lib/api/response'
