@@ -2,7 +2,7 @@
 
 import { CheckCircle, XCircle } from 'lucide-react'
 import posthog from 'posthog-js'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -762,7 +762,20 @@ function MissionWizardContent() {
 export function MissionWizardPage() {
   return (
     <RequireAuth role="FOUNDER">
-      <MissionWizardContent />
+      <Suspense fallback={<MissionWizardPageLoading />}>
+        <MissionWizardContent />
+      </Suspense>
     </RequireAuth>
+  )
+}
+
+function MissionWizardPageLoading() {
+  return (
+    <div className="min-h-screen bg-[#faf9f7] p-8">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="h-64 animate-pulse rounded-3xl bg-white" />
+        <div className="h-64 animate-pulse rounded-3xl bg-white" />
+      </div>
+    </div>
   )
 }
