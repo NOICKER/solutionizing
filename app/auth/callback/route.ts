@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(
-    new URL('/select-role', request.url)
-  )
+  const redirectPath = type === 'recovery' ? '/auth/reset-password' : '/dashboard'
+
+  return NextResponse.redirect(new URL(redirectPath, request.url))
 }

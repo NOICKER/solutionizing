@@ -13,9 +13,10 @@ export async function POST(request: Request) {
   try {
     const body = await validateBody(request, ForgotPasswordSchema)
     const supabase = createSupabaseServerClient()
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
 
     await supabase.auth.resetPasswordForEmail(body.email, {
-      redirectTo: process.env.NEXT_PUBLIC_APP_URL + '/reset-password',
+      redirectTo: `${appUrl}/auth/reset-password`,
     })
 
     // Always return the same message — never reveal if email exists

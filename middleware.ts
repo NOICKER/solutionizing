@@ -44,6 +44,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   const isPublicRoute = publicRoutes.has(path)
   const role = user?.app_metadata?.role
+  const isResetPasswordRoute = path === '/reset-password' || path === '/auth/reset-password'
 
   const isAuthRoute = path.startsWith('/auth') || path.startsWith('/login') || path.startsWith('/register')
     || path.startsWith('/select-role') || path.startsWith('/forgot-password')
@@ -68,6 +69,10 @@ export async function middleware(request: NextRequest) {
   if (user) {
     // Logged-in users routing
     if (isAuthRoute) {
+      if (isResetPasswordRoute) {
+        return response
+      }
+
       if (path === '/select-role') {
         if (role === 'FOUNDER') return redirectWithCookies(request, response, '/dashboard/founder')
         if (role === 'TESTER') return redirectWithCookies(request, response, '/dashboard/tester')
