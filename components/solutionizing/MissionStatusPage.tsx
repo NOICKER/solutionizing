@@ -13,6 +13,8 @@ import {
   NotFoundPanel,
   clampPercent,
   formatCoins,
+  SpinnerIcon,
+  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
 export function MissionStatusPage({ missionId }: { missionId: string }) {
@@ -24,6 +26,8 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
   const [dialogType, setDialogType] = useState<'pause' | 'close' | null>(null)
   const [dialogLoading, setDialogLoading] = useState(false)
   const [dialogError, setDialogError] = useState('')
+  const [resumeLoading, setResumeLoading] = useState(false)
+  const [resumeError, setResumeError] = useState('')
 
   const loadMission = useCallback(async () => {
     setError('')
@@ -100,6 +104,29 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
       )
     } finally {
       setDialogLoading(false)
+    }
+  }
+
+  async function handleResume() {
+    if (!mission) {
+      return
+    }
+
+    setResumeLoading(true)
+    setResumeError('')
+
+    try {
+      await apiFetch(`/api/v1/missions/${mission.id}/resume`, { method: 'POST' })
+      toast.success('Mission resumed.')
+      await loadMission()
+    } catch (fetchError) {
+      setResumeError(
+        isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'
+          ? 'Check your internet connection'
+          : 'Something went wrong. Please try again.'
+      )
+    } finally {
+      setResumeLoading(false)
     }
   }
 
@@ -264,12 +291,27 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
           ) : null}
 
           {mission.status === 'PAUSED' ? (
-            <button
-              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-red-500/30 bg-red-500/10 px-8 py-4 font-bold tracking-wide text-red-500 transition-all hover:bg-red-500/20 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#faf9f7] dark:focus:ring-offset-gray-900"
-              onClick={() => setDialogType('close')}
-            >
-              CLOSE MISSION
-            </button>
+            <>
+              <button
+                className={`inline-flex items-center gap-2 px-8 py-4 text-sm ${primaryButtonClass}`}
+                onClick={() => void handleResume()}
+                disabled={resumeLoading}
+              >
+                {resumeLoading ? <SpinnerIcon /> : null}
+                RESUME MISSION
+              </button>
+              <button
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-red-500/30 bg-red-500/10 px-8 py-4 font-bold tracking-wide text-red-500 transition-all hover:bg-red-500/20 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#faf9f7] dark:focus:ring-offset-gray-900"
+                onClick={() => setDialogType('close')}
+              >
+                CLOSE MISSION
+              </button>
+              {resumeError ? (
+                <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-2 text-sm font-medium text-red-500 dark:text-red-400">
+                  {resumeError}
+                </motion.p>
+              ) : null}
+            </>
           ) : null}
 
           {mission.status === 'COMPLETED' ? (

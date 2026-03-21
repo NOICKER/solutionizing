@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/api/middleware'
-import { ok, apiError, badRequest, forbidden, notFound, serverError } from '@/lib/api/response'
+import { requireRole } from '@/lib/api/middleware'
+import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { assignmentQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
 
 async function findOwnedMission(missionId: string, founderId: string) {
@@ -18,28 +19,10 @@ export async function POST(
   context: { params: { missionId: string } }
 ) {
   try {
-    const authUser = await requireAuth()
-    const founder = await prisma.user.findUnique({
-      where: { id: authUser.id },
-      include: {
-        founderProfile: true,
-      },
-    })
+    const founder = await requireRole('FOUNDER')
 
-    if (!founder) {
-      return notFound('User')
-    }
-
-    if (founder.isSuspended) {
-      return apiError('Account suspended', 'ACCOUNT_SUSPENDED', 403)
-    }
-
-    if (founder.isDeleted) {
-      return apiError('Account deleted. Please contact support to reactivate.', 'ACCOUNT_DELETED', 403)
-    }
-
-    if (founder.role !== 'FOUNDER' || !founder.founderProfile) {
-      return forbidden()
+    if (!founder.founderProfile) {
+      return notFound('Founder profile')
     }
 
     const mission = await findOwnedMission(
@@ -66,6 +49,11 @@ export async function POST(
         questions: { orderBy: { order: 'asc' } },
       },
     })
+
+    // If there are still testers needed, add job to reassign
+    if (mission.testersCompleted < mission.testersRequired) {
+      await assignmentQueue.add('assign', { missionId: mission.id })
+    }
 
     return ok(updatedMission)
   } catch (err) {
