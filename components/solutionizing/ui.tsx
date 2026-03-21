@@ -97,6 +97,16 @@ export function MissionStatusBadge({ status }: { status: string }) {
   )
 }
 
+export function RetestCountChip({ count }: { count: number }) {
+  const label = `${count} retest${count === 1 ? '' : 's'}`
+
+  return (
+    <div className="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-bold text-[#4463d6]">
+      ↻ {label}
+    </div>
+  )
+}
+
 export function ReputationTierBadge({ tier }: { tier: string }) {
   const styleMap: Record<string, string> = {
     NEWCOMER: 'bg-gray-100 text-gray-700',

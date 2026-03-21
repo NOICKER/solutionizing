@@ -9,6 +9,19 @@ import { checkMissionContent } from '@/lib/safety/contentCheck'
 import { z } from 'zod'
 import { logApiRouteError } from '@/lib/api/log'
 
+const missionInclude = {
+  assets: { orderBy: { order: 'asc' as const } },
+  questions: { orderBy: { order: 'asc' as const } },
+  retests: {
+    select: {
+      id: true,
+      title: true,
+      completedAt: true,
+    },
+    orderBy: { createdAt: 'asc' as const },
+  },
+}
+
 const MissionListQuerySchema = z.object({
   status: z.nativeEnum(MissionStatus).optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -139,10 +152,7 @@ export async function GET(request: Request) {
       prisma.mission.count({ where }),
       prisma.mission.findMany({
         where,
-        include: {
-          assets: { orderBy: { order: 'asc' } },
-          questions: { orderBy: { order: 'asc' } },
-        },
+        include: missionInclude,
         orderBy: { createdAt: 'desc' },
         skip,
         take: query.limit,
@@ -217,10 +227,7 @@ export async function POST(request: Request) {
             })),
         },
       },
-      include: {
-        assets: { orderBy: { order: 'asc' } },
-        questions: { orderBy: { order: 'asc' } },
-      },
+      include: missionInclude,
     })
 
     return created(mission)

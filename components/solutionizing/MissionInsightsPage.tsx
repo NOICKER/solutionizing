@@ -1,19 +1,26 @@
 "use client"
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReactNode, useCallback, useEffect, useState, useMemo } from 'react'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { ApiFeedbackQuestion, ApiMissionDetail, ApiMissionFeedback } from '@/types/api'
+import {
+  ApiFeedbackQuestion,
+  ApiMissionDetail,
+  ApiMissionFeedback,
+  ApiMissionRetestSummary,
+} from '@/types/api'
 import {
   NotFoundPanel,
   StarRow,
   primaryButtonClass,
   textFieldClass,
+  SpinnerIcon,
 } from '@/components/solutionizing/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  ArrowLeft, ArrowRight, Clock, Star, 
+  ArrowLeft, ArrowRight, Clock, Star, LineChart,
   MessageSquare, Users, Download, Sparkles,
   ChevronUp, BarChart3,
   MessageCircle, Loader2, Target
@@ -53,6 +60,29 @@ function getQuestionMeasureCopy(question: ApiFeedbackQuestion) {
 }
 
 type CompletedAssignment = NonNullable<ApiMissionDetail['completedAssignments']>[number]
+type RetestTimelineRun = ApiMissionRetestSummary & { clarityScore: number | null }
+
+function getRetestTimelineTimestamp(completedAt: string | null) {
+  if (!completedAt) {
+    return Number.MAX_SAFE_INTEGER
+  }
+
+  const timestamp = Date.parse(completedAt)
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp
+}
+
+async function loadMissionClarityScore(missionId: string) {
+  try {
+    const feedback = await apiFetch<ApiMissionFeedback>(`/api/v1/missions/${missionId}/feedback`)
+    return feedback.summary.clarityScore ?? null
+  } catch (error) {
+    if (isApiClientError(error) && error.status === 400) {
+      return null
+    }
+
+    return null
+  }
+}
 
 function SummaryStatCard({
   label,
@@ -88,13 +118,13 @@ function SummaryStatCard({
           </div>
         )}
       </div>
-      
+
       <div className="relative mb-2 flex items-baseline gap-2">
         <div className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-700">
           {value}
         </div>
       </div>
-      
+
       {footer && <div className="relative mt-4 border-t border-slate-100/80 pt-4">{footer}</div>}
     </motion.div>
   )
@@ -441,7 +471,406 @@ function RateTestersSection({
   )
 }
 
+/*
+function RetestDeltaSection({
+  mission,
+  currentClarityScore,
+}: {
+  mission: ApiMissionDetail
+  currentClarityScore: number | null
+}) {
+  const router = useRouter()
+  const [timelineRuns, setTimelineRuns] = useState<RetestTimelineRun[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const currentRun = {
+      id: mission.id,
+      title: mission.title,
+      completedAt: mission.completedAt,
+    }
+
+    setTimelineRuns([{ ...currentRun, clarityScore: currentClarityScore }])
+
+    async function loadTimeline() {
+      const parentMission = mission.parentMissionId
+        ? await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.parentMissionId}`).catch(() => null)
+        : null
+
+      const relatedRuns = [
+        ...(parentMission
+          ? [{ id: parentMission.id, title: parentMission.title, completedAt: parentMission.completedAt }]
+          : []),
+        ...(parentMission?.retests ?? []),
+        currentRun,
+        ...(mission.retests ?? []),
+      ]
+
+      const uniqueRuns = Array.from(new Map(relatedRuns.map((run) => [run.id, run])).values())
+      const clarityScores = await Promise.all(
+        uniqueRuns.map((run) =>
+          run.id === mission.id ? Promise.resolve(currentClarityScore) : loadMissionClarityScore(run.id)
+        )
+      )
+
+      if (isCancelled) {
+        return
+      }
+
+      setTimelineRuns(
+        uniqueRuns
+          .map((run, index) => ({
+            ...run,
+            clarityScore: clarityScores[index],
+          }))
+          .sort(
+            (leftRun, rightRun) =>
+              getRetestTimelineTimestamp(leftRun.completedAt) -
+              getRetestTimelineTimestamp(rightRun.completedAt)
+          )
+      )
+    }
+
+    void loadTimeline()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [
+    currentClarityScore,
+    mission.completedAt,
+    mission.id,
+    mission.parentMissionId,
+    mission.retests,
+    mission.title,
+  ])
+
+  const currentRun = timelineRuns.find((run) => run.id === mission.id) ?? null
+  const currentRunIndex = timelineRuns.findIndex((run) => run.id === mission.id)
+  const previousRun =
+    currentRunIndex <= 0
+      ? null
+      : timelineRuns
+          .slice(0, currentRunIndex)
+          .reverse()
+          .find((run) => run.completedAt !== null) ?? null
+
+  const scoreDelta =
+    currentRun?.clarityScore !== null && currentRun?.clarityScore !== undefined &&
+    previousRun?.clarityScore !== null && previousRun?.clarityScore !== undefined
+      ? currentRun.clarityScore - previousRun.clarityScore
+      : null
+
+  let deltaToneClass = 'bg-slate-100 text-slate-600'
+  let deltaLabel = 'Baseline run'
+
+  if (previousRun) {
+    if (scoreDelta === null) {
+      deltaLabel = 'No score delta yet'
+    } else if (scoreDelta === 0) {
+      deltaLabel = 'No change since last run'
+    } else {
+      deltaToneClass = scoreDelta > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+      deltaLabel = `${scoreDelta > 0 ? '+' : ''}${scoreDelta.toFixed(1)} since last run`
+    }
+  }
+
+  async function handleRunRetest() {
+    setSubmitError(null)
+    setIsSubmitting(true)
+
+    try {
+      const newMission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.id}/retest`, {
+        method: 'POST',
+      })
+
+      router.push(`/mission/wizard?edit=${newMission.id}`)
+    } catch (error) {
+      setSubmitError(isApiClientError(error) ? error.message : 'Something went wrong. Try again.')
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.45 }}
+      className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
+    >
+      <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
+            <LineChart className="text-[#D97757]" />
+            Retest Delta
+          </h2>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Track clarity changes across every related run and launch the next retest from here.
+          </p>
+        </div>
+          <div className="flex flex-col items-start gap-3 lg:items-end">
+            {/*
+            <div className={`rounded-full px-4 py-2 text-sm font-black ${deltaToneClass}`}>
+            {delta > 0 ? '↑' : '↓'} {Math.abs(delta).toFixed(1)} since last run
+          </div>
+        )}
+      </div>
+
+      <div className="relative flex justify-between gap-2 pt-4">
+        <div className="absolute left-0 top-[2.25rem] -z-10 h-0.5 w-full bg-slate-200" />
+        
+        {sorted.map((item, idx) => {
+          const isCurrent = item.id === currentMissionId
+          return (
+            <Link key={item.id} href={`/mission/insights/${item.id}`} className="group flex flex-col items-center gap-3">
+              <div className={`relative flex h-4 w-4 items-center justify-center rounded-full ring-4 ${isCurrent ? 'bg-[#D97757] ring-[#fdf0eb]' : 'bg-slate-300 ring-white group-hover:bg-slate-400'}`}>
+                {isCurrent && <div className="absolute -top-8 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-bold text-white shadow-lg">You are here</div>}
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <span className={`text-xs font-bold ${isCurrent ? 'text-slate-900' : 'text-slate-500'}`}>Run {idx + 1}</span>
+                <span className="text-xs font-medium text-slate-400">{item.completedAt ? format(new Date(item.completedAt), 'MMM d') : 'Draft'}</span>
+                {item.clarityScore && (
+                  <span className="mt-1 font-mono text-sm font-bold text-[#D97757]">{item.clarityScore.toFixed(1)}</span>
+                )}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </motion.section>
+  )
+}
+
 /* ────────────────────────────────────────────────────────────────────────────────────────────── */
+
+function RetestDeltaSection({
+  mission,
+  currentClarityScore,
+}: {
+  mission: ApiMissionDetail
+  currentClarityScore: number | null
+}) {
+  const router = useRouter()
+  const [timelineRuns, setTimelineRuns] = useState<RetestTimelineRun[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const currentRun = {
+      id: mission.id,
+      title: mission.title,
+      completedAt: mission.completedAt,
+    }
+
+    setTimelineRuns([{ ...currentRun, clarityScore: currentClarityScore }])
+
+    async function loadTimeline() {
+      const parentMission = mission.parentMissionId
+        ? await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.parentMissionId}`).catch(() => null)
+        : null
+
+      const relatedRuns = [
+        ...(parentMission
+          ? [{ id: parentMission.id, title: parentMission.title, completedAt: parentMission.completedAt }]
+          : []),
+        ...(parentMission?.retests ?? []),
+        currentRun,
+        ...(mission.retests ?? []),
+      ]
+
+      const uniqueRuns = Array.from(new Map(relatedRuns.map((run) => [run.id, run])).values())
+      const clarityScores = await Promise.all(
+        uniqueRuns.map((run) =>
+          run.id === mission.id ? Promise.resolve(currentClarityScore) : loadMissionClarityScore(run.id)
+        )
+      )
+
+      if (isCancelled) {
+        return
+      }
+
+      setTimelineRuns(
+        uniqueRuns
+          .map((run, index) => ({
+            ...run,
+            clarityScore: clarityScores[index],
+          }))
+          .sort(
+            (leftRun, rightRun) =>
+              getRetestTimelineTimestamp(leftRun.completedAt) -
+              getRetestTimelineTimestamp(rightRun.completedAt)
+          )
+      )
+    }
+
+    void loadTimeline()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [
+    currentClarityScore,
+    mission.completedAt,
+    mission.id,
+    mission.parentMissionId,
+    mission.retests,
+    mission.title,
+  ])
+
+  const currentRun = timelineRuns.find((run) => run.id === mission.id) ?? null
+  const currentRunIndex = timelineRuns.findIndex((run) => run.id === mission.id)
+  const previousRun =
+    currentRunIndex <= 0
+      ? null
+      : timelineRuns
+          .slice(0, currentRunIndex)
+          .reverse()
+          .find((run) => run.completedAt !== null) ?? null
+
+  const scoreDelta =
+    currentRun?.clarityScore !== null &&
+    currentRun?.clarityScore !== undefined &&
+    previousRun?.clarityScore !== null &&
+    previousRun?.clarityScore !== undefined
+      ? currentRun.clarityScore - previousRun.clarityScore
+      : null
+
+  let deltaToneClass = 'bg-slate-100 text-slate-600'
+  let deltaLabel = 'Baseline run'
+
+  if (previousRun) {
+    if (scoreDelta === null) {
+      deltaLabel = 'No score delta yet'
+    } else if (scoreDelta === 0) {
+      deltaLabel = 'No change since last run'
+    } else {
+      deltaToneClass =
+        scoreDelta > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+      deltaLabel = `${scoreDelta > 0 ? '+' : ''}${scoreDelta.toFixed(1)} since last run`
+    }
+  }
+
+  async function handleRunRetest() {
+    setSubmitError(null)
+    setIsSubmitting(true)
+
+    try {
+      const newMission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.id}/retest`, {
+        method: 'POST',
+      })
+
+      router.push(`/mission/wizard?edit=${newMission.id}`)
+    } catch (error) {
+      setSubmitError(isApiClientError(error) ? error.message : 'Something went wrong. Try again.')
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.45 }}
+      className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
+    >
+      <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
+              <LineChart className="text-[#D97757]" />
+              Retest Delta
+            </h2>
+            <p className="mt-2 text-sm font-medium text-slate-500">
+              Track clarity changes across every related run and launch the next retest from here.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-start gap-3 lg:items-end">
+            <div className={`rounded-full px-4 py-2 text-sm font-black ${deltaToneClass}`}>
+              {deltaLabel}
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleRunRetest()}
+              disabled={isSubmitting}
+              className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+            >
+              {isSubmitting ? <SpinnerIcon /> : null}
+              Run Retest
+            </button>
+            {submitError ? <p className="text-sm font-medium text-red-600">{submitError}</p> : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-8">
+        <div className="overflow-x-auto">
+          <div className="relative flex min-w-max items-start gap-5 pb-2">
+            <div className="absolute left-8 right-8 top-5 h-px bg-slate-200" />
+
+            {timelineRuns.map((run, index) => {
+              const isCurrentRun = run.id === mission.id
+              const href = run.completedAt
+                ? `/mission/insights/${run.id}`
+                : `/mission/wizard?edit=${run.id}`
+
+              return (
+                <Link key={run.id} href={href} className="relative z-10 flex w-52 shrink-0 flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`h-4 w-4 rounded-full ring-4 ${
+                        isCurrentRun ? 'bg-[#D97757] ring-[#fdf0eb]' : 'bg-slate-300 ring-white'
+                      }`}
+                    />
+                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-slate-500">
+                      Run {index + 1}
+                    </span>
+                  </div>
+
+                  <div
+                    className={`rounded-2xl border p-5 shadow-sm transition-colors ${
+                      isCurrentRun
+                        ? 'border-[#D97757]/30 bg-[#fff7f3]'
+                        : 'border-slate-200 bg-white hover:border-[#D97757]/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="line-clamp-2 text-sm font-black text-slate-900">{run.title}</div>
+                      {isCurrentRun ? (
+                        <div className="rounded-full bg-[#D97757] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
+                          Current
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <p className="mt-2 text-xs font-medium text-slate-500">
+                      {run.completedAt ? format(new Date(run.completedAt), 'MMM d, yyyy') : 'Draft retest'}
+                    </p>
+
+                    <div className="mt-4">
+                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400">
+                        Clarity score
+                      </div>
+                      <div className="mt-1 text-2xl font-black text-[#1a1625]">
+                        {run.clarityScore === null ? 'Pending' : run.clarityScore.toFixed(1)}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </motion.section>
+  )
+}
 
 export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const [mission, setMission] = useState<ApiMissionDetail | null>(null)
@@ -546,6 +975,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const completedAssignments = mission.completedAssignments ?? []
   const shouldShowRateTesters =
     mission.status === 'COMPLETED' && completedAssignments.length > 0
+  const shouldShowRetestDelta = mission.status === 'COMPLETED'
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#faf9f7]/50 via-white to-[#fdf0eb]/50 pb-24 pt-8 sm:pt-12 relative overflow-hidden">
@@ -598,15 +1028,17 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
               </p>
             </div>
 
-            <button
-              type="button"
-              disabled
-              title="PDF export coming soon"
-              className="inline-flex h-12 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gradient-to-b from-white to-slate-50 px-6 font-bold text-slate-400 shadow-sm ring-1 ring-slate-200/80 opacity-80"
-            >
-              <Download size={18} />
-              Export PDF
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                disabled
+                title="PDF export coming soon"
+                className="inline-flex h-12 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gradient-to-b from-white to-slate-50 px-6 font-bold text-slate-400 shadow-sm ring-1 ring-slate-200/80 opacity-80"
+              >
+                <Download size={18} />
+                Export PDF
+              </button>
+            </div>
           </div>
         </motion.section>
 
@@ -717,6 +1149,13 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
             missionId={missionId}
             assignments={completedAssignments}
             onSubmitted={handleAssignmentRated}
+          />
+        ) : null}
+
+        {shouldShowRetestDelta ? (
+          <RetestDeltaSection
+            mission={mission}
+            currentClarityScore={feedback.summary.clarityScore ?? null}
           />
         ) : null}
       </div>

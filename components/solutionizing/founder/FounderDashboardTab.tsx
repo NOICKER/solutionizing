@@ -10,6 +10,7 @@ import {
   EmptyStatePanel,
   ErrorStatePanel,
   MissionStatusBadge,
+  RetestCountChip,
   clampPercent,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
@@ -26,7 +27,7 @@ function getDashboardMissionHref(mission: ApiMission) {
   }
 
   if (mission.status === 'DRAFT' || mission.status === 'REJECTED') {
-    return `/mission/wizard?edit=${mission.id}`
+    return `/mission/wizard?edit=true&missionId=${mission.id}`
   }
 
   return `/mission/status/${mission.id}`
@@ -88,7 +89,12 @@ function RecentMissionCard({
     <div className="rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-800">
       <div className="mb-4 flex items-start justify-between gap-4">
         <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{mission.title}</h3>
-        <MissionStatusBadge status={mission.status} />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <MissionStatusBadge status={mission.status} />
+          {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
+            <RetestCountChip count={mission.retests!.length} />
+          ) : null}
+        </div>
       </div>
 
       <div className="mb-4">

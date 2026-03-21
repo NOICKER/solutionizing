@@ -10,6 +10,7 @@ import {
   EmptyStatePanel,
   ErrorStatePanel,
   MissionStatusBadge,
+  RetestCountChip,
   SpinnerIcon,
   clampPercent,
   mutedButtonClass,
@@ -27,7 +28,7 @@ function getMissionDestination(mission: ApiMission) {
   }
 
   if (mission.status === 'DRAFT') {
-    return `/mission/wizard?edit=${mission.id}`
+    return `/mission/wizard?edit=true&missionId=${mission.id}`
   }
 
   return null
@@ -41,6 +42,7 @@ interface FounderMissionsTabProps {
   actionLoading: { missionId: string; action: string } | null
   onRetry: () => void
   onSubmitMission: (mission: ApiMission) => void
+  onResumeMission: (mission: ApiMission) => void
   onOpenDialog: (type: 'pause' | 'close', mission: ApiMission) => void
 }
 
@@ -52,6 +54,7 @@ export function FounderMissionsTab({
   actionLoading,
   onRetry,
   onSubmitMission,
+  onResumeMission,
   onOpenDialog,
 }: FounderMissionsTabProps) {
   const router = useRouter()
@@ -83,6 +86,7 @@ export function FounderMissionsTab({
         {missions.map((mission) => {
           const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
           const isSubmitting = actionLoading?.missionId === mission.id && actionLoading.action === 'submit'
+          const isResuming = actionLoading?.missionId === mission.id && actionLoading.action === 'resume'
           const missionHref = getMissionDestination(mission)
           const isCardClickable = Boolean(missionHref)
 
@@ -110,12 +114,17 @@ export function FounderMissionsTab({
               role={isCardClickable ? 'link' : undefined}
               tabIndex={isCardClickable ? 0 : undefined}
             >
-              <div className="mb-4 flex items-start justify-between">
+              <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="mb-1 text-lg font-black text-[#1a1625] dark:text-white">{mission.title}</h3>
                   {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-[#6b687a] dark:text-gray-400">{mission.goal}</p> : null}
                 </div>
-                <MissionStatusBadge status={mission.status} />
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <MissionStatusBadge status={mission.status} />
+                  {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
+                    <RetestCountChip count={mission.retests!.length} />
+                  ) : null}
+                </div>
               </div>
 
               {mission.status === 'PENDING_REVIEW' ? (
@@ -142,7 +151,7 @@ export function FounderMissionsTab({
               {mission.status === 'DRAFT' ? (
                 <div className="flex items-center gap-3">
                   <Link
-                    href={`/mission/wizard?edit=${mission.id}`}
+                    href={`/mission/wizard?edit=true&missionId=${mission.id}`}
                     className={`px-4 py-2 text-sm ${outlineButtonClass}`}
                     onClick={(event) => event.stopPropagation()}
                   >
@@ -203,7 +212,18 @@ export function FounderMissionsTab({
                       VIEW STATUS {'->'}
                     </Link>
                     <button
-                      className="text-sm font-semibold text-red-600 hover:underline"
+                      className={`flex items-center gap-2 px-4 py-2 text-sm ${primaryButtonClass}`}
+                      disabled={isResuming}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onResumeMission(mission)
+                      }}
+                    >
+                      {isResuming ? <SpinnerIcon /> : null}
+                      RESUME
+                    </button>
+                    <button
+                      className="ml-auto text-sm font-semibold text-red-600 hover:underline"
                       onClick={(event) => {
                         event.stopPropagation()
                         onOpenDialog('close', mission)
@@ -212,7 +232,6 @@ export function FounderMissionsTab({
                       CLOSE
                     </button>
                   </div>
-                  <p className="text-sm text-[#9b98a8] dark:text-gray-400">Contact support to resume</p>
                 </div>
               ) : null}
 
@@ -238,7 +257,7 @@ export function FounderMissionsTab({
                     <p className="text-sm text-red-800">{mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
                   </div>
                   <Link
-                    href={`/mission/wizard?edit=${mission.id}`}
+                    href={`/mission/wizard?edit=true&missionId=${mission.id}`}
                     className={`inline-flex px-6 py-3 ${primaryButtonClass}`}
                     onClick={(event) => event.stopPropagation()}
                   >

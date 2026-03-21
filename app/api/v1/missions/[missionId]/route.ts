@@ -15,6 +15,19 @@ import { checkMissionContent } from '@/lib/safety/contentCheck'
 import { z } from 'zod'
 import { logApiRouteError } from '@/lib/api/log'
 
+const missionInclude = {
+  assets: { orderBy: { order: 'asc' as const } },
+  questions: { orderBy: { order: 'asc' as const } },
+  retests: {
+    select: {
+      id: true,
+      title: true,
+      completedAt: true,
+    },
+    orderBy: { createdAt: 'asc' as const },
+  },
+}
+
 const MissionAssetSchema = z.object({
   type: z.nativeEnum(AssetType),
   url: z.string().optional(),
@@ -114,10 +127,7 @@ async function assertMissionIsSafe(
 async function findOwnedMission(missionId: string, founderId: string) {
   return prisma.mission.findFirst({
     where: { id: missionId, founderId },
-    include: {
-      assets: { orderBy: { order: 'asc' } },
-      questions: { orderBy: { order: 'asc' } },
-    },
+    include: missionInclude,
   })
 }
 
@@ -196,7 +206,7 @@ export async function PATCH(
       return notFound('Mission')
     }
 
-    if (mission.status !== 'DRAFT') {
+    if (mission.status !== 'DRAFT' && mission.status !== 'REJECTED') {
       return apiError('Mission is not editable', 'MISSION_NOT_EDITABLE', 400)
     }
 
@@ -246,6 +256,7 @@ export async function PATCH(
           coinPerTester,
           coinPlatformFee,
           coinCostTotal,
+          ...(mission.status === 'REJECTED' ? { status: 'DRAFT' } : {}),
         },
       })
 
@@ -280,10 +291,7 @@ export async function PATCH(
 
       return tx.mission.findUnique({
         where: { id: mission.id },
-        include: {
-          assets: { orderBy: { order: 'asc' } },
-          questions: { orderBy: { order: 'asc' } },
-        },
+        include: missionInclude,
       })
     })
 

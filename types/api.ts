@@ -40,6 +40,12 @@ export interface ApiMissionQuestion {
   isRequired: boolean
 }
 
+export interface ApiMissionRetestSummary {
+  id: string
+  title: string
+  completedAt: string | null
+}
+
 export interface ApiMission {
   id: string
   title: string
@@ -65,6 +71,8 @@ export interface ApiMission {
   updatedAt: string
   assets: ApiMissionAsset[]
   questions: ApiMissionQuestion[]
+  parentMissionId?: string | null
+  retests?: ApiMissionRetestSummary[]
 }
 
 export interface ApiMissionDetail extends ApiMission {
