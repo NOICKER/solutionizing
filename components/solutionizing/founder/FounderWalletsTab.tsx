@@ -98,7 +98,7 @@ export function FounderWalletsTab({
           <div className="mt-4 space-y-3 text-sm text-[#6b687a] dark:text-gray-400">
             <p>Choose a pack below to add credits to your founder wallet.</p>
             <p>Coins are used when missions launch and tester slots get funded.</p>
-            <p>During beta, purchases are credited instantly after checkout.</p>
+            <p>Coin top-ups are available only when checkout is enabled for this environment.</p>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@ export function FounderWalletsTab({
       </div>
 
       <div className="mt-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
-        <strong>Beta notice:</strong> Payment processing coming soon - coins are credited instantly during beta.
+        <strong>Beta notice:</strong> Real payment processing is still being finalized. Purchases may be temporarily unavailable.
       </div>
     </section>
   )

@@ -338,6 +338,8 @@ function FounderDashboardContent() {
       setPurchaseError(
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
           ? 'Check your internet connection'
+          : isApiClientError(error) && error.code === 'PAYMENTS_UNAVAILABLE'
+            ? error.message
           : 'Purchase failed. Try again.'
       )
     } finally {

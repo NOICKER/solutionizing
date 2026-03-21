@@ -15,7 +15,7 @@ import {
 } from '@/components/solutionizing/onboarding/OnboardingShell'
 
 type FounderOnboardingStep = 1 | 2 | 3 | 4 | 5
-type CoinPackId = 'starter' | 'growth' | 'pro'
+type CoinPackId = 'starter' | 'growth' | 'scale'
 
 interface FounderOnboardingProps {
   initialDisplayName: string

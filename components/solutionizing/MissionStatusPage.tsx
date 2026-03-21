@@ -84,18 +84,26 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
 
     try {
       if (dialogType === 'pause') {
-        await apiFetch(`/api/v1/missions/${mission.id}/pause`, { method: 'POST' })
+        const updatedMission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.id}/pause`, {
+          method: 'POST',
+        })
+        setMission(updatedMission)
       } else {
-        const response = await apiFetch<{ refundAmount?: number; refundCoins?: number }>(
+        const response = await apiFetch<{
+          mission: ApiMissionDetail
+          refundAmount?: number
+          refundCoins?: number
+        }>(
           `/api/v1/missions/${mission.id}/close`,
           { method: 'POST' }
         )
+        setMission(response.mission)
         const refund = response.refundCoins ?? response.refundAmount ?? 0
         toast.success(`Mission closed. ${formatCoins(refund)} coins refunded to your balance.`)
       }
 
       setDialogType(null)
-      await loadMission()
+      setCountdown(30)
     } catch (fetchError) {
       setDialogError(
         isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'
@@ -116,9 +124,12 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
     setResumeError('')
 
     try {
-      await apiFetch(`/api/v1/missions/${mission.id}/resume`, { method: 'POST' })
+      const updatedMission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.id}/resume`, {
+        method: 'POST',
+      })
+      setMission(updatedMission)
       toast.success('Mission resumed.')
-      await loadMission()
+      setCountdown(30)
     } catch (fetchError) {
       setResumeError(
         isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'

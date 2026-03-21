@@ -3,7 +3,7 @@ import { TxType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
-import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { ok, badRequest, notFound, serverError, apiError } from '@/lib/api/response'
 import { COIN_PACKS } from '@/lib/business/coins'
 import { logApiRouteError } from '@/lib/api/log'
 
@@ -26,8 +26,18 @@ export async function POST(request: Request) {
       return notFound('Founder profile')
     }
 
-    // TODO: Replace with real payment gateway
-    // (Razorpay or Stripe) before going live
+    const allowBetaInstantCoinCredit = process.env.ALLOW_BETA_INSTANT_COIN_CREDIT === 'true'
+
+    if (!allowBetaInstantCoinCredit) {
+      return apiError(
+        'Coin purchases are temporarily unavailable until checkout is enabled.',
+        'PAYMENTS_UNAVAILABLE',
+        503
+      )
+    }
+
+    // Temporary beta flow: direct credits are only allowed behind
+    // ALLOW_BETA_INSTANT_COIN_CREDIT=true.
     const result = await prisma.$transaction(async (tx) => {
       const profile = await tx.founderProfile.update({
         where: { id: founder.founderProfile!.id },

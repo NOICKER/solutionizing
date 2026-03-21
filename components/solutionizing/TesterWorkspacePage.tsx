@@ -121,14 +121,22 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       return
     }
 
-    if (redirectCountdown <= 0) {
-      router.push('/dashboard/tester')
-      return
-    }
+    setRedirectCountdown(5)
 
-    const timer = window.setTimeout(() => setRedirectCountdown((value) => value - 1), 1000)
-    return () => window.clearTimeout(timer)
-  }, [phase, redirectCountdown, router])
+    const timer = window.setInterval(() => {
+      setRedirectCountdown((value) => {
+        if (value <= 1) {
+          window.clearInterval(timer)
+          router.push('/dashboard/tester')
+          return 0
+        }
+
+        return value - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [phase, router])
 
   const questions = useMemo(
     () => [...(assignment?.mission.questions ?? [])].sort((left, right) => left.order - right.order),
@@ -259,12 +267,12 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       )
 
       const stats = await apiFetch<ApiTesterStats>('/api/v1/tester/stats').catch(() => null)
-      await refetch()
       posthog.capture('feedback_submitted', {
         missionId: activeAssignment.mission.id,
       })
       setSuccessState({ coinsEarned: response.coinsEarned, newTier: response.newTier, stats })
       setPhase('success')
+      void refetch().catch(() => undefined)
     } catch (error) {
       if (isApiClientError(error)) {
         if (error.code === 'MISSION_FULL' && error.status === 409) {

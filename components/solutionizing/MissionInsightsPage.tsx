@@ -878,6 +878,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const [feedback, setFeedback] = useState<ApiMissionFeedback | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [notReady, setNotReady] = useState(false)
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null)
   const [synthesisLoading, setSynthesisLoading] = useState(false)
@@ -885,11 +886,17 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const loadData = useCallback(async () => {
     setIsLoading(true)
     setNotReady(false)
+    setLoadError('')
     try {
       const [missionResponse, feedbackResponse] = await Promise.all([
         apiFetch<ApiMissionDetail>(`/api/v1/missions/${missionId}`),
         apiFetch<ApiMissionFeedback>(`/api/v1/missions/${missionId}/feedback`).catch((error) => {
-          if (isApiClientError(error) && error.status === 400) {
+          if (
+            isApiClientError(error) &&
+            error.status === 400 &&
+            error.code === 'BAD_REQUEST' &&
+            error.message.toLowerCase().includes('no completed responses')
+          ) {
             setNotReady(true)
             return null
           }
@@ -902,6 +909,12 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
     } catch (error) {
       if (isApiClientError(error) && error.status === 404) {
         setIsNotFound(true)
+      } else {
+        setLoadError(
+          isApiClientError(error) && error.code === 'NETWORK_ERROR'
+            ? 'Check your internet connection'
+            : 'Something went wrong while loading mission insights.'
+        )
       }
     } finally {
       setIsLoading(false)
@@ -950,7 +963,29 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
     )
   }
 
-  if (isNotFound || !mission) {
+  if (isNotFound) {
+    return <NotFoundPanel backHref="/dashboard/founder" />
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
+        <div className="w-full max-w-xl rounded-panel border border-red-200 bg-red-50 p-8 text-center">
+          <h1 className="text-2xl font-black text-slate-900">Unable to load insights</h1>
+          <p className="mt-3 text-sm font-medium text-slate-600">{loadError}</p>
+          <button
+            type="button"
+            onClick={() => void loadData()}
+            className={`mt-6 px-6 py-3 text-sm ${primaryButtonClass}`}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!mission) {
     return <NotFoundPanel backHref="/dashboard/founder" />
   }
 
