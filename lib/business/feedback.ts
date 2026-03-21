@@ -34,7 +34,12 @@ export async function computeFeedback(missionId: string) {
 
   if (completedAssignments.length === 0) {
     return {
-      summary: { completedCount: 0 },
+      summary: {
+        completedCount: 0,
+        clarityScore: null,
+        recommendationLikelihood: null,
+        representativeQuote: null,
+      },
       byQuestion: [],
       timingMetrics: null,
     }
