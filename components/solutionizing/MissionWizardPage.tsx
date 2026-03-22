@@ -60,14 +60,14 @@ function StepIndicator({ step }: { step: number }) {
           Step {step} of 4
         </div>
       </div>
-      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
         <div className="h-full rounded-full bg-[#d77a57]" style={{ width: `${(step / 4) * 100}%` }} />
       </div>
       <div className="flex items-center justify-between text-sm">
-        <div className={step >= 1 ? 'font-bold text-[#d77a57]' : 'text-[#9b98a8]'}>Brief</div>
-        <div className={step >= 2 ? 'font-black text-[#1a1625]' : 'text-[#9b98a8]'}>Setup</div>
-        <div className={step >= 3 ? 'font-black text-[#1a1625]' : 'text-[#9b98a8]'}>Questions</div>
-        <div className={step >= 4 ? 'font-black text-[#1a1625]' : 'text-[#9b98a8]'}>Review</div>
+        <div className={step >= 1 ? 'font-bold text-[#d77a57]' : 'text-[#9b98a8] dark:text-gray-500'}>Brief</div>
+        <div className={step >= 2 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Setup</div>
+        <div className={step >= 3 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Questions</div>
+        <div className={step >= 4 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Review</div>
       </div>
     </div>
   )
@@ -440,14 +440,14 @@ function MissionWizardContent() {
   const reviewAssets = useMemo(
     () =>
       state.assets.map((asset, index) => (
-        <div key={`${asset.type}-${index}`} className="rounded-card border border-[#e5e4e0] bg-white p-6">
+        <div key={`${asset.type}-${index}`} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">ASSET {index + 1}</div>
-          <div className="mb-2 text-lg font-black text-[#1a1625]">{asset.type}</div>
-          <p className="break-words text-sm text-[#6b687a]">
+          <div className="mb-2 text-lg font-black text-[#1a1625] dark:text-white">{asset.type}</div>
+          <p className="break-words text-sm text-[#6b687a] dark:text-gray-400">
             {asset.type === 'TEXT' ? asset.text : asset.url}
           </p>
           {asset.label?.trim() ? (
-            <p className="mt-3 text-sm font-semibold text-[#1a1625]">Label: {asset.label.trim()}</p>
+            <p className="mt-3 text-sm font-semibold text-[#1a1625] dark:text-white">Label: {asset.label.trim()}</p>
           ) : null}
         </div>
       )),
@@ -457,10 +457,10 @@ function MissionWizardContent() {
   const reviewQuestions = useMemo(
     () =>
       state.questions.map((question, index) => (
-        <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6">
+        <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
-          <div className="mb-2 text-lg font-black text-[#1a1625]">{question.text}</div>
-          <div className="text-sm text-[#6b687a]">{question.type.replaceAll('_', ' ')}</div>
+          <div className="mb-2 text-lg font-black text-[#1a1625] dark:text-white">{question.text}</div>
+          <div className="text-sm text-[#6b687a] dark:text-gray-400">{question.type.replaceAll('_', ' ')}</div>
         </div>
       )),
     [state.questions]
@@ -468,21 +468,21 @@ function MissionWizardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8">
+      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
         <div className="mx-auto max-w-4xl space-y-6">
-          <div className="h-64 animate-pulse rounded-3xl bg-white" />
-          <div className="h-64 animate-pulse rounded-3xl bg-white" />
+          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
+          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12">
+    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
         {showDraftBanner ? (
-          <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <span className="text-sm font-semibold text-amber-800">You have an unsaved draft. Continue where you left off?</span>
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/70 dark:bg-amber-950/40">
+            <span className="text-sm font-semibold text-amber-800 dark:text-amber-100">You have an unsaved draft. Continue where you left off?</span>
             <button
               type="button"
               onClick={() => {
@@ -490,25 +490,25 @@ function MissionWizardContent() {
                 setState(initialState)
                 setShowDraftBanner(false)
               }}
-              className="text-sm font-bold text-amber-700 hover:text-amber-900 underline"
+              className="text-sm font-bold text-amber-700 underline hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
             >
               Clear draft
             </button>
           </div>
         ) : null}
         {showRejectedBanner ? (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/70 dark:bg-amber-950/40">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-amber-900">
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
                   This mission was rejected. Review the feedback below, make your changes, and resubmit for review.
                 </p>
-                <p className="mt-2 text-sm text-amber-800">{rejectedReviewNote}</p>
+                <p className="mt-2 text-sm text-amber-800 dark:text-amber-200">{rejectedReviewNote}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowRejectedBanner(false)}
-                className="text-sm font-bold text-amber-700 underline hover:text-amber-900"
+                className="text-sm font-bold text-amber-700 underline hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
               >
                 Dismiss
               </button>
@@ -521,14 +521,14 @@ function MissionWizardContent() {
           {state.difficulty} — {formatCoins(coinRates[state.difficulty])} coins per tester
         </div>
 
-        <h2 className="mb-8 text-3xl font-black text-[#1a1625]">
+        <h2 className="mb-8 text-3xl font-black text-[#1a1625] dark:text-white">
           {step === 1 ? 'Mission Brief' : step === 2 ? 'Mission Setup' : step === 3 ? 'Questions' : 'Review'}
         </h2>
 
         {step === 1 ? (
           <div className="space-y-8">
             <div data-field-key="title">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">GIVE YOUR MISSION A TITLE</label>
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">GIVE YOUR MISSION A TITLE</label>
               <input
                 value={state.title}
                 onChange={(event) => updateState((current) => ({ ...current, title: event.target.value }))}
@@ -536,13 +536,13 @@ function MissionWizardContent() {
                 className={textFieldClass}
               />
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-red-600">{errors.title}</span>
-                <span className="text-sm text-[#9b98a8]">{state.title.length}/100</span>
+                <span className="text-sm text-red-600 dark:text-red-400">{errors.title}</span>
+                <span className="text-sm text-[#9b98a8] dark:text-gray-400">{state.title.length}/100</span>
               </div>
             </div>
 
             <div data-field-key="goal">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">WHAT DO YOU WANT TO LEARN?</label>
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">WHAT DO YOU WANT TO LEARN?</label>
               <textarea
                 value={state.goal}
                 onBlur={handleGoalBlur}
@@ -551,13 +551,13 @@ function MissionWizardContent() {
                 className={`${textFieldClass} resize-none`}
               />
               <div className="mt-2 flex items-center justify-between">
-                <span className={`text-sm ${errors.goal ? 'text-red-600' : 'text-amber-700'}`}>{errors.goal || goalWarning}</span>
-                <span className="text-sm text-[#9b98a8]">{state.goal.length}/300</span>
+                <span className={`text-sm ${errors.goal ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-300'}`}>{errors.goal || goalWarning}</span>
+                <span className="text-sm text-[#9b98a8] dark:text-gray-400">{state.goal.length}/300</span>
               </div>
             </div>
 
             <div>
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">DIFFICULTY</label>
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">DIFFICULTY</label>
               <div className="grid gap-4 md:grid-cols-3">
                 {([
                   { value: 'EASY', price: '500 coins per tester', note: 'Quick impressions' },
@@ -568,11 +568,11 @@ function MissionWizardContent() {
                     key={difficulty.value}
                     type="button"
                     onClick={() => updateState((current) => ({ ...current, difficulty: difficulty.value }))}
-                    className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6]' : 'border-2 border-[#e5e4e0] bg-white'}`}
+                    className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6] dark:bg-[#d77a57]/10' : 'border-2 border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800'}`}
                   >
-                    <div className="mb-2 text-xl font-black text-[#1a1625]">{difficulty.value}</div>
+                    <div className="mb-2 text-xl font-black text-[#1a1625] dark:text-white">{difficulty.value}</div>
                     <div className="text-sm font-bold text-[#d77a57]">{difficulty.price}</div>
-                    <div className="mt-2 text-sm text-[#6b687a]">{difficulty.note}</div>
+                    <div className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">{difficulty.note}</div>
                   </button>
                 ))}
               </div>
@@ -582,19 +582,19 @@ function MissionWizardContent() {
 
         {step === 2 ? (
           <div className="space-y-8">
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">ESTIMATED MINUTES</label>
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">ESTIMATED MINUTES</label>
               <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
               <div className="mt-4 text-center">
-                <div className="text-2xl font-black text-[#1a1625]">{state.estimatedMinutes} minutes</div>
-                <p className="mt-1 text-sm text-[#9b98a8]">Missions must be 2–4 minutes</p>
+                <div className="text-2xl font-black text-[#1a1625] dark:text-white">{state.estimatedMinutes} minutes</div>
+                <p className="mt-1 text-sm text-[#9b98a8] dark:text-gray-400">Missions must be 2–4 minutes</p>
               </div>
             </div>
 
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8]">NUMBER OF TESTERS</label>
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">NUMBER OF TESTERS</label>
               <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
-              <div className="mt-4 text-center text-2xl font-black text-[#1a1625]">{state.testersRequired} testers</div>
+              <div className="mt-4 text-center text-2xl font-black text-[#1a1625] dark:text-white">{state.testersRequired} testers</div>
             </div>
 
             <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
@@ -607,16 +607,16 @@ function MissionWizardContent() {
               </div>
             </div>
 
-            {coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
+            {coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
 
             <div className="space-y-4">
               {state.assets.map((asset, index) => (
-                <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6" data-field-key={`asset-${index}`}>
+                <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`asset-${index}`}>
                   <div className="mb-4 flex flex-wrap items-center gap-3">
                     {(['LINK', 'SCREENSHOT', 'VIDEO', 'TEXT'] as const).map((type) => (
-                      <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { type, url: '', text: '', label: currentAsset.label ?? '' } : currentAsset) }))} className={`rounded-full px-3 py-1 text-xs font-bold ${asset.type === type ? 'bg-blue-100 text-blue-700' : 'bg-[#f3f3f5] text-[#6b687a]'}`}>{type}</button>
+                      <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { type, url: '', text: '', label: currentAsset.label ?? '' } : currentAsset) }))} className={`rounded-full px-3 py-1 text-xs font-bold ${asset.type === type ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'}`}>{type}</button>
                     ))}
-                    {state.assets.length > 1 ? <button type="button" className="ml-auto text-[#9b98a8]" onClick={() => updateState((current) => ({ ...current, assets: current.assets.filter((_, assetIndex) => assetIndex !== index) }))}>×</button> : null}
+                    {state.assets.length > 1 ? <button type="button" className="ml-auto text-[#9b98a8] dark:text-gray-400" onClick={() => updateState((current) => ({ ...current, assets: current.assets.filter((_, assetIndex) => assetIndex !== index) }))}>×</button> : null}
                   </div>
 
                   {asset.type === 'TEXT' ? (
@@ -624,13 +624,13 @@ function MissionWizardContent() {
                   ) : (
                     <div className="relative">
                       <input value={asset.url ?? ''} onBlur={() => void handleAssetReachability(index)} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, url: event.target.value } : currentAsset) }))} placeholder="https://example.com" className={textFieldClass} />
-                      {assetChecks[index] === 'reachable' ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600" /> : null}
-                      {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600" /> : null}
+                      {assetChecks[index] === 'reachable' ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600 dark:text-green-400" /> : null}
+                      {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600 dark:text-red-400" /> : null}
                     </div>
                   )}
 
                   <input value={asset.label ?? ''} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, label: event.target.value } : currentAsset) }))} placeholder="Optional label" className={`${textFieldClass} mt-3`} />
-                  <p className="mt-1 text-sm text-red-600">{errors[`asset-${index}`]}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors[`asset-${index}`]}</p>
                 </div>
               ))}
 
@@ -642,13 +642,13 @@ function MissionWizardContent() {
         {step === 3 ? (
           <div className="space-y-6">
             {state.questions.map((question, index) => (
-              <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6" data-field-key={`question-${index}`}>
+              <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`question-${index}`}>
                 <div className="mb-4 flex items-center justify-between">
                   <div className="text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
-                  {state.questions.length > 1 ? <button type="button" className="text-[#9b98a8]" onClick={() => updateState((current) => ({ ...current, questions: current.questions.filter((_, questionIndex) => questionIndex !== index) }))}>×</button> : null}
+                  {state.questions.length > 1 ? <button type="button" className="text-[#9b98a8] dark:text-gray-400" onClick={() => updateState((current) => ({ ...current, questions: current.questions.filter((_, questionIndex) => questionIndex !== index) }))}>×</button> : null}
                 </div>
                 <input value={question.text} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, text: event.target.value } : currentQuestion) }))} placeholder="e.g. What was your first impression?" className={textFieldClass} />
-                <p className="mt-1 text-sm text-red-600">{errors[`question-${index}`]}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors[`question-${index}`]}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {([
                     ['TEXT_SHORT', 'Short text'],
@@ -657,7 +657,7 @@ function MissionWizardContent() {
                     ['MULTIPLE_CHOICE', 'Multiple choice'],
                     ['YES_NO', 'Yes/No'],
                   ] as const).map(([type, label]) => (
-                    <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, type, options: type === 'MULTIPLE_CHOICE' ? currentQuestion.options && currentQuestion.options.length >= 2 ? currentQuestion.options : ['', ''] : undefined } : currentQuestion) }))} className={`rounded-full px-3 py-1 text-sm font-semibold ${question.type === type ? 'bg-[#d77a57]/10 text-[#d77a57]' : 'bg-[#f3f3f5] text-[#6b687a]'}`}>{label}</button>
+                    <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, type, options: type === 'MULTIPLE_CHOICE' ? currentQuestion.options && currentQuestion.options.length >= 2 ? currentQuestion.options : ['', ''] : undefined } : currentQuestion) }))} className={`rounded-full px-3 py-1 text-sm font-semibold ${question.type === type ? 'bg-[#d77a57]/10 text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#f0a98c]' : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'}`}>{label}</button>
                   ))}
                 </div>
 
@@ -666,19 +666,19 @@ function MissionWizardContent() {
                     {(question.options ?? []).map((option, optionIndex) => (
                       <div key={optionIndex} className="flex items-center gap-3">
                         <input value={option} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, options: (currentQuestion.options ?? []).map((currentOption, currentOptionIndex) => currentOptionIndex === optionIndex ? event.target.value : currentOption) } : currentQuestion) }))} className={textFieldClass} />
-                        {(question.options?.length ?? 0) > 2 ? <button type="button" className="text-[#9b98a8]" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, options: (currentQuestion.options ?? []).filter((_, currentOptionIndex) => currentOptionIndex !== optionIndex) } : currentQuestion) }))}>×</button> : null}
+                        {(question.options?.length ?? 0) > 2 ? <button type="button" className="text-[#9b98a8] dark:text-gray-400" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, options: (currentQuestion.options ?? []).filter((_, currentOptionIndex) => currentOptionIndex !== optionIndex) } : currentQuestion) }))}>×</button> : null}
                       </div>
                     ))}
-                    <p className="text-sm text-red-600">{errors[`question-options-${index}`]}</p>
+                    <p className="text-sm text-red-600 dark:text-red-400">{errors[`question-options-${index}`]}</p>
                     {(question.options?.length ?? 0) < 5 ? <button type="button" className="text-sm font-semibold text-[#d77a57] hover:underline" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, options: [...(currentQuestion.options ?? []), ''] } : currentQuestion) }))}>+ Add option</button> : null}
                   </div>
                 ) : null}
 
                 <div className="mt-4 flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm text-[#6b687a]"><input type="checkbox" checked={question.required} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, required: event.target.checked } : currentQuestion) }))} />Required</label>
+                  <label className="flex items-center gap-2 text-sm text-[#6b687a] dark:text-gray-400"><input type="checkbox" checked={question.required} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, required: event.target.checked } : currentQuestion) }))} />Required</label>
                   <div className="flex items-center gap-2">
-                    <button type="button" disabled={index === 0} className="text-sm text-[#6b687a] disabled:opacity-40" onClick={() => updateState((current) => { const questions = [...current.questions];[questions[index - 1], questions[index]] = [questions[index], questions[index - 1]]; return { ...current, questions } })}>↑</button>
-                    <button type="button" disabled={index === state.questions.length - 1} className="text-sm text-[#6b687a] disabled:opacity-40" onClick={() => updateState((current) => { const questions = [...current.questions];[questions[index], questions[index + 1]] = [questions[index + 1], questions[index]]; return { ...current, questions } })}>↓</button>
+                    <button type="button" disabled={index === 0} className="text-sm text-[#6b687a] disabled:opacity-40 dark:text-gray-400" onClick={() => updateState((current) => { const questions = [...current.questions];[questions[index - 1], questions[index]] = [questions[index], questions[index - 1]]; return { ...current, questions } })}>↑</button>
+                    <button type="button" disabled={index === state.questions.length - 1} className="text-sm text-[#6b687a] disabled:opacity-40 dark:text-gray-400" onClick={() => updateState((current) => { const questions = [...current.questions];[questions[index], questions[index + 1]] = [questions[index + 1], questions[index]]; return { ...current, questions } })}>↓</button>
                   </div>
                 </div>
               </div>
@@ -690,13 +690,13 @@ function MissionWizardContent() {
 
         {step === 4 ? (
           <div className="space-y-6">
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">TITLE</div>
-              <div className="text-xl font-black text-[#1a1625]">{state.title}</div>
+              <div className="text-xl font-black text-[#1a1625] dark:text-white">{state.title}</div>
             </div>
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">GOAL</div>
-              <p className="text-[#1a1625]">{state.goal}</p>
+              <p className="text-[#1a1625] dark:text-white">{state.goal}</p>
             </div>
             <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-white/50">COST BREAKDOWN</div>
@@ -709,14 +709,14 @@ function MissionWizardContent() {
             </div>
             {reviewAssets}
             {reviewQuestions}
-            {submitError ? <p className="text-sm text-red-600">{submitError}</p> : null}
+            {submitError ? <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p> : null}
           </div>
         ) : null}
 
-        <div className="mt-8 flex items-center justify-between border-t border-[#e5e4e0] pt-6">
+        <div className="mt-8 flex items-center justify-between border-t border-[#e5e4e0] pt-6 dark:border-gray-700">
           <button
             type="button"
-            className="font-semibold text-[#6b687a] hover:text-[#1a1625]"
+            className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white"
             onClick={() => {
               if (step === 1) {
                 router.push('/dashboard/founder')
@@ -771,10 +771,10 @@ export function MissionWizardPage() {
 
 function MissionWizardPageLoading() {
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8">
+    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
       <div className="mx-auto max-w-4xl space-y-6">
-        <div className="h-64 animate-pulse rounded-3xl bg-white" />
-        <div className="h-64 animate-pulse rounded-3xl bg-white" />
+        <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
+        <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
       </div>
     </div>
   )
