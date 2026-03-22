@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/server'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, serverError } from '@/lib/api/response'
 import { z } from 'zod'
@@ -12,7 +12,7 @@ const ResetPasswordSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await validateBody(request, ResetPasswordSchema)
-    const supabase = createSupabaseServerClient()
+    const { supabase, applySupabaseCookies } = createSupabaseRouteHandlerClient(request)
 
     const { error } = await supabase.auth.updateUser({
       password: body.password,
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return badRequest('Password reset failed')
     }
 
-    return ok({ message: 'Password updated successfully' })
+    return applySupabaseCookies(ok({ message: 'Password updated successfully' }))
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)

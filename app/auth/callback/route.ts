@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import type { EmailOtpType } from '@supabase/gotrue-js'
 import { NextResponse } from 'next/server'
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get('code')
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
-  const supabase = createSupabaseServerClient()
+  const { supabase, applySupabaseCookies } = createSupabaseRouteHandlerClient(request)
   let userId: string | null = null
   let isEmailConfirmed = false
 
@@ -40,5 +40,7 @@ export async function GET(request: Request) {
 
   const redirectPath = type === 'recovery' ? '/auth/reset-password' : '/dashboard'
 
-  return NextResponse.redirect(new URL(redirectPath, request.url))
+  return applySupabaseCookies(
+    NextResponse.redirect(new URL(redirectPath, request.url))
+  )
 }

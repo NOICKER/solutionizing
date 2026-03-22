@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 import { enforceRateLimit } from '@/lib/api/rate-limit'
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     const body = await validateBody(request, LoginSchema)
-    const supabase = createSupabaseServerClient()
+    const { supabase, applySupabaseCookies } = createSupabaseRouteHandlerClient(request)
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: body.email,
@@ -159,11 +159,13 @@ export async function POST(request: Request) {
           ? '/onboarding'
           : (redirectMap[normalizedRole] ?? '/')
 
-    return ok({
-      role: normalizedRole,
-      redirectTo,
-      user: { id: dbUser.id, email: dbUser.email, role: normalizedRole },
-    })
+    return applySupabaseCookies(
+      ok({
+        role: normalizedRole,
+        redirectTo,
+        user: { id: dbUser.id, email: dbUser.email, role: normalizedRole },
+      })
+    )
   } catch (err) {
     if (err instanceof Response) return err
     if (isPrismaError(err)) {

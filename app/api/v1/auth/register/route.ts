@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseRouteHandlerClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 import { enforceRateLimit } from '@/lib/api/rate-limit'
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const body = await validateBody(request, RegisterSchema)
-    const supabase = createSupabaseServerClient()
+    const { supabase, applySupabaseCookies } = createSupabaseRouteHandlerClient(request)
 
     const { data, error } = await supabase.auth.signUp({
       email: body.email,
@@ -69,9 +69,11 @@ export async function POST(request: Request) {
       })
     }
 
-    return created({
-      message: 'Verification email sent. Please check your inbox.'
-    })
+    return applySupabaseCookies(
+      created({
+        message: 'Verification email sent. Please check your inbox.'
+      })
+    )
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)
