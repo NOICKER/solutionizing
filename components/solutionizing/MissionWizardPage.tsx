@@ -713,7 +713,7 @@ function MissionWizardContent() {
           </div>
         ) : null}
 
-        <div className="mt-8 flex items-center justify-between border-t border-[#e5e4e0] pt-6 dark:border-gray-700">
+        <div className="mt-5 flex items-center justify-between border-t border-[#e5e4e0] pt-4 dark:border-gray-700">
           <button
             type="button"
             className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white"
