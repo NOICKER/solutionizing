@@ -86,12 +86,10 @@ function GetStartedChecklist({
   coinBalance,
   missionsCount,
   onBuyCoins,
-  onCreateMission,
 }: {
   coinBalance: number
   missionsCount: number
   onBuyCoins: () => void
-  onCreateMission: () => void
 }) {
   const step1Complete = coinBalance > 0
   const step2Complete = missionsCount > 0
@@ -146,9 +144,9 @@ function GetStartedChecklist({
             </p>
           </div>
           {!step2Complete && (
-            <button className={`mt-1 flex-shrink-0 text-sm font-bold text-white px-4 py-2 rounded-2xl bg-gradient-to-r from-[#d77a57] to-[#c4673f] hover:shadow-lg hover:scale-[1.02] transition-all`} onClick={onCreateMission}>
+            <Link href="/mission/wizard" className="mt-1 flex-shrink-0 rounded-2xl bg-gradient-to-r from-[#d77a57] to-[#c4673f] px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg">
               Create Mission →
-            </button>
+            </Link>
           )}
         </div>
 
@@ -461,7 +459,6 @@ function FounderDashboardContent() {
                       coinBalance={coinBalance}
                       missionsCount={missions.length}
                       onBuyCoins={() => setActiveTab('wallets')}
-                      onCreateMission={() => router.push('/mission/wizard')}
                     />
                   </>
                 ) : (

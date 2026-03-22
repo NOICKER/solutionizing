@@ -6,6 +6,7 @@ import { AppStateProvider } from "@/context/AppStateContext";
 import { Toaster } from "@/components/ui/sonner";
 import PostHogProvider from "@/providers/PostHogProvider";
 import { CookieConsent } from "@/components/solutionizing/CookieConsent";
+import { AppThemeBoundary } from "@/components/AppThemeBoundary";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -27,11 +28,13 @@ export default function RootLayout({
       <body className={`${manrope.variable} min-h-screen bg-neutral-bg text-text-main dark:bg-gray-900 dark:text-white`}>
         <PostHogProvider>
           <AuthProvider>
-            <AppStateProvider>
-              {children}
-              <CookieConsent />
-              <Toaster />
-            </AppStateProvider>
+            <AppThemeBoundary>
+              <AppStateProvider>
+                {children}
+                <CookieConsent />
+                <Toaster />
+              </AppStateProvider>
+            </AppThemeBoundary>
           </AuthProvider>
         </PostHogProvider>
       </body>
