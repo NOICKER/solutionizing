@@ -66,6 +66,10 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies(request, response, '/auth')
   }
 
+  if (user && path === '/') {
+    return redirectWithCookies(request, response, '/dashboard')
+  }
+
   if (user) {
     // Logged-in users routing
     if (isAuthRoute) {
