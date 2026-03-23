@@ -10,7 +10,7 @@ import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 import { ApiMission } from '@/types/api'
 import { deleteAccount } from '@/lib/api/account'
-import { BrandMark, CoinBalanceSkeleton, ConfirmationDialog, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
+import { BrandMark, CoinBalanceSkeleton, ConfirmationDialog, PageLoadingBar, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
 import { FounderDashboardTab } from '@/components/solutionizing/founder/FounderDashboardTab'
 import { FounderMissionsTab } from '@/components/solutionizing/founder/FounderMissionsTab'
 import { FounderSettingsTab } from '@/components/solutionizing/founder/FounderSettingsTab'
@@ -175,6 +175,21 @@ const founderNavItems = [
 
 type FounderTab = (typeof founderNavItems)[number]['id']
 
+const dashboardLoadingMessages = [
+  "Hang tight, we're syncing your missions... unlike your last standup.",
+  "Loading... this is the part where enterprise software plays jazz.",
+  "Why did the founder cross the road? To get feedback. Still waiting on that too.",
+  "Fetching data. Our intern is very fast, don't worry.",
+  "Did you know 'loading' is just the app's way of saying it needs a moment to think?",
+  "We're not slow, we're just building suspense.",
+  "Knock knock. Who's there? Your dashboard. Your dashboard who? Exactly, still loading.",
+  "Pro tip: clicking faster does not make it faster. We checked.",
+  "This is fine. Everything is fine. The data is coming.",
+  'Our servers are powered by chai and determination.',
+  'Why do programmers prefer dark mode? Because light attracts bugs.',
+  'Almost there... (this message has been approved by the loading committee)',
+] as const
+
 function FounderDashboardContent() {
   const router = useRouter()
   const { user, signOut } = useAuth()
@@ -194,6 +209,7 @@ function FounderDashboardContent() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
 
   const loadBalance = useCallback(async () => {
     setIsBalanceLoading(true)
@@ -237,6 +253,12 @@ function FounderDashboardContent() {
   useEffect(() => {
     void loadDashboard()
   }, [loadDashboard])
+
+  useEffect(() => {
+    if (isLoading) {
+      setLoadingMessageIndex(0)
+    }
+  }, [isLoading])
 
   const userName = user?.founderProfile?.displayName ?? 'Founder'
   const userEmail = user?.email ?? 'founder@example.com'
@@ -352,6 +374,14 @@ function FounderDashboardContent() {
     }
   }
 
+  const handleSkeletonClick = useCallback(() => {
+    if (!isLoading) {
+      return
+    }
+
+    setLoadingMessageIndex((currentIndex) => (currentIndex + 1) % dashboardLoadingMessages.length)
+  }, [isLoading])
+
   const headerLabel =
     activeTab === 'missions'
       ? 'Missions'
@@ -374,6 +404,7 @@ function FounderDashboardContent() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] px-4 py-4 dark:bg-gray-900 sm:px-6 lg:px-8">
+      <PageLoadingBar isLoading={isLoading} />
       <div className="mx-auto grid max-w-[1600px] gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-[#ece6df] lg:bg-white/90 lg:p-5 lg:shadow-[0_30px_80px_-52px_rgba(26,22,37,0.32)] dark:lg:border-gray-700 dark:lg:bg-gray-800">
           <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-[#fcf6f2] px-4 py-4 dark:bg-gray-900/80">
@@ -477,6 +508,8 @@ function FounderDashboardContent() {
                     isLoading={isLoading}
                     loadError={loadError}
                     missions={missions}
+                    loadingMessage={dashboardLoadingMessages[loadingMessageIndex]}
+                    onSkeletonClick={handleSkeletonClick}
                     onRetry={() => void loadDashboard()}
                     onViewAllMissions={() => setActiveTab('missions')}
                   />

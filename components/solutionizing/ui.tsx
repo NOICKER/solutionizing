@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Star } from 'lucide-react'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 export const primaryButtonClass =
   'rounded-[2rem] bg-gradient-to-r from-[#d77a57] to-[#c4673f] text-white font-black hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
@@ -122,17 +122,87 @@ export function ReputationTierBadge({ tier }: { tier: string }) {
   )
 }
 
+export function PageLoadingBar({ isLoading }: { isLoading: boolean }) {
+  const [isVisible, setIsVisible] = useState(isLoading)
+  const [isFadingOut, setIsFadingOut] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [transitionDuration, setTransitionDuration] = useState(0)
+
+  useEffect(() => {
+    let animationFrame = 0
+    let fadeTimeout: ReturnType<typeof setTimeout> | undefined
+
+    if (isLoading) {
+      setIsVisible(true)
+      setIsFadingOut(false)
+      setTransitionDuration(0)
+      setProgress(0)
+
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = window.requestAnimationFrame(() => {
+          setTransitionDuration(2000)
+          setProgress(85)
+        })
+      })
+    } else if (isVisible) {
+      setTransitionDuration(0)
+      setProgress(100)
+      setIsFadingOut(true)
+
+      fadeTimeout = window.setTimeout(() => {
+        setIsVisible(false)
+        setIsFadingOut(false)
+        setProgress(0)
+      }, 300)
+    }
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+
+      if (fadeTimeout) {
+        window.clearTimeout(fadeTimeout)
+      }
+    }
+  }, [isLoading, isVisible])
+
+  if (!isVisible) {
+    return null
+  }
+
+  return (
+    <div className={`pointer-events-none fixed inset-x-0 top-0 z-50 transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+      <div className="relative h-1 w-full overflow-visible">
+        <div
+          className="relative h-full overflow-visible bg-[#d77a57]"
+          style={{
+            width: `${progress}%`,
+            transitionDuration: `${transitionDuration}ms`,
+            transitionProperty: 'width',
+            transitionTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+          }}
+        >
+          <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+0.375rem)] text-[11px] font-bold text-[#d77a57]">
+            {Math.round(progress)}%
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type DashboardCardSkeletonVariant = 'stat' | 'card' | 'full'
 
 export function DashboardCardSkeleton({
   count,
   variant = 'full',
+  onClick,
 }: {
   count: number
   variant?: DashboardCardSkeletonVariant
+  onClick?: () => void
 }) {
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           {variant === 'stat' ? (

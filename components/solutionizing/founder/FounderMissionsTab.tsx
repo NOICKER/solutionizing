@@ -87,6 +87,7 @@ export function FounderMissionsTab({
           const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
           const isSubmitting = actionLoading?.missionId === mission.id && actionLoading.action === 'submit'
           const isResuming = actionLoading?.missionId === mission.id && actionLoading.action === 'resume'
+          const isAnyActionLoading = actionLoading?.missionId === mission.id
           const missionHref = getMissionDestination(mission)
           const isCardClickable = Boolean(missionHref)
 
@@ -181,7 +182,8 @@ export function FounderMissionsTab({
                     VIEW STATUS {'->'}
                   </Link>
                   <button
-                    className={`px-4 py-2 text-sm ${mutedButtonClass}`}
+                    className={`px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${mutedButtonClass}`}
+                    disabled={isAnyActionLoading}
                     onClick={(event) => {
                       event.stopPropagation()
                       onOpenDialog('pause', mission)
@@ -190,7 +192,8 @@ export function FounderMissionsTab({
                     PAUSE
                   </button>
                   <button
-                    className="ml-auto text-sm font-semibold text-red-600 hover:underline"
+                    className="ml-auto text-sm font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isAnyActionLoading}
                     onClick={(event) => {
                       event.stopPropagation()
                       onOpenDialog('close', mission)
@@ -223,7 +226,8 @@ export function FounderMissionsTab({
                       RESUME
                     </button>
                     <button
-                      className="ml-auto text-sm font-semibold text-red-600 hover:underline"
+                      className="ml-auto text-sm font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isAnyActionLoading}
                       onClick={(event) => {
                         event.stopPropagation()
                         onOpenDialog('close', mission)

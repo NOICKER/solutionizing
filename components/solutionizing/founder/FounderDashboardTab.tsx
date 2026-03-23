@@ -122,6 +122,8 @@ interface FounderDashboardTabProps {
   isLoading: boolean
   loadError: string
   missions: ApiMission[]
+  loadingMessage?: string
+  onSkeletonClick?: () => void
   onRetry: () => void
   onViewAllMissions: () => void
 }
@@ -130,6 +132,8 @@ export function FounderDashboardTab({
   isLoading,
   loadError,
   missions,
+  loadingMessage,
+  onSkeletonClick,
   onRetry,
   onViewAllMissions,
 }: FounderDashboardTabProps) {
@@ -163,7 +167,12 @@ export function FounderDashboardTab({
   let content
 
   if (isLoading) {
-    content = <DashboardCardSkeleton count={3} variant="full" />
+    content = (
+      <div className="space-y-3">
+        <DashboardCardSkeleton count={3} variant="full" onClick={onSkeletonClick} />
+        {loadingMessage ? <p className="text-center text-sm italic text-[#6b687a] dark:text-gray-400">{loadingMessage}</p> : null}
+      </div>
+    )
   } else if (loadError) {
     content = (
       <ErrorStatePanel
