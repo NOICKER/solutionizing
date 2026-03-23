@@ -3,7 +3,7 @@ import { MissionStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
-import { notificationQueue } from '@/lib/queue'
+import { assignmentQueue, notificationQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
 
 export async function POST(
@@ -35,10 +35,15 @@ export async function POST(
     const updatedMission = await prisma.mission.update({
       where: { id: mission.id },
       data: {
+        status: MissionStatus.ACTIVE,
         reviewedBy: admin.id,
         reviewedAt: new Date(),
         reviewNote: null,
       },
+    })
+
+    await assignmentQueue.add('assign', {
+      missionId: mission.id,
     })
 
     await notificationQueue.add('notify', {

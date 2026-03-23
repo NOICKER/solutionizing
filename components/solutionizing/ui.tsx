@@ -486,3 +486,144 @@ export function PageHeader({
     </header>
   )
 }
+
+const skeletonPulseClass = 'animate-pulse bg-[#e5e4e0] dark:bg-gray-700'
+
+export function CoinBalanceSkeleton() {
+  return (
+    <div className="flex items-center gap-3 rounded-[1.7rem] border border-[#ece6df] bg-white/95 px-4 py-3 shadow-[0_18px_40px_-28px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-900/80">
+      <div className={`h-10 w-10 rounded-[1rem] ${skeletonPulseClass}`} />
+      <div>
+        <div className={`h-2.5 w-24 rounded-full ${skeletonPulseClass}`} />
+        <div className={`mt-2 h-7 w-40 rounded-full ${skeletonPulseClass}`} />
+      </div>
+    </div>
+  )
+}
+
+export function WizardStepSkeleton({ step = 1 }: { step?: number }) {
+  if (step === 1) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <div className={`mb-3 h-3 w-40 rounded-full ${skeletonPulseClass}`} />
+          <div className={`h-12 rounded-2xl ${skeletonPulseClass}`} />
+          <div className="mt-2 flex items-center justify-between">
+            <div className={`h-4 w-28 rounded-full ${skeletonPulseClass}`} />
+            <div className={`h-4 w-12 rounded-full ${skeletonPulseClass}`} />
+          </div>
+        </div>
+
+        <div>
+          <div className={`mb-3 h-3 w-44 rounded-full ${skeletonPulseClass}`} />
+          <div className={`h-32 rounded-2xl ${skeletonPulseClass}`} />
+          <div className="mt-2 flex items-center justify-between">
+            <div className={`h-4 w-36 rounded-full ${skeletonPulseClass}`} />
+            <div className={`h-4 w-14 rounded-full ${skeletonPulseClass}`} />
+          </div>
+        </div>
+
+        <div>
+          <div className={`mb-3 h-3 w-24 rounded-full ${skeletonPulseClass}`} />
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-card border-2 border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div className={`mb-2 h-6 w-20 rounded-full ${skeletonPulseClass}`} />
+                <div className={`h-4 w-32 rounded-full ${skeletonPulseClass}`} />
+                <div className={`mt-3 h-4 w-24 rounded-full ${skeletonPulseClass}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === 2) {
+    return (
+      <div className="space-y-8">
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div className={`mb-3 h-3 w-32 rounded-full ${skeletonPulseClass}`} />
+          <div className={`h-2 rounded-full ${skeletonPulseClass}`} />
+          <div className="mt-4 flex flex-col items-center">
+            <div className={`h-8 w-36 rounded-full ${skeletonPulseClass}`} />
+            <div className={`mt-2 h-4 w-32 rounded-full ${skeletonPulseClass}`} />
+          </div>
+        </div>
+
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div className={`mb-3 h-3 w-36 rounded-full ${skeletonPulseClass}`} />
+          <div className={`h-2 rounded-full ${skeletonPulseClass}`} />
+          <div className="mt-4 flex justify-center">
+            <div className={`h-8 w-32 rounded-full ${skeletonPulseClass}`} />
+          </div>
+        </div>
+
+        <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6">
+          <div className={`mb-4 h-3 w-32 rounded-full ${skeletonPulseClass}`} />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className={`h-4 w-40 rounded-full ${skeletonPulseClass}`} />
+              <div className={`h-4 w-20 rounded-full ${skeletonPulseClass}`} />
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className={`h-4 w-32 rounded-full ${skeletonPulseClass}`} />
+              <div className={`h-4 w-20 rounded-full ${skeletonPulseClass}`} />
+            </div>
+            <div className="my-3 border-t border-white/20" />
+            <div className="flex items-center justify-between gap-4">
+              <div className={`h-6 w-20 rounded-full ${skeletonPulseClass}`} />
+              <div className="flex flex-col items-end gap-2">
+                <div className={`h-6 w-28 rounded-full ${skeletonPulseClass}`} />
+                <div className={`h-4 w-16 rounded-full ${skeletonPulseClass}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className={`h-7 w-20 rounded-full ${skeletonPulseClass}`} />
+            ))}
+          </div>
+          <div className={`h-12 rounded-2xl ${skeletonPulseClass}`} />
+          <div className={`mt-3 h-12 rounded-2xl ${skeletonPulseClass}`} />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <div
+          key={index}
+          className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <div className={`h-4 w-24 rounded-full ${skeletonPulseClass}`} />
+            <div className={`h-5 w-5 rounded-full ${skeletonPulseClass}`} />
+          </div>
+          <div className={`h-12 rounded-2xl ${skeletonPulseClass}`} />
+          <div className={`mt-2 h-4 w-32 rounded-full ${skeletonPulseClass}`} />
+          <div className="mt-4 flex flex-wrap gap-2">
+            {Array.from({ length: 5 }).map((_, chipIndex) => (
+              <div key={chipIndex} className={`h-8 w-24 rounded-full ${skeletonPulseClass}`} />
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className={`h-4 w-20 rounded-full ${skeletonPulseClass}`} />
+            <div className="flex items-center gap-2">
+              <div className={`h-5 w-5 rounded-full ${skeletonPulseClass}`} />
+              <div className={`h-5 w-5 rounded-full ${skeletonPulseClass}`} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}

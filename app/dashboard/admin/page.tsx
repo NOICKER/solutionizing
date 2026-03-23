@@ -109,19 +109,19 @@ function getUserDisplayName(user: User) {
 }
 
 function getRoleBadgeClass(role: User['role']) {
-  if (role === 'FOUNDER') return 'bg-blue-100 text-blue-700'
-  if (role === 'TESTER') return 'bg-purple-100 text-purple-700'
-  if (role === 'ADMIN') return 'bg-amber-100 text-amber-700'
-  return 'bg-gray-100 text-gray-700'
+  if (role === 'FOUNDER') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+  if (role === 'TESTER') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+  if (role === 'ADMIN') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+  return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
 }
 
 function ReportStatusBadge({ status }: { status: ReportResolutionStatus }) {
   const classes =
     status === 'RESOLVED'
-      ? 'bg-green-100 text-green-700'
+      ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
       : status === 'DISMISSED'
-        ? 'bg-gray-200 text-gray-700'
-        : 'bg-amber-100 text-amber-700'
+        ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
 
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-[0.7rem] font-bold ${classes}`}>
@@ -355,7 +355,7 @@ export default function AdminDashboardPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8">
+      <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8 dark:bg-gray-900">
         <ErrorStatePanel
           title="Dashboard Error"
           body={error}
@@ -369,11 +369,11 @@ export default function AdminDashboardPage() {
 
   return (
     <RequireAuth role="ADMIN">
-      <div className="flex min-h-screen bg-[#faf9f7]">
-        <aside className="fixed bottom-0 left-0 top-0 hidden w-72 border-r border-[#e5e4e0] bg-white p-6 md:block">
+      <div className="flex min-h-screen bg-[#faf9f7] dark:bg-gray-900">
+        <aside className="fixed bottom-0 left-0 top-0 hidden w-72 border-r border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 md:block">
           <div className="mb-10 flex items-center gap-3">
             <BrandMark className="h-8 w-8 text-[#d77a57]" />
-            <span className="text-xl font-black tracking-tight text-[#1a1625]">Admin Panel</span>
+            <span className="text-xl font-black tracking-tight text-[#1a1625] dark:text-white">Admin Panel</span>
           </div>
 
           <nav className="flex flex-col gap-2">
@@ -386,17 +386,17 @@ export default function AdminDashboardPage() {
                 onClick={() => setActiveTab(item.id)}
               />
             ))}
-            <div className="my-4 border-t border-[#f0efed]" />
+            <div className="my-4 border-t border-[#f0efed] dark:border-gray-700" />
             <SidebarNavItem
               {...settingsSidebarProps}
               label="Platform Settings"
-              onClick={() => {}}
+              onClick={() => toast.info('Platform settings coming soon.')}
             />
           </nav>
 
           <div className="absolute bottom-6 left-6 right-6">
-            <div className="rounded-card bg-[#f6f1ec] p-4 text-center">
-              <p className="mb-2 text-xs font-bold text-[#8b8797]">Solutionizing v1.2.0</p>
+            <div className="rounded-card bg-[#f6f1ec] p-4 text-center dark:bg-gray-900">
+              <p className="mb-2 text-xs font-bold text-[#8b8797] dark:text-gray-400">Solutionizing v1.2.0</p>
               <button
                 className={`${outlineButtonClass} w-full py-2 text-xs`}
                 onClick={() => router.push('/')}
@@ -456,35 +456,35 @@ export default function AdminDashboardPage() {
                         label="Total Missions"
                         value={stats.totals.missions}
                         glyph="🚀"
-                        colorClass="bg-white"
+                        colorClass="bg-white dark:bg-gray-800"
                         glyphColorClass="bg-orange-100 text-orange-600"
                       />
                       <StatCard
                         label="Active Founders"
                         value={stats.totals.founders}
                         glyph="🏢"
-                        colorClass="bg-white"
+                        colorClass="bg-white dark:bg-gray-800"
                         glyphColorClass="bg-blue-100 text-blue-600"
                       />
                       <StatCard
                         label="Qualified Testers"
                         value={stats.totals.testers}
                         glyph="⚡"
-                        colorClass="bg-white"
+                        colorClass="bg-white dark:bg-gray-800"
                         glyphColorClass="bg-purple-100 text-purple-600"
                       />
                       <StatCard
                         label="Platform Revenue"
                         value={`₹${(stats.last30Days.platformRevenue / 100).toLocaleString()}`}
                         glyph="💰"
-                        colorClass="bg-white"
+                        colorClass="bg-white dark:bg-gray-800"
                         glyphColorClass="bg-emerald-100 text-emerald-600"
                       />
                     </div>
 
-                    <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white">
-                      <div className="flex items-center justify-between border-b border-[#e5e4e0] p-6">
-                        <h3 className="text-xl font-bold text-[#1a1625]">Newest User Registrations</h3>
+                    <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800">
+                      <div className="flex items-center justify-between border-b border-[#e5e4e0] p-6 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-[#1a1625] dark:text-white">Newest User Registrations</h3>
                         <button
                           className="text-sm font-bold text-[#d77a57] hover:underline"
                           onClick={() => setActiveTab('users')}
@@ -496,20 +496,20 @@ export default function AdminDashboardPage() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
                             <thead>
-                              <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
+                              <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
                                 <th className="px-6 py-4">User</th>
                                 <th className="px-6 py-4">Role</th>
                                 <th className="px-6 py-4">Joined On</th>
                                 <th className="px-6 py-4">Identity Status</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#f0efed]">
+                            <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                               {recentUsers.map((user) => (
                                 <tr key={user.id} className="text-sm">
-                                  <td className="px-6 py-4 text-[#1a1625]">
+                                  <td className="px-6 py-4 text-[#1a1625] dark:text-white">
                                     <div className="flex flex-col gap-1">
                                       <span className="font-bold">{getUserDisplayName(user)}</span>
-                                      <span className="text-xs text-[#8b8797]">{user.email}</span>
+                                      <span className="text-xs text-[#8b8797] dark:text-gray-400">{user.email}</span>
                                     </div>
                                   </td>
                                   <td className="px-6 py-4 uppercase">
@@ -517,19 +517,19 @@ export default function AdminDashboardPage() {
                                       {user.role || 'PENDING'}
                                     </span>
                                   </td>
-                                  <td className="px-6 py-4 text-[#6b687a]">
+                                  <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
                                     {format(new Date(user.createdAt), 'MMM d, yyyy')}
                                   </td>
-                                  <td className="px-6 py-4 text-[#6b687a]">
+                                  <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
                                     {user.isSuspended ? (
                                       <div className="flex items-center gap-2">
                                         <div className="h-2 w-2 rounded-full bg-red-500" />
-                                        <span className="text-xs font-bold text-red-600">Suspended</span>
+                                        <span className="text-xs font-bold text-red-600 dark:text-red-300">Suspended</span>
                                       </div>
                                     ) : (
                                       <div className="flex items-center gap-2">
                                         <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                        <span className="text-xs font-bold text-emerald-600">Active</span>
+                                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300">Active</span>
                                       </div>
                                     )}
                                   </td>
@@ -551,34 +551,34 @@ export default function AdminDashboardPage() {
               ) : null}
 
               {activeTab === 'missions' ? (
-                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
-                  <div className="border-b border-[#e5e4e0] p-6">
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
                     <h3 className="text-xl font-bold">Pending Review ({pendingMissions.length})</h3>
                   </div>
                   {pendingMissions.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>
-                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
+                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
                             <th className="px-6 py-4">Mission Details</th>
                             <th className="px-6 py-4">Founder</th>
                             <th className="px-6 py-4">Requested Coins</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#f0efed]">
+                        <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                           {pendingMissions.map((mission) => (
                             <tr key={mission.id} className="text-sm">
                               <td className="px-6 py-4">
                                 <div className="flex flex-col">
                                   <span className="font-bold">{mission.title}</span>
-                                  <span className="line-clamp-1 text-xs text-[#8b8797]">{mission.description}</span>
+                                  <span className="line-clamp-1 text-xs text-[#8b8797] dark:text-gray-400">{mission.description}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4">
                                 <div className="flex flex-col">
                                   <span className="font-bold">{mission.founder?.companyName || 'Unknown Corp'}</span>
-                                  <span className="text-xs text-[#8b8797]">{mission.founder?.displayName}</span>
+                                  <span className="text-xs text-[#8b8797] dark:text-gray-400">{mission.founder?.displayName}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 font-bold text-[#d77a57]">
@@ -587,14 +587,14 @@ export default function AdminDashboardPage() {
                               <td className="px-6 py-4">
                                 <div className="flex items-center justify-end gap-2">
                                   <button
-                                    className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200"
+                                    className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
                                     onClick={() => handleApproveMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
                                     Approve
                                   </button>
                                   <button
-                                    className="rounded-full bg-orange-100 px-4 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
+                                    className="rounded-full bg-orange-100 px-4 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-900/60"
                                     onClick={() => handleRejectMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
@@ -618,15 +618,15 @@ export default function AdminDashboardPage() {
               ) : null}
 
               {activeTab === 'users' ? (
-                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
-                  <div className="border-b border-[#e5e4e0] p-6">
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
                     <h3 className="text-xl font-bold">All Users ({userList.length})</h3>
                   </div>
                   {userList.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>
-                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797]">
+                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
                             <th className="px-6 py-4">User</th>
                             <th className="px-6 py-4">Role</th>
                             <th className="px-6 py-4">Joined On</th>
@@ -634,7 +634,7 @@ export default function AdminDashboardPage() {
                             <th className="px-6 py-4 text-right">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#f0efed]">
+                        <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                           {userList.map((userItem) => {
                             const isUserActionLoading = userActionLoadingId === userItem.id
 
@@ -643,9 +643,9 @@ export default function AdminDashboardPage() {
                                 <td className="px-6 py-4">
                                   <div className="flex flex-col gap-1">
                                     <span className="font-bold">{getUserDisplayName(userItem)}</span>
-                                    <span className="text-xs text-[#8b8797]">{userItem.email}</span>
+                                    <span className="text-xs text-[#8b8797] dark:text-gray-400">{userItem.email}</span>
                                     {userItem.isSuspended ? (
-                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-red-700">
+                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-red-700 dark:bg-red-900/40 dark:text-red-300">
                                         Suspended
                                       </span>
                                     ) : null}
@@ -656,24 +656,24 @@ export default function AdminDashboardPage() {
                                     {userItem.role || 'PENDING'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-[#6b687a]">
+                                <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
                                   {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
                                 </td>
                                 <td className="px-6 py-4">
                                   <div className="flex flex-col gap-1">
                                     {userItem.founderProfile || userItem.testerProfile ? (
-                                      <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+                                      <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-300">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                         Completed
                                       </span>
                                     ) : (
-                                      <span className="flex items-center gap-1 text-xs font-bold text-orange-600">
+                                      <span className="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-300">
                                         <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                                         Incomplete
                                       </span>
                                     )}
                                     {userItem.isSuspended && userItem.suspendedAt ? (
-                                      <span className="text-xs text-[#8b8797]">
+                                      <span className="text-xs text-[#8b8797] dark:text-gray-400">
                                         Since {format(new Date(userItem.suspendedAt), 'MMM d, yyyy')}
                                       </span>
                                     ) : null}
@@ -691,13 +691,13 @@ export default function AdminDashboardPage() {
                                         Unsuspend
                                       </button>
                                       {userItem.suspendReason ? (
-                                        <p className="max-w-[220px] text-right text-xs text-[#8b8797]">
+                                        <p className="max-w-[220px] text-right text-xs text-[#8b8797] dark:text-gray-400">
                                           Reason: {userItem.suspendReason}
                                         </p>
                                       ) : null}
                                     </div>
                                   ) : (
-                                    <span className="text-xs font-semibold text-[#9b98a8]">No actions</span>
+                                    <span className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">No actions</span>
                                   )}
                                 </td>
                               </tr>
@@ -717,8 +717,8 @@ export default function AdminDashboardPage() {
               ) : null}
 
               {activeTab === 'flags' ? (
-                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625]">
-                  <div className="border-b border-[#e5e4e0] p-6">
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
                     <h3 className="text-xl font-bold">Reports Needing Attention ({totalFlagReports})</h3>
                   </div>
                   {flaggedItems.length > 0 ? (
@@ -726,16 +726,16 @@ export default function AdminDashboardPage() {
                       {flaggedItems.map((group) => (
                         <article
                           key={group.missionId}
-                          className="rounded-[1.75rem] border border-[#ece6df] bg-[#fffdfa] p-5"
+                          className="rounded-[1.75rem] border border-[#ece6df] bg-[#fffdfa] p-5 dark:border-gray-700 dark:bg-gray-900/70"
                         >
-                          <div className="flex flex-col gap-3 border-b border-[#efe7df] pb-4 md:flex-row md:items-start md:justify-between">
+                          <div className="flex flex-col gap-3 border-b border-[#efe7df] pb-4 dark:border-gray-700 md:flex-row md:items-start md:justify-between">
                             <div className="space-y-2">
-                              <div className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8]">
+                              <div className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
                                 Mission reports
                               </div>
                               <Link
                                 href={`/mission/status/${group.missionId}`}
-                                className="text-lg font-black text-[#1a1625] hover:text-[#d77a57]"
+                                className="text-lg font-black text-[#1a1625] hover:text-[#d77a57] dark:text-white"
                               >
                                 {group.missionTitle ?? 'Untitled mission'}
                               </Link>
@@ -752,36 +752,36 @@ export default function AdminDashboardPage() {
                               return (
                                 <div
                                   key={report.id}
-                                  className="rounded-[1.5rem] border border-[#ece6df] bg-white p-4"
+                                  className="rounded-[1.5rem] border border-[#ece6df] bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
                                 >
                                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="space-y-2">
                                       <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-sm font-bold text-[#1a1625]">
+                                        <span className="text-sm font-bold text-[#1a1625] dark:text-white">
                                           {report.testerDisplayName ?? 'Unknown tester'}
                                         </span>
                                         <ReportStatusBadge status={report.status} />
                                       </div>
-                                      <p className="text-sm italic text-[#6b687a]">&quot;{report.reason}&quot;</p>
-                                      <p className="text-xs text-[#8b8797]">
+                                      <p className="text-sm italic text-[#6b687a] dark:text-gray-400">&quot;{report.reason}&quot;</p>
+                                      <p className="text-xs text-[#8b8797] dark:text-gray-400">
                                         Reported {format(new Date(report.createdAt), 'MMM d, yyyy • HH:mm')}
                                       </p>
                                       {report.note ? (
-                                        <p className="text-xs text-[#6b687a]">Admin note: {report.note}</p>
+                                        <p className="text-xs text-[#6b687a] dark:text-gray-400">Admin note: {report.note}</p>
                                       ) : null}
                                     </div>
 
                                     {isPending ? (
                                       <div className="flex items-center gap-2 text-xs font-bold">
                                         <button
-                                          className="text-emerald-700 hover:underline"
+                                          className="text-emerald-700 hover:underline dark:text-emerald-300"
                                           onClick={() => handleOpenReportResolution(report.id, 'RESOLVED')}
                                         >
                                           Resolve
                                         </button>
-                                        <span className="text-[#d9d2cb]">|</span>
+                                        <span className="text-[#d9d2cb] dark:text-gray-600">|</span>
                                         <button
-                                          className="text-[#6b687a] hover:underline"
+                                          className="text-[#6b687a] hover:underline dark:text-gray-400"
                                           onClick={() => handleOpenReportResolution(report.id, 'DISMISSED')}
                                         >
                                           Dismiss
@@ -791,8 +791,8 @@ export default function AdminDashboardPage() {
                                   </div>
 
                                   {isResolvingThisReport && reportResolutionDraft ? (
-                                    <div className="mt-4 rounded-2xl border border-[#ece6df] bg-[#faf7f3] p-4">
-                                      <div className="mb-2 text-sm font-bold text-[#1a1625]">
+                                    <div className="mt-4 rounded-2xl border border-[#ece6df] bg-[#faf7f3] p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                                      <div className="mb-2 text-sm font-bold text-[#1a1625] dark:text-white">
                                         {reportResolutionDraft.status === 'RESOLVED'
                                           ? 'Resolve this report?'
                                           : 'Dismiss this report?'}
@@ -856,7 +856,7 @@ export default function AdminDashboardPage() {
           )}
         </main>
 
-        <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-panel border border-[#e5e4e0] bg-white/95 px-2 py-2 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.28)] backdrop-blur md:hidden">
+        <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-panel border border-[#e5e4e0] bg-white/95 px-2 py-2 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.28)] backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 md:hidden">
           {adminNavItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.id
@@ -868,13 +868,13 @@ export default function AdminDashboardPage() {
                 onClick={() => setActiveTab(item.id)}
                 className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
                   isActive
-                    ? 'bg-[#f5ede7] text-[#D97757]'
-                    : 'text-[#6e6882] hover:bg-[#f8f3ef]'
+                    ? 'bg-[#f5ede7] text-[#D97757] dark:bg-[#d77a57]/20 dark:text-[#D97757]'
+                    : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'
                 }`}
               >
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                    isActive ? 'bg-[#f3ddd3] text-[#D97757]' : 'bg-[#f3efe8] text-[#6b6477]'
+                    isActive ? 'bg-[#f3ddd3] text-[#D97757] dark:bg-[#d77a57]/30 dark:text-[#D97757]' : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -904,7 +904,7 @@ export default function AdminDashboardPage() {
           >
             {missionDialog.type === 'reject' ? (
               <div className="text-left">
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625] dark:text-white">
                   Rejection Reason
                 </label>
                 <textarea
@@ -915,7 +915,7 @@ export default function AdminDashboardPage() {
                   className={`${textFieldClass} resize-none`}
                   placeholder="Explain why this mission is being rejected."
                 />
-                <p className="mt-2 text-xs text-[#9b98a8]">Minimum 10 characters</p>
+                <p className="mt-2 text-xs text-[#9b98a8] dark:text-gray-400">Minimum 10 characters</p>
               </div>
             ) : null}
           </ConfirmationDialog>

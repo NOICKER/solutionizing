@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
-import { SpinnerIcon, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -219,8 +219,9 @@ function MissionWizardContent() {
   const [rejectedReviewNote, setRejectedReviewNote] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [goalWarning, setGoalWarning] = useState('')
-  const [assetChecks, setAssetChecks] = useState<Record<number, 'reachable' | 'unreachable'>>({})
+  const [assetChecks, setAssetChecks] = useState<Record<number, 'checking' | 'reachable' | 'unreachable'>>({})
   const [coinBalance, setCoinBalance] = useState(0)
+  const [isBalanceLoading, setIsBalanceLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
@@ -291,9 +292,21 @@ function MissionWizardContent() {
   }, [isEditMode])
 
   useEffect(() => {
-    if (step === 2) {
-      void loadBalance()
+    if (step !== 2) {
+      return
     }
+
+    async function refreshBalance() {
+      setIsBalanceLoading(true)
+
+      try {
+        await loadBalance()
+      } finally {
+        setIsBalanceLoading(false)
+      }
+    }
+
+    void refreshBalance()
   }, [loadBalance, step])
 
   useEffect(() => {
@@ -344,6 +357,8 @@ function MissionWizardContent() {
     if (!asset || asset.type === 'TEXT' || !asset.url?.trim()) {
       return
     }
+
+    setAssetChecks((current) => ({ ...current, [index]: 'checking' }))
 
     try {
       await fetch(asset.url, { method: 'HEAD', mode: 'no-cors' })
@@ -470,8 +485,7 @@ function MissionWizardContent() {
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
         <div className="mx-auto max-w-4xl space-y-6">
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
+          <WizardStepSkeleton step={1} />
         </div>
       </div>
     )
@@ -607,7 +621,7 @@ function MissionWizardContent() {
               </div>
             </div>
 
-            {coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
+            {!isBalanceLoading && coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
 
             <div className="space-y-4">
               {state.assets.map((asset, index) => (
@@ -624,6 +638,7 @@ function MissionWizardContent() {
                   ) : (
                     <div className="relative">
                       <input value={asset.url ?? ''} onBlur={() => void handleAssetReachability(index)} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, url: event.target.value } : currentAsset) }))} placeholder="https://example.com" className={textFieldClass} />
+                      {assetChecks[index] === 'checking' ? <SpinnerIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b98a8]" /> : null}
                       {assetChecks[index] === 'reachable' ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600 dark:text-green-400" /> : null}
                       {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600 dark:text-red-400" /> : null}
                     </div>

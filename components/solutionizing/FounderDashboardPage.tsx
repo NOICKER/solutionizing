@@ -10,7 +10,7 @@ import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 import { ApiMission } from '@/types/api'
 import { deleteAccount } from '@/lib/api/account'
-import { BrandMark, ConfirmationDialog, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
+import { BrandMark, CoinBalanceSkeleton, ConfirmationDialog, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
 import { FounderDashboardTab } from '@/components/solutionizing/founder/FounderDashboardTab'
 import { FounderMissionsTab } from '@/components/solutionizing/founder/FounderMissionsTab'
 import { FounderSettingsTab } from '@/components/solutionizing/founder/FounderSettingsTab'
@@ -180,6 +180,7 @@ function FounderDashboardContent() {
   const { user, signOut } = useAuth()
   const [missions, setMissions] = useState<ApiMission[]>([])
   const [coinBalance, setCoinBalance] = useState(user?.founderProfile?.coinBalance ?? 0)
+  const [isBalanceLoading, setIsBalanceLoading] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({})
@@ -195,8 +196,14 @@ function FounderDashboardContent() {
   const [deleteError, setDeleteError] = useState('')
 
   const loadBalance = useCallback(async () => {
-    const response = await apiFetch<BalanceResponse>('/api/v1/coins/balance')
-    setCoinBalance(response.balance ?? response.coinBalance ?? 0)
+    setIsBalanceLoading(true)
+
+    try {
+      const response = await apiFetch<BalanceResponse>('/api/v1/coins/balance')
+      setCoinBalance(response.balance ?? response.coinBalance ?? 0)
+    } finally {
+      setIsBalanceLoading(false)
+    }
   }, [])
 
   const loadMissions = useCallback(async () => {
@@ -435,16 +442,20 @@ function FounderDashboardContent() {
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-end">
-                  <div className="flex items-center gap-3 rounded-[1.7rem] border border-[#ece6df] bg-white/95 px-4 py-3 shadow-[0_18px_40px_-28px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-900/80">
-                    <GlyphChip className="bg-amber-50 text-amber-500">C</GlyphChip>
-                    <div>
-                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">Coin balance</div>
-                      <div className="mt-1 flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</span>
-                        <span className="text-sm font-medium text-[#9b98a8] dark:text-gray-400">~ Rs {(coinBalance / 100).toFixed(0)}</span>
+                  {isBalanceLoading ? (
+                    <CoinBalanceSkeleton />
+                  ) : (
+                    <div className="flex items-center gap-3 rounded-[1.7rem] border border-[#ece6df] bg-white/95 px-4 py-3 shadow-[0_18px_40px_-28px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-900/80">
+                      <GlyphChip className="bg-amber-50 text-amber-500">C</GlyphChip>
+                      <div>
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">Coin balance</div>
+                        <div className="mt-1 flex items-baseline gap-2">
+                          <span className="text-2xl font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</span>
+                          <span className="text-sm font-medium text-[#9b98a8] dark:text-gray-400">~ Rs {(coinBalance / 100).toFixed(0)}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   <button className={`px-5 py-3 text-sm ${primaryButtonClass}`} onClick={() => setActiveTab('wallets')}>
                     BUY COINS +
                   </button>
