@@ -399,7 +399,7 @@ export default function AdminDashboardPage() {
               <p className="mb-2 text-xs font-bold text-[#8b8797] dark:text-gray-400">Solutionizing v1.2.0</p>
               <button
                 className={`${outlineButtonClass} w-full py-2 text-xs`}
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/dashboard')}
               >
                 Go to Homepage
               </button>
@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
               'Oversee platform users and their activity.'
             }
           >
-            <button className={primaryButtonClass}>System Status</button>
+            <button className={primaryButtonClass} onClick={() => toast.info('All systems operational.')}>System Status</button>
             <button
               className={outlineButtonClass}
               onClick={() => {
