@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
-import { SpinnerIcon, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -41,6 +41,22 @@ const coinRates: Record<Difficulty, number> = {
   EASY: 500,
   MEDIUM: 1500,
   HARD: 3000,
+}
+
+const questionTypeDescriptions: Record<WizardQuestion['type'], string> = {
+  TEXT_SHORT: 'Testers type a short answer (up to 500 characters)',
+  TEXT_LONG: 'Testers write a detailed response (up to 1,000 characters)',
+  RATING_1_5: 'Testers pick a star rating from 1 to 5',
+  MULTIPLE_CHOICE: 'Testers pick one option from your list',
+  YES_NO: 'Testers answer yes or no',
+}
+
+const questionTypeUseCases: Record<WizardQuestion['type'], string> = {
+  TEXT_SHORT: "Good for: 'What was your first reaction when you landed on the page?'",
+  TEXT_LONG: "Good for: 'Walk us through what you tried to do and where you got stuck.'",
+  RATING_1_5: "Good for: 'How trustworthy did the pricing page feel?'",
+  MULTIPLE_CHOICE: "Good for: 'Which of these best describes why you wouldn't sign up?'",
+  YES_NO: "Good for: 'Did you understand what this product does within 10 seconds?'",
 }
 
 function isValidUrl(value: string) {
@@ -475,7 +491,50 @@ function MissionWizardContent() {
         <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
           <div className="mb-2 text-lg font-black text-[#1a1625] dark:text-white">{question.text}</div>
-          <div className="text-sm text-[#6b687a] dark:text-gray-400">{question.type.replaceAll('_', ' ')}</div>
+          <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-500">Tester will see</div>
+          {question.type === 'TEXT_SHORT' ? (
+            <input
+              type="text"
+              disabled
+              placeholder="Tester's answer..."
+              className={`${textFieldClass} opacity-50 cursor-not-allowed mt-3`}
+            />
+          ) : null}
+          {question.type === 'TEXT_LONG' ? (
+            <textarea
+              disabled
+              rows={3}
+              placeholder="Tester's detailed response..."
+              className={`${textFieldClass} opacity-50 cursor-not-allowed resize-none mt-3`}
+            />
+          ) : null}
+          {question.type === 'RATING_1_5' ? (
+            <div className="mt-3">
+              <StarRow value={0} readonly={true} size={28} />
+            </div>
+          ) : null}
+          {question.type === 'YES_NO' ? (
+            <div className="mt-3 flex gap-3">
+              <button disabled className="rounded-2xl border-2 border-[#e5e4e0] px-6 py-2 text-sm font-bold text-[#9b98a8] dark:border-gray-700 dark:text-gray-500">
+                Yes
+              </button>
+              <button disabled className="rounded-2xl border-2 border-[#e5e4e0] px-6 py-2 text-sm font-bold text-[#9b98a8] dark:border-gray-700 dark:text-gray-500">
+                No
+              </button>
+            </div>
+          ) : null}
+          {question.type === 'MULTIPLE_CHOICE' ? (
+            <div className="mt-3 space-y-2">
+              {(question.options ?? []).map((opt, optionIndex) => (
+                <div
+                  key={optionIndex}
+                  className="rounded-2xl border-2 border-[#e5e4e0] px-4 py-2 text-sm text-[#9b98a8] dark:border-gray-700 dark:text-gray-500"
+                >
+                  {opt || `Option ${optionIndex + 1}`}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       )),
     [state.questions]
@@ -561,6 +620,7 @@ function MissionWizardContent() {
                 value={state.goal}
                 onBlur={handleGoalBlur}
                 onChange={(event) => updateState((current) => ({ ...current, goal: event.target.value }))}
+                placeholder="e.g. I want to know if first-time visitors understand what we do within 10 seconds, and whether the pricing page feels trustworthy."
                 rows={5}
                 className={`${textFieldClass} resize-none`}
               />
@@ -568,25 +628,61 @@ function MissionWizardContent() {
                 <span className={`text-sm ${errors.goal ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-300'}`}>{errors.goal || goalWarning}</span>
                 <span className="text-sm text-[#9b98a8] dark:text-gray-400">{state.goal.length}/300</span>
               </div>
+              <div className="mt-3 rounded-2xl border border-[#e5e4e0] bg-[#faf9f7] p-4 dark:border-gray-700 dark:bg-gray-800">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#9b98a8] dark:text-gray-500">What makes a good goal?</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 text-green-500">✓</span>
+                    <span className="text-[#1a1625] dark:text-white">&quot;Do visitors understand what this product does in under 30 seconds?&quot;</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 text-green-500">✓</span>
+                    <span className="text-[#1a1625] dark:text-white">&quot;Does the checkout flow feel confusing or trustworthy?&quot;</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 text-red-400">✗</span>
+                    <span className="text-[#9b98a8] dark:text-gray-400">&quot;Give me feedback on my website.&quot; — too vague, testers won&apos;t know what to focus on</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">DIFFICULTY</label>
               <div className="grid gap-4 md:grid-cols-3">
                 {([
-                  { value: 'EASY', price: '500 coins per tester', note: 'Quick impressions' },
-                  { value: 'MEDIUM', price: '1,500 coins per tester', note: 'Detailed feedback' },
-                  { value: 'HARD', price: '3,000 coins per tester', note: 'Complex analysis' },
+                  {
+                    value: 'EASY',
+                    price: '500 coins per tester',
+                    note: 'Quick impressions',
+                    detail:
+                      'Testers spend 2 minutes, visit your link, and answer a few quick questions. Best for first impressions and top-of-funnel clarity.',
+                  },
+                  {
+                    value: 'MEDIUM',
+                    price: '1,500 coins per tester',
+                    note: 'Detailed feedback',
+                    detail:
+                      'Testers spend up to 4 minutes, explore key flows, and give structured written feedback. Best for UX and messaging.',
+                  },
+                  {
+                    value: 'HARD',
+                    price: '3,000 coins per tester',
+                    note: 'Complex analysis',
+                    detail:
+                      'Testers spend up to 6 minutes, dig into specific features, and write detailed analysis. Best for product decisions and conversion problems.',
+                  },
                 ] as const).map((difficulty) => (
                   <button
                     key={difficulty.value}
                     type="button"
                     onClick={() => updateState((current) => ({ ...current, difficulty: difficulty.value }))}
                     className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6] dark:bg-[#d77a57]/10' : 'border-2 border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800'}`}
-                  >
+                    >
                     <div className="mb-2 text-xl font-black text-[#1a1625] dark:text-white">{difficulty.value}</div>
                     <div className="text-sm font-bold text-[#d77a57]">{difficulty.price}</div>
                     <div className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">{difficulty.note}</div>
+                    <div className="mt-2 text-xs leading-relaxed text-[#9b98a8] dark:text-gray-500">{difficulty.detail}</div>
                   </button>
                 ))}
               </div>
@@ -624,6 +720,9 @@ function MissionWizardContent() {
             {!isBalanceLoading && coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
 
             <div className="space-y-4">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
+                <p>How to make your mission work: use links that testers can open without logging in, confirm they still work in an incognito window, and if the product needs login, add a TEXT asset with a demo account and password.</p>
+              </div>
               {state.assets.map((asset, index) => (
                 <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`asset-${index}`}>
                   <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -664,6 +763,7 @@ function MissionWizardContent() {
                 </div>
                 <input value={question.text} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, text: event.target.value } : currentQuestion) }))} placeholder="e.g. What was your first impression?" className={textFieldClass} />
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors[`question-${index}`]}</p>
+                <p className="mt-2 text-xs text-[#9b98a8] dark:text-gray-500">Ask one specific thing. Vague questions like &quot;What do you think?&quot; produce vague answers. Better: &quot;Did the pricing feel too high, too low, or about right?&quot;</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {([
                     ['TEXT_SHORT', 'Short text'],
@@ -675,6 +775,8 @@ function MissionWizardContent() {
                     <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, type, options: type === 'MULTIPLE_CHOICE' ? currentQuestion.options && currentQuestion.options.length >= 2 ? currentQuestion.options : ['', ''] : undefined } : currentQuestion) }))} className={`rounded-full px-3 py-1 text-sm font-semibold ${question.type === type ? 'bg-[#d77a57]/10 text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#f0a98c]' : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'}`}>{label}</button>
                   ))}
                 </div>
+                {question.type ? <p className="mt-2 text-xs text-[#9b98a8] dark:text-gray-400">{questionTypeDescriptions[question.type]}</p> : null}
+                {question.type ? <p className="mt-1 text-xs text-[#d77a57]/80 dark:text-[#f0a98c]/70">{questionTypeUseCases[question.type]}</p> : null}
 
                 {question.type === 'MULTIPLE_CHOICE' ? (
                   <div className="mt-4 space-y-3">
