@@ -14,7 +14,7 @@ import { BrandMark, CoinBalanceSkeleton, ConfirmationDialog, PageLoadingBar, for
 import { FounderDashboardTab } from '@/components/solutionizing/founder/FounderDashboardTab'
 import { FounderMissionsTab } from '@/components/solutionizing/founder/FounderMissionsTab'
 import { FounderSettingsTab } from '@/components/solutionizing/founder/FounderSettingsTab'
-import { FounderWalletsTab } from '@/components/solutionizing/founder/FounderWalletsTab'
+import { FounderWalletsTab, type PurchaseFlowState } from '@/components/solutionizing/founder/FounderWalletsTab'
 import { SupportPage } from '@/components/solutionizing/shared/SupportPage'
 import { ThemeToggleButton } from '@/components/solutionizing/shared/ThemeToggleButton'
 
@@ -204,7 +204,7 @@ function FounderDashboardContent() {
   const [dialogLoading, setDialogLoading] = useState(false)
   const [dialogError, setDialogError] = useState('')
   const [purchaseLoadingPackId, setPurchaseLoadingPackId] = useState<string | null>(null)
-  const [purchaseError, setPurchaseError] = useState('')
+  const [purchaseResult, setPurchaseResult] = useState<PurchaseFlowState>(null)
   const [activeTab, setActiveTab] = useState<FounderTab>('dashboard')
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -348,11 +348,18 @@ function FounderDashboardContent() {
   }
 
   async function handlePurchase(packId: string) {
-    setPurchaseError('')
+    setPurchaseResult(null)
     setPurchaseLoadingPackId(packId)
 
     try {
-      const response = await apiFetch<{ coinsAdded?: number }>('/api/v1/coins/purchase', {
+      const response = await apiFetch<{
+        coinsAdded?: number
+        newBalance?: number
+        pack?: {
+          id: string
+          label: string
+        }
+      }>('/api/v1/coins/purchase', {
         method: 'POST',
         body: { packId },
       })
@@ -360,15 +367,30 @@ function FounderDashboardContent() {
       posthog.capture('coins_purchased', {
         amount: response.coinsAdded ?? 0,
       })
-      toast.success(`${formatCoins(response.coinsAdded ?? 0)} coins added to your balance!`)
+      setPurchaseResult({
+        status: 'success',
+        packId: packId as 'starter' | 'growth' | 'scale',
+        packName: response.pack?.label ?? 'Coin pack',
+        coinsAdded: response.coinsAdded ?? 0,
+        newBalance: response.newBalance ?? coinBalance + (response.coinsAdded ?? 0),
+        message:
+          'Your wallet was credited successfully. You can use these coins immediately for upcoming missions in this beta environment.',
+      })
     } catch (error) {
-      setPurchaseError(
+      const message =
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
-          ? 'Check your internet connection'
+          ? 'We could not reach checkout. Check your internet connection and try again.'
           : isApiClientError(error) && error.code === 'PAYMENTS_UNAVAILABLE'
-            ? error.message
-          : 'Purchase failed. Try again.'
-      )
+            ? `${error.message} This branch is still using the beta purchase gateway.`
+            : 'The purchase request failed before coins were credited. Retry the same pack or contact support if it keeps happening.'
+
+      setPurchaseResult({
+        status: 'failure',
+        packId: packId as 'starter' | 'growth' | 'scale',
+        packName:
+          packId === 'starter' ? 'Starter' : packId === 'growth' ? 'Growth' : 'Scale',
+        message,
+      })
     } finally {
       setPurchaseLoadingPackId(null)
     }
@@ -529,9 +551,14 @@ function FounderDashboardContent() {
               ) : activeTab === 'wallets' ? (
                 <FounderWalletsTab
                   coinBalance={coinBalance}
-                  purchaseError={purchaseError}
                   purchaseLoadingPackId={purchaseLoadingPackId}
+                  purchaseResult={purchaseResult}
                   onPurchase={(packId) => void handlePurchase(packId)}
+                  onResetPurchaseResult={() => setPurchaseResult(null)}
+                  onGoToMissions={() => {
+                    setPurchaseResult(null)
+                    setActiveTab('missions')
+                  }}
                 />
               ) : activeTab === 'support' ? (
                 <SupportPage role="FOUNDER" />

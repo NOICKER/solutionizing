@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
-import { SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { ModalShell, SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -58,6 +58,50 @@ const questionTypeUseCases: Record<WizardQuestion['type'], string> = {
   MULTIPLE_CHOICE: "Good for: 'Which of these best describes why you wouldn't sign up?'",
   YES_NO: "Good for: 'Did you understand what this product does within 10 seconds?'",
 }
+
+const questionTemplates: Array<{
+  title: string
+  description: string
+  question: Omit<WizardQuestion, 'order'>
+}> = [
+  {
+    title: 'First impression',
+    description: 'Capture the earliest reaction before testers overthink it.',
+    question: {
+      text: 'What stood out to you first when you opened this experience?',
+      type: 'TEXT_SHORT',
+      required: true,
+    },
+  },
+  {
+    title: 'Confusion check',
+    description: 'Find the exact moment where the flow stopped making sense.',
+    question: {
+      text: 'What felt confusing, unclear, or harder than you expected?',
+      type: 'TEXT_LONG',
+      required: true,
+    },
+  },
+  {
+    title: 'Trust pulse',
+    description: 'Measure whether the experience feels credible enough to continue.',
+    question: {
+      text: 'How trustworthy did this feel overall?',
+      type: 'RATING_1_5',
+      required: true,
+    },
+  },
+  {
+    title: 'Next-step intent',
+    description: 'Understand whether the product motivates action.',
+    question: {
+      text: 'Which best describes your willingness to take the next step?',
+      type: 'MULTIPLE_CHOICE',
+      options: ['Ready to continue', 'Maybe, but I need more clarity', 'Not likely to continue'],
+      required: true,
+    },
+  },
+]
 
 function isValidUrl(value: string) {
   try {
@@ -241,11 +285,28 @@ function MissionWizardContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
+  const [exitAction, setExitAction] = useState<'draft' | 'delete' | null>(null)
   const dirtyRef = useRef(false)
+  const [exitDialogOpen, setExitDialogOpen] = useState(false)
+  const [exitError, setExitError] = useState('')
+  const hydratedStateRef = useRef<WizardState>(initialState)
+  const draftStorageKey = useMemo(
+    () => (editMissionId ? `mission-wizard-draft:${editMissionId}` : 'mission-wizard-draft'),
+    [editMissionId]
+  )
+  const refreshFlagKey = useMemo(
+    () => (editMissionId ? `solutionizing-draft-refresh:${editMissionId}` : 'solutionizing-draft-refresh'),
+    [editMissionId]
+  )
 
   const subtotal = coinRates[state.difficulty] * state.testersRequired
   const fee = Math.ceil(subtotal * 0.2)
   const total = subtotal + fee
+
+  const clearLocalDraft = useCallback(() => {
+    sessionStorage.removeItem(draftStorageKey)
+    sessionStorage.removeItem(refreshFlagKey)
+  }, [draftStorageKey, refreshFlagKey])
 
   const loadBalance = useCallback(async () => {
     try {
@@ -258,17 +319,23 @@ function MissionWizardContent() {
 
   useEffect(() => {
     async function initialize() {
+      hydratedStateRef.current = initialState
+
       if (!isEditMode || !editMissionId) {
         try {
-          const draftJson = sessionStorage.getItem('mission-wizard-draft')
+          const draftJson = sessionStorage.getItem(draftStorageKey)
           if (draftJson) {
             const draft = JSON.parse(draftJson)
             setState(draft)
             setShowDraftBanner(true)
+          } else {
+            setState(initialState)
+            setShowDraftBanner(false)
           }
         } catch {
           // ignore
         }
+        dirtyRef.current = false
         setIsLoading(false)
         return
       }
@@ -280,7 +347,21 @@ function MissionWizardContent() {
           router.replace('/dashboard/founder')
           return
         }
-        setState(toFrontendMission(mission))
+        const baseState = toFrontendMission(mission)
+        hydratedStateRef.current = baseState
+        const draftJson = sessionStorage.getItem(draftStorageKey)
+        if (draftJson) {
+          try {
+            setState(JSON.parse(draftJson))
+            setShowDraftBanner(true)
+          } catch {
+            setState(baseState)
+            setShowDraftBanner(false)
+          }
+        } else {
+          setState(baseState)
+          setShowDraftBanner(false)
+        }
         if (mission.status === 'REJECTED') {
           setRejectedReviewNote(
             mission.reviewNote ?? 'Your mission was rejected. Review the feedback and update it before resubmitting.'
@@ -293,19 +374,20 @@ function MissionWizardContent() {
       } catch {
         router.replace('/dashboard/founder')
       } finally {
+        dirtyRef.current = false
         setIsLoading(false)
       }
     }
 
     void initialize()
-  }, [editMissionId, isEditMode, router])
+  }, [draftStorageKey, editMissionId, isEditMode, router])
 
   useEffect(() => {
-    if (!isEditMode && sessionStorage.getItem('solutionizing-draft-refresh') === '1') {
+    if (sessionStorage.getItem(refreshFlagKey) === '1') {
       toast.info("Your draft wasn't saved yet.")
-      sessionStorage.removeItem('solutionizing-draft-refresh')
+      sessionStorage.removeItem(refreshFlagKey)
     }
-  }, [isEditMode])
+  }, [refreshFlagKey])
 
   useEffect(() => {
     if (step !== 2) {
@@ -327,25 +409,23 @@ function MissionWizardContent() {
 
   useEffect(() => {
     const onBeforeUnload = () => {
-      if (!isEditMode && dirtyRef.current) {
-        sessionStorage.setItem('solutionizing-draft-refresh', '1')
+      if (dirtyRef.current) {
+        sessionStorage.setItem(refreshFlagKey, '1')
       }
     }
 
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [isEditMode])
+  }, [refreshFlagKey])
 
   const updateState = useCallback((updater: (current: WizardState) => WizardState) => {
     dirtyRef.current = true
     setState((current) => {
       const nextState = updater(current)
-      if (!isEditMode) {
-        sessionStorage.setItem('mission-wizard-draft', JSON.stringify(nextState))
-      }
+      sessionStorage.setItem(draftStorageKey, JSON.stringify(nextState))
       return nextState
     })
-  }, [isEditMode])
+  }, [draftStorageKey])
 
   function handleNext() {
     const nextErrors = validateStep(step, state)
@@ -439,8 +519,8 @@ function MissionWizardContent() {
         })
       }
 
-      sessionStorage.removeItem('solutionizing-draft-refresh')
-      sessionStorage.removeItem('mission-wizard-draft')
+      clearLocalDraft()
+      dirtyRef.current = false
       toast.success(
         action === 'submit'
           ? 'Mission submitted for review!'
@@ -540,6 +620,155 @@ function MissionWizardContent() {
     [state.questions]
   )
 
+  function handleBack() {
+    if (step === 1) {
+      return
+    }
+
+    setStep((current) => current - 1)
+  }
+
+  async function handleExitSaveDraft() {
+    setExitAction('draft')
+    setExitError('')
+    const validationErrors = getMissionValidationErrors(state)
+
+    if (Object.keys(validationErrors).length === 0) {
+      setExitDialogOpen(false)
+      await handleSave('draft')
+      setExitAction(null)
+      return
+    }
+
+    try {
+      sessionStorage.setItem(draftStorageKey, JSON.stringify(state))
+      sessionStorage.removeItem(refreshFlagKey)
+      dirtyRef.current = false
+      setExitDialogOpen(false)
+      toast.success('Draft saved locally. You can continue it later.')
+      router.push('/dashboard/founder')
+    } catch {
+      setExitError('We could not save this draft. Try again.')
+    } finally {
+      setExitAction(null)
+    }
+  }
+
+  async function handleExitDelete() {
+    setExitAction('delete')
+    setExitError('')
+
+    try {
+      clearLocalDraft()
+      dirtyRef.current = false
+
+      if (isEditMode && editMissionId) {
+        await apiFetch(`/api/v1/missions/${editMissionId}`, { method: 'DELETE' })
+        toast.success('Mission deleted.')
+      } else {
+        toast.success('Draft discarded.')
+      }
+
+      setExitDialogOpen(false)
+      router.push('/dashboard/founder')
+    } catch (error) {
+      if (isApiClientError(error)) {
+        setExitError(error.message)
+      } else {
+        setExitError('We could not delete this mission. Try again.')
+      }
+    } finally {
+      setExitAction(null)
+    }
+  }
+
+  function insertQuestionTemplate(template: typeof questionTemplates[number]) {
+    updateState((current) => {
+      const nextQuestion: WizardQuestion = {
+        ...template.question,
+        options: template.question.options ? [...template.question.options] : undefined,
+        order: current.questions.length,
+      }
+      const shouldReplaceStarter =
+        current.questions.length === 1 &&
+        !current.questions[0].text.trim() &&
+        current.questions[0].type === 'TEXT_SHORT' &&
+        current.questions[0].required
+
+      const nextQuestions = shouldReplaceStarter
+        ? [{ ...nextQuestion, order: 0 }]
+        : [...current.questions, nextQuestion].slice(0, 6)
+
+      return {
+        ...current,
+        questions: nextQuestions.map((question, index) => ({
+          ...question,
+          options: question.options ? [...question.options] : undefined,
+          order: index,
+        })),
+      }
+    })
+  }
+
+  function renderStepNavigation(position: 'top' | 'bottom') {
+    const containerClass =
+      position === 'top'
+        ? 'mb-8 flex items-center justify-between border-b border-[#e5e4e0] pb-4 dark:border-gray-700'
+        : 'mt-5 flex items-center justify-between border-t border-[#e5e4e0] pt-4 dark:border-gray-700'
+    const canGoBack = step > 1
+
+    return (
+      <div className={containerClass}>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            className="font-semibold text-[#d77a57] hover:text-[#c4673f] dark:text-[#f0a98c] dark:hover:text-white"
+            onClick={() => {
+              setExitError('')
+              setExitDialogOpen(true)
+            }}
+          >
+            EXIT
+          </button>
+          <button
+            type="button"
+            disabled={!canGoBack}
+            className="font-semibold text-[#6b687a] hover:text-[#1a1625] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:text-white"
+            onClick={handleBack}
+          >
+            {'<- Back'}
+          </button>
+        </div>
+        {step < 4 ? (
+          <button type="button" className={`px-8 py-3.5 ${primaryButtonClass}`} onClick={handleNext}>
+            {'CONTINUE ->'}
+          </button>
+        ) : (
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              disabled={pendingAction !== null}
+              className={`flex items-center gap-2 px-6 py-3.5 ${outlineButtonClass}`}
+              onClick={() => void handleSave('draft')}
+            >
+              {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
+              {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
+            </button>
+            <button
+              type="button"
+              disabled={pendingAction !== null}
+              className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`}
+              onClick={() => void handleSave('submit')}
+            >
+              {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
+              {isEditMode ? 'SUBMIT FOR REVIEW' : 'SAVE & SUBMIT FOR REVIEW'}
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
@@ -559,8 +788,9 @@ function MissionWizardContent() {
             <button
               type="button"
               onClick={() => {
-                sessionStorage.removeItem('mission-wizard-draft')
-                setState(initialState)
+                clearLocalDraft()
+                dirtyRef.current = false
+                setState(hydratedStateRef.current)
                 setShowDraftBanner(false)
               }}
               className="text-sm font-bold text-amber-700 underline hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
@@ -597,6 +827,8 @@ function MissionWizardContent() {
         <h2 className="mb-8 text-3xl font-black text-[#1a1625] dark:text-white">
           {step === 1 ? 'Mission Brief' : step === 2 ? 'Mission Setup' : step === 3 ? 'Questions' : 'Review'}
         </h2>
+
+        {renderStepNavigation('top')}
 
         {step === 1 ? (
           <div className="space-y-8">
@@ -755,6 +987,38 @@ function MissionWizardContent() {
 
         {step === 3 ? (
           <div className="space-y-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">Suggested templates</p>
+                  <h3 className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">Start with proven questions</h3>
+                  <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">Insert a template, then rewrite it to match your mission. These are generic prompts that work across most tests.</p>
+                </div>
+                <span className="text-sm font-semibold text-[#d77a57]">{state.questions.length}/6 questions</span>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {questionTemplates.map((template) => (
+                  <div key={template.title} className="rounded-2xl border border-[#ece8e1] bg-[#faf9f7] p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-black text-[#1a1625] dark:text-white">{template.title}</p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#d77a57]">{template.question.type.replaceAll('_', ' ')}</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={state.questions.length >= 6}
+                        className="rounded-full border border-[#d77a57]/30 px-3 py-1 text-xs font-bold text-[#d77a57] transition-colors hover:bg-[#d77a57]/10 disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#f0a98c]/30 dark:text-[#f0a98c]"
+                        onClick={() => insertQuestionTemplate(template)}
+                      >
+                        INSERT
+                      </button>
+                    </div>
+                    <p className="mt-3 text-sm text-[#1a1625] dark:text-white">{template.question.text}</p>
+                    <p className="mt-2 text-xs text-[#6b687a] dark:text-gray-400">{template.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
             {state.questions.map((question, index) => (
               <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`question-${index}`}>
                 <div className="mb-4 flex items-center justify-between">
@@ -830,48 +1094,59 @@ function MissionWizardContent() {
           </div>
         ) : null}
 
-        <div className="mt-5 flex items-center justify-between border-t border-[#e5e4e0] pt-4 dark:border-gray-700">
-          <button
-            type="button"
-            className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white"
-            onClick={() => {
-              if (step === 1) {
-                router.push('/dashboard/founder')
-              } else {
-                setStep((current) => current - 1)
-              }
-            }}
-          >
-            ← Back
-          </button>
-          {step < 4 ? (
-            <button type="button" className={`px-8 py-3.5 ${primaryButtonClass}`} onClick={handleNext}>
-              CONTINUE →
-            </button>
-          ) : (
-            <div className="flex flex-wrap items-center justify-end gap-3">
+        {renderStepNavigation('bottom')}
+      </div>
+      {exitDialogOpen ? (
+        <ModalShell
+          onClose={() => {
+            if (exitAction === null) {
+              setExitDialogOpen(false)
+              setExitError('')
+            }
+          }}
+        >
+          <div className="mx-auto max-w-xl rounded-card border border-[#e5e4e0] bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+            <div className="mb-6">
+              <h3 className="text-2xl font-black text-[#1a1625] dark:text-white">Exit mission wizard?</h3>
+              <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+                Save your progress as a draft, delete this mission, or stay here and keep editing.
+              </p>
+            </div>
+            {exitError ? <p className="mb-4 text-sm text-red-600 dark:text-red-400">{exitError}</p> : null}
+            <div className="space-y-3">
               <button
                 type="button"
-                disabled={pendingAction !== null}
-                className={`flex items-center gap-2 px-6 py-3.5 ${outlineButtonClass}`}
-                onClick={() => void handleSave('draft')}
+                disabled={exitAction !== null}
+                className={`flex w-full items-center justify-center gap-2 rounded-[2rem] px-6 py-3.5 ${primaryButtonClass} disabled:pointer-events-none disabled:opacity-70`}
+                onClick={() => void handleExitSaveDraft()}
               >
-                {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
-                {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
+                {exitAction === 'draft' ? <SpinnerIcon className="h-5 w-5" /> : null}
+                SAVE AS DRAFT
               </button>
               <button
                 type="button"
-                disabled={pendingAction !== null}
-                className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`}
-                onClick={() => void handleSave('submit')}
+                disabled={exitAction !== null}
+                className="flex w-full items-center justify-center gap-2 rounded-[2rem] bg-gradient-to-r from-red-500 to-red-600 px-6 py-3.5 font-black text-white transition-all hover:scale-[1.02] hover:shadow-lg disabled:pointer-events-none disabled:opacity-70"
+                onClick={() => void handleExitDelete()}
               >
-                {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
-                {isEditMode ? 'SUBMIT FOR REVIEW' : 'SAVE & SUBMIT FOR REVIEW'}
+                {exitAction === 'delete' ? <SpinnerIcon className="h-5 w-5" /> : null}
+                DELETE MISSION
+              </button>
+              <button
+                type="button"
+                disabled={exitAction !== null}
+                className="w-full rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] px-6 py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0] disabled:pointer-events-none disabled:opacity-70 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                onClick={() => {
+                  setExitDialogOpen(false)
+                  setExitError('')
+                }}
+              >
+                CANCEL
               </button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </ModalShell>
+      ) : null}
     </div>
   )
 }
@@ -889,9 +1164,38 @@ export function MissionWizardPage() {
 function MissionWizardPageLoading() {
   return (
     <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-        <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
+        <div className="mb-8">
+          <div className="mb-4 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1 text-sm font-bold text-[#d77a57]">
+            Step 1 of 4
+          </div>
+          <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="h-full w-1/4 rounded-full bg-[#d77a57]" />
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <div className="font-bold text-[#d77a57]">Brief</div>
+            <div className="text-[#9b98a8] dark:text-gray-500">Setup</div>
+            <div className="text-[#9b98a8] dark:text-gray-500">Questions</div>
+            <div className="text-[#9b98a8] dark:text-gray-500">Review</div>
+          </div>
+        </div>
+
+        <div className="mb-8 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-2 text-sm font-bold text-[#d77a57]">
+          MEDIUM · loading coin rate
+        </div>
+
+        <div className="mb-8 h-10 w-60 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
+        <div className="mb-8 flex items-center justify-between border-b border-[#e5e4e0] pb-4 dark:border-gray-700">
+          <div className="h-5 w-20 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
+          <div className="h-12 w-36 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
+        </div>
+
+        <WizardStepSkeleton step={1} />
+
+        <div className="mt-5 flex items-center justify-between border-t border-[#e5e4e0] pt-4 dark:border-gray-700">
+          <div className="h-5 w-20 animate-pulse rounded-full bg-[#e5e4e0] dark:bg-gray-700" />
+          <div className="h-12 w-36 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
+        </div>
       </div>
     </div>
   )

@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { SpinnerIcon } from '@/components/solutionizing/ui'
+import { SpinnerIcon, textFieldClass } from '@/components/solutionizing/ui'
 import {
   OnboardingShell,
   OnboardingStepIcon,
@@ -17,8 +17,16 @@ import {
   preferredDeviceOptions,
   type PreferredDevice,
 } from '@/components/solutionizing/tester/profileOptions'
+import {
+  hasPayoutFieldErrors,
+  serializePayoutDetails,
+  validatePayoutDetails,
+  type BankTransferPayoutDetails,
+  type PayoutField,
+  type PayoutFieldErrors,
+} from '@/lib/payout-details'
 
-type TesterOnboardingStep = 1 | 2 | 3 | 4
+type TesterOnboardingStep = 1 | 2 | 3 | 4 | 5
 
 interface TesterOnboardingProps {
   initialDisplayName: string
@@ -61,6 +69,40 @@ function getRequestErrorMessage(error: unknown) {
   return 'Something went wrong. Please try again.'
 }
 
+function BankingDetailsStepSkeleton() {
+  return (
+    <div className="animate-pulse space-y-8">
+      <div className="max-w-2xl space-y-3">
+        <div className="h-5 w-32 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
+        <div className="h-10 w-full max-w-xl rounded-3xl bg-[#f5ede7] dark:bg-gray-800" />
+        <div className="h-5 w-full max-w-2xl rounded-full bg-[#f2e7df] dark:bg-gray-900" />
+      </div>
+
+      <div className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-6 dark:border-gray-800 dark:bg-gray-950/60">
+        <div className="space-y-4">
+          <div className="h-4 w-40 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
+          <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <div className="h-4 w-32 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
+              <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-24 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
+              <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60">
+        <div className="h-4 w-full max-w-xl rounded-full bg-[#f2e7df] dark:bg-gray-800" />
+        <div className="mt-3 h-4 w-full max-w-lg rounded-full bg-[#f2e7df] dark:bg-gray-900" />
+      </div>
+    </div>
+  )
+}
+
 export function TesterOnboarding({
   initialDisplayName,
   initialExpertiseTags,
@@ -71,39 +113,81 @@ export function TesterOnboarding({
   const [step, setStep] = useState<TesterOnboardingStep>(1)
   const [expertiseTags, setExpertiseTags] = useState<string[]>(initialExpertiseTags)
   const [preferredDevice, setPreferredDevice] = useState<PreferredDevice | null>(initialPreferredDevice)
+  const [accountHolderName, setAccountHolderName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [ifscCode, setIfscCode] = useState('')
+  const [bankFieldErrors, setBankFieldErrors] = useState<PayoutFieldErrors>({})
   const [errorMessage, setErrorMessage] = useState('')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [isSavingBankDetails, setIsSavingBankDetails] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
 
   async function handleNext() {
     setErrorMessage('')
+    setBankFieldErrors({})
 
     if (step === 1 || step === 2) {
       setStep((currentStep) => (currentStep + 1) as TesterOnboardingStep)
       return
     }
 
-    if (!preferredDevice) {
-      setErrorMessage('Choose the device setup you use most often to continue.')
+    if (step === 3) {
+      if (!preferredDevice) {
+        setErrorMessage('Choose the device setup you use most often to continue.')
+        return
+      }
+
+      setIsSavingProfile(true)
+
+      try {
+        await apiFetch('/api/v1/tester/profile', {
+          method: 'PATCH',
+          body: {
+            expertiseTags,
+            preferredDevice,
+          },
+        })
+        await refetch()
+        setStep(4)
+      } catch (error) {
+        setErrorMessage(getRequestErrorMessage(error))
+      } finally {
+        setIsSavingProfile(false)
+      }
+
       return
     }
 
-    setIsSavingProfile(true)
+    const bankDetailsDraft: BankTransferPayoutDetails = {
+      method: 'BANK_TRANSFER',
+      accountHolderName,
+      accountNumber,
+      ifscCode,
+    }
+    const nextBankFieldErrors = validatePayoutDetails(bankDetailsDraft)
+
+    if (hasPayoutFieldErrors(nextBankFieldErrors)) {
+      setBankFieldErrors(nextBankFieldErrors)
+      const firstError = Object.values(nextBankFieldErrors).find(Boolean)
+      setErrorMessage(firstError ?? 'Enter your banking details to continue.')
+      return
+    }
+
+    setIsSavingBankDetails(true)
 
     try {
       await apiFetch('/api/v1/tester/profile', {
         method: 'PATCH',
         body: {
-          expertiseTags,
-          preferredDevice,
+          payoutDetails: serializePayoutDetails(bankDetailsDraft),
         },
       })
       await refetch()
-      setStep(4)
+      setStep(5)
     } catch (error) {
       setErrorMessage(getRequestErrorMessage(error))
     } finally {
-      setIsSavingProfile(false)
+      setIsSavingBankDetails(false)
     }
   }
 
@@ -145,21 +229,46 @@ export function TesterOnboarding({
     })
   }
 
+  function handleBankFieldChange(field: PayoutField, value: string) {
+    setErrorMessage('')
+    setBankFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: undefined,
+    }))
+
+    if (field === 'accountHolderName') {
+      setAccountHolderName(value)
+      return
+    }
+
+    if (field === 'accountNumber') {
+      setAccountNumber(value.replace(/\D/g, ''))
+      return
+    }
+
+    setIfscCode(value.toUpperCase())
+  }
+
+  function getVisibleBankFieldError(field: PayoutField) {
+    return bankFieldErrors[field]
+  }
+
   const footer = (
     <div className="mt-10 flex flex-col-reverse gap-3 border-t border-[#efe8e1] pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
           setErrorMessage('')
+          setBankFieldErrors({})
           setStep((currentStep) => Math.max(1, currentStep - 1) as TesterOnboardingStep)
         }}
-        disabled={step === 1 || isSavingProfile || isCompleting}
+        disabled={step === 1 || isSavingProfile || isSavingBankDetails || isCompleting}
         className={onboardingGhostButtonClass}
       >
         Back
       </button>
 
-      {step === 4 ? (
+      {step === 5 ? (
         <button
           type="button"
           onClick={() => void handleComplete()}
@@ -173,18 +282,24 @@ export function TesterOnboarding({
         <button
           type="button"
           onClick={() => void handleNext()}
-          disabled={isSavingProfile}
+          disabled={isSavingProfile || isSavingBankDetails}
           className={onboardingPrimaryButtonClass}
         >
-          {isSavingProfile ? <SpinnerIcon className="h-5 w-5" /> : null}
-          {step === 1 ? 'Get Started' : 'Next'}
+          {isSavingProfile || isSavingBankDetails ? <SpinnerIcon className="h-5 w-5" /> : null}
+          {step === 1
+            ? 'Get Started'
+            : step === 3
+              ? 'Save Profile'
+              : step === 4
+                ? 'Save Banking Details'
+                : 'Next'}
         </button>
       )}
     </div>
   )
 
   return (
-    <OnboardingShell step={step} totalSteps={4}>
+    <OnboardingShell step={step} totalSteps={5}>
       {step === 1 ? (
         <div className="space-y-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#fff4ef] px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
@@ -347,6 +462,107 @@ export function TesterOnboarding({
       ) : null}
 
       {step === 4 ? (
+        isSavingBankDetails ? (
+          <BankingDetailsStepSkeleton />
+        ) : (
+          <div>
+            <div className="max-w-2xl">
+              <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Add your banking details</h1>
+              <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+                These details are used only for tester withdrawals so payouts can be processed without chasing you later.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-6">
+              <section className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-6 dark:border-gray-800 dark:bg-gray-950/60">
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+                      Bank transfer details
+                    </div>
+                    <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+                      Enter the bank account where you want your withdrawals sent.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4">
+                    <div>
+                      <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                        Account Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        value={accountHolderName}
+                        onChange={(event) => handleBankFieldChange('accountHolderName', event.target.value)}
+                        placeholder="Aarav Sharma"
+                        autoComplete="name"
+                        className={textFieldClass}
+                      />
+                      {getVisibleBankFieldError('accountHolderName') ? (
+                        <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('accountHolderName')}</p>
+                      ) : null}
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                          Account Number
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={accountNumber}
+                          onChange={(event) => handleBankFieldChange('accountNumber', event.target.value)}
+                          placeholder="123456789012"
+                          autoComplete="off"
+                          className={textFieldClass}
+                        />
+                        {getVisibleBankFieldError('accountNumber') ? (
+                          <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('accountNumber')}</p>
+                        ) : null}
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                          IFSC Code
+                        </label>
+                        <input
+                          type="text"
+                          value={ifscCode}
+                          onChange={(event) => handleBankFieldChange('ifscCode', event.target.value)}
+                          placeholder="HDFC0123456"
+                          autoComplete="off"
+                          className={textFieldClass}
+                        />
+                        {getVisibleBankFieldError('ifscCode') ? (
+                          <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('ifscCode')}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-[#d77a57]">shield_lock</span>
+                  <div>
+                    <div className="text-sm font-black text-[#1a1625] dark:text-white">Security reassurance</div>
+                    <p className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">
+                      Your banking details are encrypted at rest and used only when a withdrawal is processed. They are not shown to founders and are never included in mission data.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+            {footer}
+          </div>
+        )
+      ) : null}
+
+      {step === 5 ? (
         <div className="space-y-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4ef] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
             <span className="material-symbols-outlined !text-[2.6rem]">check_circle</span>

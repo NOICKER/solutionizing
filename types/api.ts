@@ -6,6 +6,7 @@ export type MissionStatus =
   | 'PAUSED'
   | 'COMPLETED'
   | 'REJECTED'
+export type Role = 'FOUNDER' | 'TESTER' | 'ADMIN'
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 export type AssignmentStatus =
   | 'ASSIGNED'
@@ -20,6 +21,14 @@ export type QuestionType =
   | 'RATING_1_5'
   | 'MULTIPLE_CHOICE'
   | 'YES_NO'
+export type FlagReason =
+  | 'CONFUSING'
+  | 'UNCLEAR_NEXT_STEP'
+  | 'FEELS_SUSPICIOUS'
+  | 'HARD_TO_USE'
+  | 'TOO_SLOW_OR_ANNOYING'
+  | 'NOT_COMPELLING'
+export type FlagStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED'
 export type BackendAssetType = 'LINK' | 'SCREENSHOT' | 'TEXT_DESCRIPTION' | 'SHORT_VIDEO'
 export type WizardAssetType = 'LINK' | 'SCREENSHOT' | 'VIDEO' | 'TEXT'
 
@@ -132,6 +141,27 @@ export interface ApiTesterStats {
       title: string
     }
   }>
+}
+
+export interface ApiMissionFlag {
+  id: string
+  assignmentId: string
+  reporterRole: Role
+  reporterDisplayName: string | null
+  targetRole: Role
+  targetDisplayName: string | null
+  reason: FlagReason
+  details: string | null
+  status: FlagStatus
+  resolutionNote: string | null
+  createdAt: string
+}
+
+export interface ApiMissionFlagGroup {
+  missionId: string
+  missionTitle: string | null
+  missionStatus: string | null
+  flags: ApiMissionFlag[]
 }
 
 export type ApiFeedbackQuestion =

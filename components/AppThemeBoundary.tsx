@@ -4,7 +4,12 @@ import { usePathname } from 'next/navigation'
 import { ThemeProvider } from '@/context/ThemeContext'
 
 function isThemeManagedPath(pathname: string) {
-  return pathname === '/onboarding' || pathname.startsWith('/dashboard') || pathname.startsWith('/mission')
+  return (
+    pathname === '/onboarding' ||
+    pathname === '/contact' ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/mission')
+  )
 }
 
 export function AppThemeBoundary({ children }: { children: React.ReactNode }) {

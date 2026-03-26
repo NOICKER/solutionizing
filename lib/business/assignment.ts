@@ -1,9 +1,15 @@
 import { AssignmentStatus, MissionStatus } from '@prisma/client'
-import { addHours, differenceInHours } from 'date-fns'
+import { addHours } from 'date-fns'
 import { prisma } from '@/lib/prisma'
 import { acquireLock, releaseLock } from '@/lib/redis'
 import { OPEN_ASSIGNMENT_STATUSES } from '@/lib/business/mission-assignments'
 import { TIER_THRESHOLDS } from '@/lib/business/reputation'
+import {
+  getTesterAvailabilityPool,
+  getTesterAvailabilityScore,
+  invalidateTesterAvailabilityCache,
+  isTesterOnline,
+} from '@/lib/business/tester-availability'
 
 const OVERASSIGNMENT_FACTOR = 1.3
 const TESTER_LOCK_TTL_SECONDS = 30
@@ -12,17 +18,6 @@ type AssignedTesterNotification = {
   assignmentId: string
   missionId: string
   userId: string
-}
-
-function getAvailabilityScore(lastActiveAt: Date, now: Date) {
-  const hoursSinceLastActive = Math.max(0, differenceInHours(now, lastActiveAt))
-
-  if (hoursSinceLastActive <= 24) return 100
-  if (hoursSinceLastActive <= 72) return 80
-  if (hoursSinceLastActive <= 7 * 24) return 60
-  if (hoursSinceLastActive <= 14 * 24) return 40
-  if (hoursSinceLastActive <= 30 * 24) return 20
-  return 0
 }
 
 export async function assignTestersToMission(
@@ -71,50 +66,54 @@ export async function assignTestersToMission(
     const minimumReputationScore = TIER_THRESHOLDS[mission.minRepTier].min
     const now = new Date()
 
-    const testerCandidates = await prisma.testerProfile.findMany({
-      where: {
-        reputationScore: {
-          gte: minimumReputationScore,
-        },
-        user: {
-          isSuspended: false,
-          deletedAt: null,
-        },
-        assignments: {
-          none: {
-            OR: [
-              {
-                missionId,
+    const [availabilityPool, blockedAssignments] = await Promise.all([
+      getTesterAvailabilityPool(),
+      prisma.missionAssignment.findMany({
+        where: {
+          OR: [
+            {
+              missionId,
+            },
+            {
+              status: {
+                in: [...OPEN_ASSIGNMENT_STATUSES],
               },
-              {
-                status: {
-                  in: [...OPEN_ASSIGNMENT_STATUSES],
-                },
-                mission: {
-                  status: MissionStatus.ACTIVE,
-                },
+              mission: {
+                status: MissionStatus.ACTIVE,
               },
-            ],
-          },
+            },
+          ],
         },
-      },
-      select: {
-        id: true,
-        userId: true,
-        reputationScore: true,
-        lastActiveAt: true,
-      },
-    })
+        select: {
+          testerId: true,
+        },
+      }),
+    ])
+
+    const blockedTesterIds = new Set(blockedAssignments.map((assignment) => assignment.testerId))
+
+    const testerCandidates = availabilityPool.filter(
+      (tester) =>
+        tester.reputationScore >= minimumReputationScore &&
+        !blockedTesterIds.has(tester.id)
+    )
 
     const selectedTesters = testerCandidates
       .map((tester) => ({
         tester,
+        isOnline: isTesterOnline(tester.lastActiveAt, now),
         score:
           tester.reputationScore * 0.5 +
-          getAvailabilityScore(tester.lastActiveAt, now) * 0.3 +
-          Math.random() * 100 * 0.2,
+          getTesterAvailabilityScore(tester.lastActiveAt, now) * 0.35 +
+          Math.random() * 100 * 0.15,
       }))
-      .sort((left, right) => right.score - left.score)
+      .sort((left, right) => {
+        if (left.isOnline !== right.isOnline) {
+          return Number(right.isOnline) - Number(left.isOnline)
+        }
+
+        return right.score - left.score
+      })
       .map(({ tester }) => tester)
 
     if (selectedTesters.length === 0) {
@@ -253,6 +252,10 @@ export async function assignTestersToMission(
         return created
       }
     )
+
+    if (createdAssignments.length > 0) {
+      await invalidateTesterAvailabilityCache()
+    }
 
     return createdAssignments
   } finally {

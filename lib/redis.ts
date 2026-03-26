@@ -5,6 +5,7 @@ type RedisGlobalState = {
   redis?: IORedis
   upstashRedis?: UpstashRedis
   localLocks?: Map<string, number>
+  localCache?: Map<string, { value: string; expiresAt: number }>
   loggedInlineQueueWarning?: boolean
 }
 
@@ -36,9 +37,11 @@ function resolveRedisUrl() {
 
 const redisUrl = resolveRedisUrl()
 const localLocks = globalForRedis.localLocks ?? new Map<string, number>()
+const localCache = globalForRedis.localCache ?? new Map<string, { value: string; expiresAt: number }>()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForRedis.localLocks = localLocks
+  globalForRedis.localCache = localCache
 }
 
 export const isRedisConfigured = redisUrl !== null
@@ -101,6 +104,17 @@ function getLocalLockExpiry(key: string) {
   return expiry
 }
 
+function getLocalCacheEntry(key: string) {
+  const entry = localCache.get(key)
+
+  if (entry && entry.expiresAt <= Date.now()) {
+    localCache.delete(key)
+    return undefined
+  }
+
+  return entry
+}
+
 export async function acquireLock(key: string, ttlSeconds: number): Promise<boolean> {
   const upstashRedis = getUpstashRedisConnection()
 
@@ -126,6 +140,90 @@ export async function releaseLock(key: string): Promise<void> {
   }
 
   localLocks.delete(key)
+}
+
+export async function getCachedValue(key: string): Promise<string | null> {
+  const upstashRedis = getUpstashRedisConnection()
+
+  if (upstashRedis) {
+    const value = await upstashRedis.get<string | null>(key)
+    return value ?? null
+  }
+
+  if (redisUrl) {
+    const redis = requireRedisConnection()
+    await redis.connect().catch(() => undefined)
+    const value = await redis.get(key)
+    return value ?? null
+  }
+
+  return getLocalCacheEntry(key)?.value ?? null
+}
+
+export async function setCachedValue(
+  key: string,
+  value: string,
+  ttlSeconds: number
+): Promise<void> {
+  const upstashRedis = getUpstashRedisConnection()
+
+  if (upstashRedis) {
+    await upstashRedis.set(key, value, { ex: ttlSeconds })
+    return
+  }
+
+  if (redisUrl) {
+    const redis = requireRedisConnection()
+    await redis.connect().catch(() => undefined)
+    await redis.set(key, value, 'EX', ttlSeconds)
+    return
+  }
+
+  localCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlSeconds * 1000,
+  })
+}
+
+export async function deleteCachedValue(key: string): Promise<void> {
+  const upstashRedis = getUpstashRedisConnection()
+
+  if (upstashRedis) {
+    await upstashRedis.del(key)
+    return
+  }
+
+  if (redisUrl) {
+    const redis = requireRedisConnection()
+    await redis.connect().catch(() => undefined)
+    await redis.del(key)
+    return
+  }
+
+  localCache.delete(key)
+}
+
+export async function getCachedJson<T>(key: string): Promise<T | null> {
+  const value = await getCachedValue(key)
+
+  if (!value) {
+    return null
+  }
+
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    await deleteCachedValue(key)
+    return null
+  }
+}
+
+export async function setCachedJson(
+  key: string,
+  value: unknown,
+  ttlSeconds: number
+): Promise<void> {
+  await setCachedValue(key, JSON.stringify(value), ttlSeconds)
 }
 
 export function logInlineQueueWarning() {

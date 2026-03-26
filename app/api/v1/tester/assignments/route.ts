@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
+import { touchTesterPresence } from '@/lib/business/tester-availability'
 
 const AssignmentListQuerySchema = z.object({
   status: z.nativeEnum(AssignmentStatus).optional(),
@@ -19,6 +20,8 @@ export async function GET(request: Request) {
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const requestUrl = new URL(request.url)
     const queryResult = AssignmentListQuerySchema.safeParse({

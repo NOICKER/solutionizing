@@ -16,10 +16,10 @@ export async function POST(
   context: { params: { reportId: string } }
 ) {
   try {
-    await requireRole('ADMIN')
+    const admin = await requireRole('ADMIN')
     const body = await validateBody(request, ResolveMissionReportSchema)
 
-    const existingReport = await prisma.missionReport.findUnique({
+    const existingReport = await prisma.missionFlag.findUnique({
       where: { id: context.params.reportId },
       select: { id: true },
     })
@@ -28,11 +28,13 @@ export async function POST(
       return notFound('Mission report')
     }
 
-    const updatedReport = await prisma.missionReport.update({
+    const updatedReport = await prisma.missionFlag.update({
       where: { id: existingReport.id },
       data: {
         status: body.status,
-        note: body.note?.trim() ? body.note.trim() : null,
+        resolutionNote: body.note?.trim() ? body.note.trim() : null,
+        resolvedAt: new Date(),
+        resolvedById: admin.id,
       },
     })
 

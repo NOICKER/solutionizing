@@ -1,5 +1,6 @@
 import { AssignmentStatus, MissionStatus } from '@prisma/client'
 import { updateReputation } from '@/lib/business/reputation'
+import { invalidateTesterAvailabilityCache } from '@/lib/business/tester-availability'
 import { prisma } from '@/lib/prisma'
 import type { TimeoutCheckPayload } from '@/types/jobs'
 
@@ -71,6 +72,7 @@ export async function processTimeoutJob({ assignmentId }: TimeoutCheckPayload) {
     return
   }
 
+  await invalidateTesterAvailabilityCache()
   await updateReputation(assignment.testerId, 'TIMEOUT')
 
   if (

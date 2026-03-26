@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { validateBody } from '@/lib/api/validate'
 import { ok, notFound, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
+import { touchTesterPresence } from '@/lib/business/tester-availability'
 
 const VerifyTesterProfileSchema = z.object({
   deviceType: z.enum(['desktop', 'mobile', 'both']),
@@ -19,6 +20,8 @@ export async function POST(request: Request) {
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const body = await validateBody(request, VerifyTesterProfileSchema)
 

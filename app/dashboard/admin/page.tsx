@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { toast } from '@/components/ui/sonner'
+import { getFlagReasonLabel } from '@/lib/flags'
+import type { ApiMissionFlagGroup, FlagStatus, Role } from '@/types/api'
 import {
   BrandMark,
   ConfirmationDialog,
@@ -51,7 +53,7 @@ interface UserProfile {
 interface User {
   id: string
   email: string
-  role: 'FOUNDER' | 'TESTER' | 'ADMIN' | null
+  role: Role | null
   isSuspended: boolean
   suspendedAt: string | null
   suspendReason: string | null
@@ -60,24 +62,7 @@ interface User {
   testerProfile: UserProfile | null
 }
 
-type ReportResolutionStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED'
-
-interface FlagReport {
-  id: string
-  testerId: string
-  testerDisplayName: string | null
-  reason: string
-  status: ReportResolutionStatus
-  note: string | null
-  createdAt: string
-}
-
-interface FlaggedMissionGroup {
-  missionId: string
-  missionTitle: string | null
-  missionStatus: string | null
-  reports: FlagReport[]
-}
+type ReportResolutionStatus = FlagStatus
 
 type MissionDialogState =
   | { type: 'approve'; missionId: string; missionTitle: string }
@@ -135,7 +120,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentUsers, setRecentUsers] = useState<User[]>([])
   const [pendingMissions, setPendingMissions] = useState<any[]>([])
-  const [flaggedItems, setFlaggedItems] = useState<FlaggedMissionGroup[]>([])
+  const [flaggedItems, setFlaggedItems] = useState<ApiMissionFlagGroup[]>([])
   const [userList, setUserList] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isActionLoading, setIsActionLoading] = useState(false)
@@ -199,7 +184,7 @@ export default function AdminDashboardPage() {
   const fetchFlaggedContent = useCallback(async () => {
     try {
       setIsLoading(true)
-      const res = await apiFetch<FlaggedMissionGroup[]>('/api/v1/admin/flags')
+      const res = await apiFetch<ApiMissionFlagGroup[]>('/api/v1/admin/flags')
       setFlaggedItems(res)
     } catch (err) {
       console.error('Failed to fetch flagged content', err)
@@ -312,7 +297,7 @@ export default function AdminDashboardPage() {
       const updatedReport = await apiFetch<{
         id: string
         status: ReportResolutionStatus
-        note: string | null
+        resolutionNote: string | null
         createdAt: string
       }>(`/api/v1/admin/flags/${reportResolutionDraft.reportId}/resolve`, {
         method: 'POST',
@@ -325,12 +310,12 @@ export default function AdminDashboardPage() {
       setFlaggedItems((current) =>
         current.map((group) => ({
           ...group,
-          reports: group.reports.map((report) =>
+          flags: group.flags.map((report) =>
             report.id === updatedReport.id
               ? {
                   ...report,
                   status: updatedReport.status,
-                  note: updatedReport.note,
+                  resolutionNote: updatedReport.resolutionNote,
                   createdAt: updatedReport.createdAt,
                 }
               : report
@@ -340,10 +325,10 @@ export default function AdminDashboardPage() {
 
       closeReportResolution()
       toast.success(
-        reportResolutionDraft.status === 'RESOLVED' ? 'Report resolved.' : 'Report dismissed.'
+        reportResolutionDraft.status === 'RESOLVED' ? 'Flag resolved.' : 'Flag dismissed.'
       )
     } catch (err) {
-      const message = isApiClientError(err) ? err.message : 'Failed to update report.'
+      const message = isApiClientError(err) ? err.message : 'Failed to update flag.'
       setReportResolutionError(message)
       toast.error(message)
     } finally {
@@ -351,7 +336,7 @@ export default function AdminDashboardPage() {
     }
   }, [closeReportResolution, reportResolutionDraft])
 
-  const totalFlagReports = flaggedItems.reduce((total, group) => total + group.reports.length, 0)
+  const totalFlagReports = flaggedItems.reduce((total, group) => total + group.flags.length, 0)
 
   if (error) {
     return (
@@ -412,13 +397,13 @@ export default function AdminDashboardPage() {
             title={
               activeTab === 'overview' ? 'System Overview' :
               activeTab === 'missions' ? 'Mission Control' :
-              activeTab === 'flags' ? 'Flagged Content' :
+              activeTab === 'flags' ? 'Flag Review Queue' :
               'User Management'
             }
             subtitle={
               activeTab === 'overview' ? 'Monitor platform activity and manage system resources.' :
               activeTab === 'missions' ? 'Review and moderate mission submissions.' :
-              activeTab === 'flags' ? 'Review reports and moderate policy violations.' :
+              activeTab === 'flags' ? 'Review structured mission signals and moderation concerns.' :
               'Oversee platform users and their activity.'
             }
           >
@@ -719,7 +704,7 @@ export default function AdminDashboardPage() {
               {activeTab === 'flags' ? (
                 <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                   <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
-                    <h3 className="text-xl font-bold">Reports Needing Attention ({totalFlagReports})</h3>
+                    <h3 className="text-xl font-bold">Flags Needing Attention ({totalFlagReports})</h3>
                   </div>
                   {flaggedItems.length > 0 ? (
                     <div className="space-y-4 p-6">
@@ -731,7 +716,7 @@ export default function AdminDashboardPage() {
                           <div className="flex flex-col gap-3 border-b border-[#efe7df] pb-4 dark:border-gray-700 md:flex-row md:items-start md:justify-between">
                             <div className="space-y-2">
                               <div className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
-                                Mission reports
+                                Mission signals
                               </div>
                               <Link
                                 href={`/mission/status/${group.missionId}`}
@@ -744,7 +729,7 @@ export default function AdminDashboardPage() {
                           </div>
 
                           <div className="mt-5 space-y-4">
-                            {group.reports.map((report) => {
+                            {group.flags.map((report) => {
                               const isPending = report.status === 'PENDING'
                               const isResolvingThisReport = reportResolutionDraft?.reportId === report.id
                               const isReportActionLoading = reportActionLoadingId === report.id
@@ -758,16 +743,24 @@ export default function AdminDashboardPage() {
                                     <div className="space-y-2">
                                       <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-sm font-bold text-[#1a1625] dark:text-white">
-                                          {report.testerDisplayName ?? 'Unknown tester'}
+                                          {report.reporterDisplayName ?? 'Unknown reporter'}
                                         </span>
                                         <ReportStatusBadge status={report.status} />
                                       </div>
-                                      <p className="text-sm italic text-[#6b687a] dark:text-gray-400">&quot;{report.reason}&quot;</p>
+                                      <p className="text-sm font-semibold text-[#6b687a] dark:text-gray-300">
+                                        {report.reporterRole} flagged {report.targetRole.toLowerCase()} • {getFlagReasonLabel(report.reason)}
+                                      </p>
+                                      <p className="text-xs text-[#8b8797] dark:text-gray-400">
+                                        Target: {report.targetDisplayName ?? 'Unknown user'}
+                                      </p>
                                       <p className="text-xs text-[#8b8797] dark:text-gray-400">
                                         Reported {format(new Date(report.createdAt), 'MMM d, yyyy • HH:mm')}
                                       </p>
-                                      {report.note ? (
-                                        <p className="text-xs text-[#6b687a] dark:text-gray-400">Admin note: {report.note}</p>
+                                      {report.details ? (
+                                        <p className="text-sm italic text-[#6b687a] dark:text-gray-400">&quot;{report.details}&quot;</p>
+                                      ) : null}
+                                      {report.resolutionNote ? (
+                                        <p className="text-xs text-[#6b687a] dark:text-gray-400">Admin note: {report.resolutionNote}</p>
                                       ) : null}
                                     </div>
 
@@ -794,8 +787,8 @@ export default function AdminDashboardPage() {
                                     <div className="mt-4 rounded-2xl border border-[#ece6df] bg-[#faf7f3] p-4 dark:border-gray-700 dark:bg-gray-900/60">
                                       <div className="mb-2 text-sm font-bold text-[#1a1625] dark:text-white">
                                         {reportResolutionDraft.status === 'RESOLVED'
-                                          ? 'Resolve this report?'
-                                          : 'Dismiss this report?'}
+                                          ? 'Resolve this flag?'
+                                          : 'Dismiss this flag?'}
                                       </div>
                                       <textarea
                                         rows={2}
@@ -844,9 +837,9 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
                   ) : (
-                    <EmptyStatePanel
-                      title="Clear of reports"
-                      description="No content has been flagged by users recently."
+                      <EmptyStatePanel
+                      title="Clear of flags"
+                      description="No structured mission flags have been submitted recently."
                       icon={<Flag className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
                     />
                   )}

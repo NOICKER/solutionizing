@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, notFound, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
+import { touchTesterPresence } from '@/lib/business/tester-availability'
 
 function roundToTwo(value: number) {
   return Math.round(value * 100) / 100
@@ -16,6 +17,8 @@ export async function GET(request: Request) {
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const testerProfileId = tester.testerProfile.id
     const [testerProfile, avgRatingResult, recentActivity] = await Promise.all([

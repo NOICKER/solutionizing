@@ -7,6 +7,32 @@ import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
 import { NotFoundPanel, primaryButtonClass } from '@/components/solutionizing/ui'
 
+function SafetyReviewPageSkeleton() {
+  const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
+  const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
+
+  return (
+    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="mx-auto max-w-2xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
+        <div className={`mb-8 h-5 w-40 ${skeletonBar}`} />
+        <div className="mb-8 flex justify-center">
+          <div className={`h-20 w-20 rounded-full ${skeletonBlock}`} />
+        </div>
+        <div className="space-y-4 text-center">
+          <div className={`mx-auto h-10 w-56 ${skeletonBar}`} />
+          <div className={`mx-auto h-5 w-72 ${skeletonBar}`} />
+        </div>
+        <div className={`mt-8 h-40 ${skeletonBlock}`} />
+        <div className={`mt-6 h-24 ${skeletonBlock}`} />
+        <div className="mt-8 space-y-3">
+          <div className={`h-14 rounded-[2rem] ${skeletonBlock}`} />
+          <div className={`mx-auto h-5 w-36 ${skeletonBar}`} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function SafetyReviewPage({ missionId }: { missionId: string }) {
   const router = useRouter()
   const [mission, setMission] = useState<ApiMissionDetail | null>(null)
@@ -39,14 +65,7 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
   }, [missionId, router])
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="h-6 w-40 animate-pulse rounded bg-[#e5e4e0]" />
-          <div className="h-64 animate-pulse rounded-3xl bg-white" />
-        </div>
-      </div>
-    )
+    return <SafetyReviewPageSkeleton />
   }
 
   if (isNotFound || !mission) {

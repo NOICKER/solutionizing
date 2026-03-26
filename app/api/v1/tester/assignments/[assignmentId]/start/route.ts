@@ -6,6 +6,10 @@ import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/respo
 import { updateReputation } from '@/lib/business/reputation'
 import { assignmentQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
+import {
+  invalidateTesterAvailabilityCache,
+  touchTesterPresence,
+} from '@/lib/business/tester-availability'
 
 type StartAssignmentResult =
   | {
@@ -41,6 +45,8 @@ export async function POST(
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const result = await prisma.$transaction<StartAssignmentResult>(async (tx) => {
       const assignment = await tx.missionAssignment.findFirst({
@@ -152,6 +158,7 @@ export async function POST(
     if (result.expired) {
       if (result.penaltyApplied) {
         await updateReputation(tester.testerProfile.id, 'TIMEOUT')
+        await invalidateTesterAvailabilityCache()
       }
 
       if (result.penaltyApplied && result.shouldReassign) {

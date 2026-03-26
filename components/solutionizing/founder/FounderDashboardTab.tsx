@@ -85,9 +85,15 @@ function RecentMissionCard({
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
 
   return (
-    <div className="rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-800">
+    <Link
+      href={href}
+      aria-label={`Open ${mission.title}`}
+      className="group block rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-32px_rgba(26,22,37,0.24)] focus:outline-none focus:ring-2 focus:ring-[#d77a57] focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-offset-gray-900"
+    >
       <div className="mb-4 flex items-start justify-between gap-4">
-        <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{mission.title}</h3>
+        <h3 className="text-lg font-black text-[#1a1625] transition-colors group-hover:text-[#d77a57] dark:text-white dark:group-hover:text-[#f0a98c]">
+          {mission.title}
+        </h3>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <MissionStatusBadge status={mission.status} />
           {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
@@ -111,10 +117,10 @@ function RecentMissionCard({
         </div>
       </div>
 
-      <Link href={href} className="text-sm font-bold text-[#d77a57] transition-colors hover:text-[#c4673f] hover:underline">
-        View
-      </Link>
-    </div>
+      <div className="text-sm font-bold text-[#d77a57] transition-colors group-hover:text-[#c4673f]">
+        View details
+      </div>
+    </Link>
   )
 }
 

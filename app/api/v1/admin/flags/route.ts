@@ -8,85 +8,120 @@ export async function GET(request: Request) {
   try {
     await requireRole('ADMIN')
 
-    const reports = await prisma.missionReport.findMany({
+    const flags = await prisma.missionFlag.findMany({
       orderBy: {
         createdAt: 'desc',
       },
+      select: {
+        id: true,
+        missionId: true,
+        assignmentId: true,
+        reporterRole: true,
+        targetRole: true,
+        reason: true,
+        details: true,
+        status: true,
+        resolutionNote: true,
+        createdAt: true,
+        mission: {
+          select: {
+            title: true,
+            status: true,
+          },
+        },
+        reporterUser: {
+          select: {
+            email: true,
+            founderProfile: {
+              select: {
+                displayName: true,
+              },
+            },
+            testerProfile: {
+              select: {
+                displayName: true,
+              },
+            },
+          },
+        },
+        targetUser: {
+          select: {
+            email: true,
+            founderProfile: {
+              select: {
+                displayName: true,
+              },
+            },
+            testerProfile: {
+              select: {
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
     })
 
-    const missionIds = [...new Set(reports.map((report) => report.missionId))]
-    const testerIds = [...new Set(reports.map((report) => report.testerId))]
+    function getDisplayName(user: {
+      email: string
+      founderProfile: { displayName: string } | null
+      testerProfile: { displayName: string } | null
+    }) {
+      return user.founderProfile?.displayName ?? user.testerProfile?.displayName ?? user.email
+    }
 
-    const [missions, testers] = await Promise.all([
-      prisma.mission.findMany({
-        where: {
-          id: { in: missionIds },
-        },
-        select: {
-          id: true,
-          title: true,
-          status: true,
-        },
-      }),
-      prisma.testerProfile.findMany({
-        where: {
-          id: { in: testerIds },
-        },
-        select: {
-          id: true,
-          displayName: true,
-        },
-      }),
-    ])
-
-    const missionMap = new Map(missions.map((mission) => [mission.id, mission]))
-    const testerMap = new Map(testers.map((tester) => [tester.id, tester]))
-    const groupedReports = reports.reduce<
+    const groupedFlags = flags.reduce<
       Array<{
         missionId: string
         missionTitle: string | null
         missionStatus: string | null
-        reports: Array<{
+        flags: Array<{
           id: string
-          testerId: string
-          testerDisplayName: string | null
+          assignmentId: string
+          reporterRole: string
+          reporterDisplayName: string | null
+          targetRole: string
+          targetDisplayName: string | null
           reason: string
+          details: string | null
           status: string
-          note: string | null
+          resolutionNote: string | null
           createdAt: Date
         }>
       }>
-    >((groups, report) => {
-      const mission = missionMap.get(report.missionId)
-      const tester = testerMap.get(report.testerId)
-      const existingGroup = groups.find((group) => group.missionId === report.missionId)
+    >((groups, flag) => {
+      const existingGroup = groups.find((group) => group.missionId === flag.missionId)
 
-      const normalizedReport = {
-        id: report.id,
-        testerId: report.testerId,
-        testerDisplayName: tester?.displayName ?? null,
-        reason: report.reason,
-        status: report.status,
-        note: report.note,
-        createdAt: report.createdAt,
+      const normalizedFlag = {
+        id: flag.id,
+        assignmentId: flag.assignmentId,
+        reporterRole: flag.reporterRole,
+        reporterDisplayName: getDisplayName(flag.reporterUser),
+        targetRole: flag.targetRole,
+        targetDisplayName: getDisplayName(flag.targetUser),
+        reason: flag.reason,
+        details: flag.details,
+        status: flag.status,
+        resolutionNote: flag.resolutionNote,
+        createdAt: flag.createdAt,
       }
 
       if (existingGroup) {
-        existingGroup.reports.push(normalizedReport)
+        existingGroup.flags.push(normalizedFlag)
         return groups
       }
 
       groups.push({
-        missionId: report.missionId,
-        missionTitle: mission?.title ?? null,
-        missionStatus: mission?.status ?? null,
-        reports: [normalizedReport],
+        missionId: flag.missionId,
+        missionTitle: flag.mission.title ?? null,
+        missionStatus: flag.mission.status ?? null,
+        flags: [normalizedFlag],
       })
 
       return groups
     }, [])
 
-    return ok(groupedReports)
+    return ok(groupedFlags)
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)

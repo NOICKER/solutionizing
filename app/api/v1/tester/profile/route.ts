@@ -8,9 +8,13 @@ import { logApiRouteError } from '@/lib/api/log'
 import {
   getInitialPayoutDetails,
   hasPayoutFieldErrors,
-  serializePayoutDetails,
   validatePayoutDetails,
 } from '@/lib/payout-details'
+import { touchTesterPresence } from '@/lib/business/tester-availability'
+import {
+  getStoredPayoutDetailsForClient,
+  serializePayoutDetailsForStorage,
+} from '@/lib/payout-details-storage'
 
 const UpdateTesterProfileSchema = z.object({
   displayName: z.string().trim().min(2).max(50).optional(),
@@ -29,6 +33,8 @@ export async function GET(request: Request) {
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const profile = await prisma.testerProfile.findUnique({
       where: { id: tester.testerProfile.id },
@@ -50,7 +56,10 @@ export async function GET(request: Request) {
       return notFound('Tester profile')
     }
 
-    return ok(profile)
+    return ok({
+      ...profile,
+      payoutDetails: getStoredPayoutDetailsForClient(profile.payoutDetails),
+    })
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)
@@ -66,6 +75,8 @@ export async function PATCH(request: Request) {
       return notFound('Tester profile')
     }
 
+    await touchTesterPresence(tester.testerProfile.id)
+
     const body = await validateBody(request, UpdateTesterProfileSchema)
     const normalizedPayoutDetails =
       body.payoutDetails !== undefined
@@ -77,7 +88,7 @@ export async function PATCH(request: Request) {
               throw badRequest('Validation failed', { fieldErrors: payoutErrors })
             }
 
-            return serializePayoutDetails(parsedPayoutDetails)
+            return serializePayoutDetailsForStorage(parsedPayoutDetails)
           })()
         : undefined
 
@@ -120,7 +131,10 @@ export async function PATCH(request: Request) {
       },
     })
 
-    return ok(updatedProfile)
+    return ok({
+      ...updatedProfile,
+      payoutDetails: getStoredPayoutDetailsForClient(updatedProfile.payoutDetails),
+    })
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)

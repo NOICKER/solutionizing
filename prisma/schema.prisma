@@ -51,6 +51,19 @@ enum AssignmentStatus {
   TIMED_OUT
   MISSION_FULL
 }
+enum FlagReason {
+  CONFUSING
+  UNCLEAR_NEXT_STEP
+  FEELS_SUSPICIOUS
+  HARD_TO_USE
+  TOO_SLOW_OR_ANNOYING
+  NOT_COMPELLING
+}
+enum FlagStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
 enum TxType {
   PURCHASE
   MISSION_DEDUCT
@@ -74,6 +87,9 @@ model User {
   founderProfile   FounderProfile?
   testerProfile    TesterProfile?
   coinTransactions CoinTransaction[]
+  submittedFlags   MissionFlag[] @relation("MissionFlagReporter")
+  receivedFlags    MissionFlag[] @relation("MissionFlagTarget")
+  resolvedFlags    MissionFlag[] @relation("MissionFlagResolver")
   @@map("users")
 }
 model FounderProfile {
@@ -156,6 +172,7 @@ model Mission {
   assets      MissionAsset[]
   questions   MissionQuestion[]
   assignments MissionAssignment[]
+  flags       MissionFlag[]
   @@index([founderId])
   @@index([status])
   @@index([status, difficulty])
@@ -203,6 +220,7 @@ model MissionAssignment {
   coinsEarned  Int @default(0)
   responses MissionResponse[]
   rating    TesterRating?
+  flags     MissionFlag[]
   @@unique([missionId, testerId])
   @@index([testerId])
   @@index([missionId])
@@ -284,4 +302,32 @@ model MissionReport {
   @@unique([missionId, testerId])
   @@index([missionId])
   @@map("mission_reports")
+}
+model MissionFlag {
+  id             String            @id @default(cuid())
+  missionId      String
+  mission        Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  assignmentId   String
+  assignment     MissionAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reporterUserId String
+  reporterUser   User              @relation("MissionFlagReporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+  targetUserId   String
+  targetUser     User              @relation("MissionFlagTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  reporterRole   Role
+  targetRole     Role
+  reason         FlagReason
+  details        String?
+  status         FlagStatus        @default(PENDING)
+  resolutionNote String?
+  resolvedAt     DateTime?
+  resolvedById   String?
+  resolvedBy     User?             @relation("MissionFlagResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime          @default(now())
+  @@unique([assignmentId, reporterUserId, reason])
+  @@index([missionId])
+  @@index([assignmentId])
+  @@index([targetUserId])
+  @@index([status])
+  @@index([reason])
+  @@map("mission_flags")
 }

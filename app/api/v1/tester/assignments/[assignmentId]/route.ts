@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/api/middleware'
 import { ok, notFound, serverError } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
 import { Prisma } from '@prisma/client'
+import { touchTesterPresence } from '@/lib/business/tester-availability'
 
 export async function GET(
   request: Request,
@@ -15,6 +16,8 @@ export async function GET(
     if (!tester.testerProfile) {
       return notFound('Tester profile')
     }
+
+    await touchTesterPresence(tester.testerProfile.id)
 
     const assignment = await prisma.missionAssignment.findFirst({
       where: {

@@ -17,6 +17,65 @@ import {
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
+function MissionStatusPageSkeleton() {
+  const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
+  const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f2ece7] dark:bg-gray-800'
+  const panelClass =
+    'rounded-panel border border-[#ece6df] bg-white/80 p-8 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.22)] backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800/90'
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="pointer-events-none absolute left-0 top-0 h-[500px] w-full bg-gradient-to-br from-[#d77a57]/10 via-[#f7dfd3]/40 to-transparent blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] right-[-10%] h-[60%] w-[60%] rounded-full bg-gradient-to-tl from-emerald-500/10 via-[#d77a57]/10 to-transparent blur-[120px]" />
+
+      <div className="relative z-10 mx-auto max-w-4xl space-y-8">
+        <div className={`h-6 w-40 ${skeletonBar}`} />
+
+        <div className={panelClass}>
+          <div className="mb-8 flex items-start justify-between gap-6">
+            <div className="flex-1 space-y-4">
+              <div className={`h-12 w-3/4 rounded-[1.75rem] ${skeletonBar}`} />
+              <div className={`h-5 w-full max-w-2xl ${skeletonBar}`} />
+              <div className={`h-5 w-2/3 ${skeletonBar}`} />
+            </div>
+            <div className={`h-10 w-28 ${skeletonBar}`} />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-900/70"
+              >
+                <div className={`h-3 w-24 ${skeletonBar}`} />
+                <div className={`mt-4 h-9 w-24 ${skeletonBar}`} />
+                <div className={`mt-3 h-4 w-20 ${skeletonBar}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.6fr,1fr]">
+          <div className={`${panelClass} space-y-6`}>
+            <div className={`h-4 w-36 ${skeletonBar}`} />
+            <div className={`h-24 ${skeletonBlock}`} />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className={`h-32 ${skeletonBlock}`} />
+              <div className={`h-32 ${skeletonBlock}`} />
+            </div>
+          </div>
+          <div className={`${panelClass} space-y-5`}>
+            <div className={`h-4 w-24 ${skeletonBar}`} />
+            <div className={`h-14 rounded-[2rem] ${skeletonBlock}`} />
+            <div className={`h-14 rounded-[2rem] ${skeletonBlock}`} />
+            <div className={`h-28 ${skeletonBlock}`} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function MissionStatusPage({ missionId }: { missionId: string }) {
   const [mission, setMission] = useState<ApiMissionDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -142,14 +201,7 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8 text-[#1a1625] dark:bg-gray-900 dark:text-white">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#d77a57]/20 border-t-[#d77a57]" />
-          <p className="font-medium text-[#6b687a] dark:text-gray-400">Loading mission status...</p>
-        </motion.div>
-      </div>
-    )
+    return <MissionStatusPageSkeleton />
   }
 
   if (isNotFound) {
@@ -171,6 +223,11 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
   const inProgressCount = mission.assignmentCounts?.IN_PROGRESS ?? 0
   const timedOutCount = mission.assignmentCounts?.TIMED_OUT ?? 0
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
+  const effectiveLaunchAt =
+    mission.launchedAt ??
+    ((mission.status === 'ACTIVE' || mission.status === 'PAUSED' || mission.status === 'COMPLETED')
+      ? mission.reviewedAt
+      : null)
 
   const glassPanelClasses =
     'rounded-panel border border-[#ece6df] bg-white/80 p-8 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.22)] backdrop-blur-xl transition-all duration-300 hover:border-[#e2d7cd] hover:bg-white/90 dark:border-gray-700 dark:bg-gray-800/90 dark:hover:border-gray-600 dark:hover:bg-gray-800'
@@ -267,7 +324,7 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
             <div>
               <div className="text-sm text-[#6b687a] dark:text-gray-400">Mission launched</div>
               <div className="font-semibold text-[#1a1625] dark:text-white">
-                {mission.launchedAt ? format(new Date(mission.launchedAt), 'MMM d, yyyy h:mm a') : 'Not launched yet'}
+                {effectiveLaunchAt ? format(new Date(effectiveLaunchAt), 'MMM d, yyyy h:mm a') : 'Not launched yet'}
               </div>
             </div>
           </div>

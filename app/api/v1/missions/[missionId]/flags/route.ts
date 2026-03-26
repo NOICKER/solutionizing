@@ -7,42 +7,40 @@ import { ok, apiError, notFound, serverError } from '@/lib/api/response'
 import { validateBody } from '@/lib/api/validate'
 import { logApiRouteError } from '@/lib/api/log'
 import { FLAG_REASON_VALUES } from '@/lib/flags'
-import { touchTesterPresence } from '@/lib/business/tester-availability'
 
-const ReportMissionSchema = z.object({
+const CreateMissionFlagSchema = z.object({
+  assignmentId: z.string().trim().min(1),
   reason: z.enum(FLAG_REASON_VALUES),
   details: z.string().trim().max(300).optional(),
 })
 
 export async function POST(
   request: Request,
-  context: { params: { assignmentId: string } }
+  context: { params: { missionId: string } }
 ) {
   try {
-    const tester = await requireRole('TESTER')
+    const founder = await requireRole('FOUNDER')
 
-    if (!tester.testerProfile) {
-      return notFound('Tester profile')
+    if (!founder.founderProfile) {
+      return notFound('Founder profile')
     }
 
-    await touchTesterPresence(tester.testerProfile.id)
-
-    const body = await validateBody(request, ReportMissionSchema)
+    const body = await validateBody(request, CreateMissionFlagSchema)
 
     const assignment = await prisma.missionAssignment.findFirst({
       where: {
-        id: context.params.assignmentId,
-        testerId: tester.testerProfile.id,
+        id: body.assignmentId,
+        missionId: context.params.missionId,
+        mission: {
+          founderId: founder.founderProfile.id,
+        },
       },
       select: {
+        id: true,
         missionId: true,
-        mission: {
+        tester: {
           select: {
-            founder: {
-              select: {
-                userId: true,
-              },
-            },
+            userId: true,
           },
         },
       },
@@ -55,8 +53,8 @@ export async function POST(
     const existingFlag = await prisma.missionFlag.findUnique({
       where: {
         assignmentId_reporterUserId_reason: {
-          assignmentId: context.params.assignmentId,
-          reporterUserId: tester.id,
+          assignmentId: assignment.id,
+          reporterUserId: founder.id,
           reason: body.reason,
         },
       },
@@ -72,11 +70,11 @@ export async function POST(
     const createdFlag = await prisma.missionFlag.create({
       data: {
         missionId: assignment.missionId,
-        assignmentId: context.params.assignmentId,
-        reporterUserId: tester.id,
-        targetUserId: assignment.mission.founder.userId,
-        reporterRole: Role.TESTER,
-        targetRole: Role.FOUNDER,
+        assignmentId: assignment.id,
+        reporterUserId: founder.id,
+        targetUserId: assignment.tester.userId,
+        reporterRole: Role.FOUNDER,
+        targetRole: Role.TESTER,
         reason: body.reason,
         details: body.details?.trim() ? body.details.trim() : null,
         status: FlagStatus.PENDING,

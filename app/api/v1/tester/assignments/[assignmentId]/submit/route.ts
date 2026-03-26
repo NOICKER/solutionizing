@@ -9,6 +9,7 @@ import { validateBody } from '@/lib/api/validate'
 import { updateReputation } from '@/lib/business/reputation'
 import { notificationQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
+import { invalidateTesterAvailabilityCache } from '@/lib/business/tester-availability'
 
 const SubmissionResponseSchema = z.object({
   questionId: z.string().cuid(),
@@ -351,6 +352,7 @@ export async function POST(
     }
 
     const reputation = await updateReputation(tester.testerProfile.id, 'COMPLETION')
+    await invalidateTesterAvailabilityCache()
 
     return ok({
       coinsEarned: result.coinsEarned,

@@ -9,7 +9,9 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiTesterAssignmentDetail, ApiTesterStats } from '@/types/api'
 import { NotFoundPanel, SpinnerIcon, StarRow, formatCoins, formatRupeesFromCoins, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { useAuth } from '@/context/AuthContext'
+import { type FlagReasonValue } from '@/lib/flags'
 
 type WorkspacePhase = 'briefing' | 'questions' | 'review' | 'success'
 
@@ -19,42 +21,50 @@ interface SuccessState {
   stats: ApiTesterStats | null
 }
 
-function IssueModal({
-  value,
-  onChange,
-  onClose,
-  onSubmit,
-  isSubmitting,
-  errorMessage,
-}: {
-  value: string
-  onChange: (value: string) => void
-  onClose: () => void
-  onSubmit: () => void
-  isSubmitting: boolean
-  errorMessage: string
-}) {
+function TesterWorkspaceSkeleton() {
+  const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
+  const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-panel bg-white p-8 shadow-2xl dark:bg-gray-800">
-        <h2 className="mb-2 text-2xl font-black text-[#1a1625] dark:text-white">Report an issue with this mission</h2>
-        <textarea
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          rows={5}
-          autoFocus
-          className={`${textFieldClass} resize-none`}
-        />
-        {errorMessage ? <p className="mt-2 text-sm text-red-600">{errorMessage}</p> : null}
-        <div className="mt-6 flex items-center gap-3">
-          <button className="flex-1 rounded-[2rem] border border-[#e5e4e0] bg-[#f3f3f5] py-3 font-black text-[#1a1625] dark:border-gray-700 dark:bg-gray-700 dark:text-white" onClick={onClose}>
-            CANCEL
-          </button>
-          <button className={`flex flex-1 items-center justify-center gap-2 py-3 ${primaryButtonClass}`} disabled={isSubmitting} onClick={onSubmit}>
-            {isSubmitting ? <SpinnerIcon className="w-4 h-4" /> : null}
-            SUBMIT REPORT
-          </button>
+    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
+        <div className="mb-8 flex flex-col items-center space-y-4 text-center">
+          <div className={`h-9 w-40 ${skeletonBar}`} />
+          <div className={`h-12 w-full max-w-2xl rounded-[1.75rem] ${skeletonBar}`} />
+          <div className={`h-5 w-full max-w-xl ${skeletonBar}`} />
+        </div>
+
+        <div className="mb-8 grid gap-6 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div className={`mx-auto h-3 w-20 ${skeletonBar}`} />
+              <div className={`mx-auto mt-4 h-9 w-24 ${skeletonBar}`} />
+              <div className={`mx-auto mt-3 h-4 w-28 ${skeletonBar}`} />
+            </div>
+          ))}
+        </div>
+
+        <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-8 dark:border-gray-700 dark:bg-gray-800">
+          <div className={`h-6 w-52 ${skeletonBar}`} />
+          <div className="mt-6 space-y-4">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-4 rounded-2xl bg-[#faf9f7] p-4 dark:bg-gray-700">
+                <div className="flex-1 space-y-3">
+                  <div className={`h-4 w-36 ${skeletonBar}`} />
+                  <div className={`h-4 w-full max-w-lg ${skeletonBar}`} />
+                </div>
+                <div className={`h-11 w-28 rounded-[2rem] ${skeletonBlock}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className={`h-5 w-36 ${skeletonBar}`} />
+          <div className={`h-14 w-44 rounded-[2rem] ${skeletonBlock}`} />
         </div>
       </div>
     </div>
@@ -77,7 +87,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   const [submitLoading, setSubmitLoading] = useState(false)
   const [successState, setSuccessState] = useState<SuccessState | null>(null)
   const [reportOpen, setReportOpen] = useState(false)
-  const [reportText, setReportText] = useState('')
+  const [reportReason, setReportReason] = useState<FlagReasonValue | ''>('')
+  const [reportDetails, setReportDetails] = useState('')
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError] = useState('')
 
@@ -120,14 +131,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   )
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-        </div>
-      </div>
-    )
+    return <TesterWorkspaceSkeleton />
   }
 
   if (isNotFound || !assignment) {
@@ -269,8 +273,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   }
 
   async function handleReportIssue() {
-    if (reportText.trim().length < 10) {
-      setReportError('Describe the issue in at least 10 characters')
+    if (!reportReason) {
+      setReportError('Select a quick signal before submitting.')
       return
     }
 
@@ -280,13 +284,17 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     try {
       await apiFetch(`/api/v1/tester/assignments/${activeAssignment.id}/report`, {
         method: 'POST',
-        body: { reason: reportText.trim() },
+        body: {
+          reason: reportReason,
+          details: reportDetails.trim() || undefined,
+        },
       })
       setReportOpen(false)
-      setReportText('')
-      toast.info('Issue reported. Thank you.')
-    } catch {
-      setReportError('Something went wrong. Try again.')
+      setReportReason('')
+      setReportDetails('')
+      toast.info('Flag saved. This helps us spot patterns early.')
+    } catch (error) {
+      setReportError(isApiClientError(error) ? error.message : 'Something went wrong. Try again.')
     } finally {
       setReportLoading(false)
     }
@@ -355,11 +363,25 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           <div className="mt-8 text-center">
             <button className="text-sm text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white" onClick={() => setReportOpen(true)}>
-              Report an issue with this mission
+              Flag something that feels off
             </button>
           </div>
 
-          {reportOpen ? <IssueModal value={reportText} onChange={setReportText} onClose={() => setReportOpen(false)} onSubmit={() => void handleReportIssue()} isSubmitting={reportLoading} errorMessage={reportError} /> : null}
+          {reportOpen ? (
+            <FlagSignalModal
+              title="Flag this mission"
+              subtitle="Use a quick structured signal when something feels unclear, risky, or not compelling. This is faster than writing full feedback."
+              targetLabel="Founder mission flow"
+              reason={reportReason}
+              details={reportDetails}
+              errorMessage={reportError}
+              isSubmitting={reportLoading}
+              onReasonChange={setReportReason}
+              onDetailsChange={setReportDetails}
+              onClose={() => setReportOpen(false)}
+              onSubmit={() => void handleReportIssue()}
+            />
+          ) : null}
         </div>
       </div>
     )
@@ -456,11 +478,25 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           <div className="text-center">
             <button className="text-sm text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white" onClick={() => setReportOpen(true)}>
-              Report an issue with this mission
+              Flag something that feels off
             </button>
           </div>
 
-          {reportOpen ? <IssueModal value={reportText} onChange={setReportText} onClose={() => setReportOpen(false)} onSubmit={() => void handleReportIssue()} isSubmitting={reportLoading} errorMessage={reportError} /> : null}
+          {reportOpen ? (
+            <FlagSignalModal
+              title="Flag this mission"
+              subtitle="Use a quick structured signal when something feels unclear, risky, or not compelling. This is faster than writing full feedback."
+              targetLabel="Founder mission flow"
+              reason={reportReason}
+              details={reportDetails}
+              errorMessage={reportError}
+              isSubmitting={reportLoading}
+              onReasonChange={setReportReason}
+              onDetailsChange={setReportDetails}
+              onClose={() => setReportOpen(false)}
+              onSubmit={() => void handleReportIssue()}
+            />
+          ) : null}
         </div>
       </div>
     )
@@ -471,7 +507,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
         <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">STEP 5 OF 5</div>
+            <div className="mb-4 inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">REVIEW</div>
             <h1 className="mb-3 text-4xl font-black text-[#1a1625] dark:text-white">Review Your Answers</h1>
           </div>
 
@@ -492,7 +528,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ))}
           </div>
 
-          <div className="mb-8 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8 dark:border-green-900/70 dark:bg-gray-800 dark:bg-none">
+          <div className="mb-8 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8 dark:border-green-900/70 dark:bg-gray-800">
             <h3 className="mb-1 text-xl font-black text-[#1a1625] dark:text-white">You&apos;re about to earn</h3>
             <p className="text-3xl font-black text-green-600">
               {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[#6b687a] dark:text-gray-400">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
@@ -510,6 +546,30 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               SUBMIT FEEDBACK →
             </button>
           </div>
+          <div className="mt-4 text-right">
+            <button
+              type="button"
+              className="text-sm font-semibold text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white"
+              onClick={() => setReportOpen(true)}
+            >
+              Flag something that feels off
+            </button>
+          </div>
+          {reportOpen ? (
+            <FlagSignalModal
+              title="Flag this mission"
+              subtitle="Use a quick structured signal when something feels unclear, risky, or not compelling. This is faster than writing full feedback."
+              targetLabel="Founder mission flow"
+              reason={reportReason}
+              details={reportDetails}
+              errorMessage={reportError}
+              isSubmitting={reportLoading}
+              onReasonChange={setReportReason}
+              onDetailsChange={setReportDetails}
+              onClose={() => setReportOpen(false)}
+              onSubmit={() => void handleReportIssue()}
+            />
+          ) : null}
         </div>
       </div>
     )
@@ -517,7 +577,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
   return (
     <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-gradient-to-br from-green-50 to-emerald-50 p-12 text-center dark:bg-gray-900 dark:bg-none">
+      <div className="mx-auto max-w-4xl rounded-panel bg-gradient-to-br from-green-50 to-emerald-50 p-12 text-center dark:bg-gray-900">
         <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600">
           <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -541,7 +601,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           </div>
         </div>
 
-        {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-100 to-pink-100 p-6 text-sm font-bold text-purple-900 dark:border-purple-900/50 dark:bg-gray-800 dark:bg-none dark:text-purple-200">You&apos;re now a {successState.newTier} tester!</div> : null}
+        {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-100 to-pink-100 p-6 text-sm font-bold text-purple-900 dark:border-purple-900/50 dark:bg-gray-800 dark:text-purple-200">You&apos;re now a {successState.newTier} tester!</div> : null}
 
         <div className="mx-auto mb-8 grid max-w-md gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-white bg-white/50 p-4 dark:border-gray-700 dark:bg-gray-800/70"><div className="text-2xl font-black text-[#1a1625] dark:text-white">{successState?.stats?.totalCompleted ?? 0}</div><div className="text-xs text-[#6b687a] dark:text-gray-400">Total missions</div></div>
@@ -570,14 +630,7 @@ export function TesterWorkspaceRoutePage({ assignmentId }: { assignmentId: strin
   }, [assignmentId, isAuthenticated, isLoading, router])
 
   if (isLoading || !isAuthenticated || !user) {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-          <div className="h-64 animate-pulse rounded-3xl bg-white dark:bg-gray-800" />
-        </div>
-      </div>
-    )
+    return <TesterWorkspaceSkeleton />
   }
 
   if (user.role === 'FOUNDER' || user.role === 'ADMIN') {

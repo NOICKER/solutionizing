@@ -32,12 +32,15 @@ export async function POST(
       return badRequest('Mission is not pending review')
     }
 
+    const launchedAt = new Date()
+
     const updatedMission = await prisma.mission.update({
       where: { id: mission.id },
       data: {
         status: MissionStatus.ACTIVE,
         reviewedBy: admin.id,
-        reviewedAt: new Date(),
+        reviewedAt: launchedAt,
+        launchedAt,
         reviewNote: null,
       },
     })

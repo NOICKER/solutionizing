@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReactNode, useCallback, useEffect, useState, useMemo } from 'react'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
+import { toast } from '@/components/ui/sonner'
 import {
   ApiFeedbackQuestion,
   ApiMissionDetail,
@@ -19,6 +20,7 @@ import {
   textFieldClass,
   SpinnerIcon,
 } from '@/components/solutionizing/ui'
+import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, ArrowRight, Clock, Star, LineChart,
@@ -26,6 +28,7 @@ import {
   ChevronUp, BarChart3,
   MessageCircle, Loader2, Target
 } from 'lucide-react'
+import { type FlagReasonValue } from '@/lib/flags'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -34,6 +37,59 @@ const fadeInUp = {
 
 const stagger = {
   visible: { transition: { staggerChildren: 0.1 } }
+}
+
+function MissionInsightsPageSkeleton() {
+  const skeletonBar = 'animate-pulse rounded-full bg-[#ece4dd]'
+  const skeletonBlock = 'animate-pulse rounded-panel bg-[#f5ede7]'
+
+  return (
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#faf9f7]/50 via-white to-[#fdf0eb]/50 pb-24 pt-8 sm:pt-12">
+      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className={`h-10 w-44 ${skeletonBar}`} />
+          <div className={`h-6 w-32 ${skeletonBar}`} />
+        </div>
+
+        <section className="rounded-panel border border-white/60 bg-white/70 p-8 shadow-2xl shadow-[#fdf0eb]/80 backdrop-blur-2xl sm:p-12">
+          <div className={`mb-6 h-8 w-36 ${skeletonBar}`} />
+          <div className={`h-14 w-full max-w-3xl rounded-[2rem] ${skeletonBar}`} />
+          <div className={`mt-6 h-6 w-full max-w-2xl ${skeletonBar}`} />
+        </section>
+
+        <div className="mt-8 grid gap-6 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)]">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="rounded-panel border border-white/60 bg-white/70 p-6 shadow-xl shadow-[#fdf0eb]/60">
+              <div className={`h-4 w-28 ${skeletonBar}`} />
+              <div className={`mt-5 h-10 w-24 ${skeletonBar}`} />
+              <div className={`mt-4 h-4 w-32 ${skeletonBar}`} />
+            </div>
+          ))}
+          <div className="rounded-panel bg-[#b85c3a] p-8">
+            <div className={`h-4 w-28 bg-white/20 rounded-full animate-pulse`} />
+            <div className={`mt-6 h-28 rounded-[2rem] bg-white/15 animate-pulse`} />
+            <div className={`mt-8 h-4 w-36 bg-white/20 rounded-full animate-pulse`} />
+          </div>
+        </div>
+
+        <section className="mt-8 rounded-panel border border-white/60 bg-[#fdf8f6] p-8 shadow-xl shadow-[#fdf0eb]/70">
+          <div className={`h-8 w-40 ${skeletonBar}`} />
+          <div className={`mt-6 h-40 ${skeletonBlock}`} />
+        </section>
+
+        <section className="mt-12 rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40">
+          <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
+            <div className={`h-8 w-48 ${skeletonBar}`} />
+          </div>
+          <div className="space-y-6 p-8">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className={`h-40 ${skeletonBlock}`} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
 }
 
 function formatStatusLabel(status: string) {
@@ -308,8 +364,12 @@ function TesterRatingCard({
   onSubmitted: (assignmentId: string, ratingId: string) => void
 }) {
   const [score, setScore] = useState(0)
-  const [flaggedLowEffort, setFlaggedLowEffort] = useState(false)
   const [note, setNote] = useState('')
+  const [flagOpen, setFlagOpen] = useState(false)
+  const [flagReason, setFlagReason] = useState<FlagReasonValue | ''>('')
+  const [flagDetails, setFlagDetails] = useState('')
+  const [flagError, setFlagError] = useState('')
+  const [flagSubmitting, setFlagSubmitting] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(Boolean(assignment.rating))
   const [error, setError] = useState<string | null>(null)
@@ -329,7 +389,6 @@ function TesterRatingCard({
         body: {
           assignmentId: assignment.id,
           score,
-          flaggedLowEffort,
           note: note.trim(),
         },
       })
@@ -339,6 +398,35 @@ function TesterRatingCard({
       setError(isApiClientError(err) ? err.message : 'Something went wrong')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleFlagSubmit = async () => {
+    if (!flagReason) {
+      setFlagError('Select a quick signal before submitting.')
+      return
+    }
+
+    setFlagError('')
+    setFlagSubmitting(true)
+
+    try {
+      await apiFetch(`/api/v1/missions/${missionId}/flags`, {
+        method: 'POST',
+        body: {
+          assignmentId: assignment.id,
+          reason: flagReason,
+          details: flagDetails.trim() || undefined,
+        },
+      })
+      setFlagOpen(false)
+      setFlagReason('')
+      setFlagDetails('')
+      toast.info(`Tester ${testerIndex + 1} flagged for review.`)
+    } catch (err: unknown) {
+      setFlagError(isApiClientError(err) ? err.message : 'Something went wrong')
+    } finally {
+      setFlagSubmitting(false)
     }
   }
 
@@ -368,18 +456,6 @@ function TesterRatingCard({
             <StarRow value={score} size={24} onChange={setScore} readonly={formDisabled} />
           </div>
 
-          {/* Flag low effort */}
-          <label className="flex cursor-pointer items-center gap-3 select-none">
-            <input
-              type="checkbox"
-              checked={flaggedLowEffort}
-              onChange={(event) => setFlaggedLowEffort(event.target.checked)}
-              disabled={formDisabled}
-              className="h-4 w-4 rounded border-slate-300 text-[#D97757] focus:ring-[#D97757] disabled:opacity-60"
-            />
-            <span className="text-sm font-medium text-slate-700">Flag low effort</span>
-          </label>
-
           {/* Note */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -394,6 +470,17 @@ function TesterRatingCard({
               className={`${textFieldClass} resize-none disabled:opacity-60`}
             />
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setFlagError('')
+              setFlagOpen(true)
+            }}
+            className="text-sm font-semibold text-[#D97757] hover:underline"
+          >
+            Flag this tester
+          </button>
 
           <button
             type="button"
@@ -420,6 +507,21 @@ function TesterRatingCard({
             <p className="text-sm font-semibold text-slate-500">This tester was already rated.</p>
           ) : null}
         </div>
+        {flagOpen ? (
+          <FlagSignalModal
+            title="Flag this tester"
+            subtitle="Use a quick structured signal when this tester contribution feels unclear, risky, or not useful."
+            targetLabel={`Tester ${testerIndex + 1}`}
+            reason={flagReason}
+            details={flagDetails}
+            errorMessage={flagError}
+            isSubmitting={flagSubmitting}
+            onReasonChange={setFlagReason}
+            onDetailsChange={setFlagDetails}
+            onClose={() => setFlagOpen(false)}
+            onSubmit={() => void handleFlagSubmit()}
+          />
+        ) : null}
     </motion.div>
   )
 }
@@ -953,14 +1055,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   }, [])
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-[#D97757]" />
-          <p className="text-sm font-medium text-slate-500 animate-pulse tracking-wide">Gathering mission insights...</p>
-        </div>
-      </div>
-    )
+    return <MissionInsightsPageSkeleton />
   }
 
   if (isNotFound) {

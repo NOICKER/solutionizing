@@ -331,7 +331,7 @@ export async function DELETE(
       return notFound('Mission')
     }
 
-    if (mission.status !== 'DRAFT') {
+    if (mission.status !== 'DRAFT' && mission.status !== 'REJECTED') {
       return apiError('Mission is not editable', 'MISSION_NOT_EDITABLE', 400)
     }
 

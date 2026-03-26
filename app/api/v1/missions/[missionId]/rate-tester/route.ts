@@ -39,7 +39,8 @@ export async function POST(
     if (!isValidScore(score)) {
       return badRequest('score must be an integer between 1 and 5')
     }
-    if (typeof flaggedLowEffort !== 'boolean') {
+    const normalizedFlaggedLowEffort = flaggedLowEffort === undefined ? false : flaggedLowEffort
+    if (typeof normalizedFlaggedLowEffort !== 'boolean') {
       return badRequest('flaggedLowEffort must be a boolean')
     }
     if (note !== undefined && note !== null && typeof note !== 'string') {
@@ -76,11 +77,11 @@ export async function POST(
         founderId: founder.founderProfile.id,
         testerId: assignment.testerId,
         score,
-        flaggedLowEffort,
+        flaggedLowEffort: normalizedFlaggedLowEffort,
         note: typeof note === 'string' ? note : null,
       },
     })
-    await applyRatingToReputation(assignment.testerId, score, flaggedLowEffort)
+    await applyRatingToReputation(assignment.testerId, score, normalizedFlaggedLowEffort)
     return ok(rating)
   } catch (err) {
     if (err instanceof Response) return err
