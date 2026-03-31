@@ -28,15 +28,15 @@ function SelectRoleContent() {
   const testerIsActive = activeRole === 'TESTER'
 
   const founderCardClass = founderIsActive
-    ? 'border-[#d77a57] bg-[#fdf8f6] shadow-[0_28px_70px_-48px_rgba(215,122,87,0.42)]'
-    : 'border-[#e5e4e0] bg-white'
+    ? 'border-primary bg-primary/10 shadow-[0_28px_70px_-48px_rgba(217,119,87,0.42)]'
+    : 'border-border-subtle bg-surface-elevated'
 
   const testerCardClass = testerIsActive
-    ? 'border-blue-500 bg-[#f5f8ff] shadow-[0_28px_70px_-48px_rgba(59,130,246,0.36)]'
-    : 'border-[#e5e4e0] bg-white'
+    ? 'border-blue-500 bg-blue-500/10 shadow-[0_28px_70px_-48px_rgba(59,130,246,0.36)]'
+    : 'border-border-subtle bg-surface-elevated'
 
   const inactiveButtonClass =
-    'rounded-[2rem] border-2 border-[#ded8d2] bg-white font-black text-[#b2a8a0] transition-all hover:border-[#cfc7c0] hover:text-[#8f857d] disabled:pointer-events-none disabled:opacity-70'
+    'rounded-[2rem] border-2 border-border-subtle bg-surface font-black text-text-muted transition-all hover:border-border hover:text-text-main disabled:pointer-events-none disabled:opacity-70'
 
   const testerButtonClass = testerIsActive
     ? 'rounded-[2rem] bg-blue-600 text-white font-black hover:bg-blue-500 hover:shadow-lg hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
@@ -112,16 +112,16 @@ function SelectRoleContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#faf9f7] p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background p-8">
       <div className="w-full max-w-5xl">
         <div className="mb-12 text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover">
               <BrandMark />
             </div>
-            <h1 className="text-4xl font-black text-[#1a1625]">SOLUTIONIZING</h1>
+            <h1 className="text-4xl font-black text-text-main">SOLUTIONIZING</h1>
           </div>
-          <p className="text-xl text-[#6b687a]">How will you use Solutionizing?</p>
+          <p className="text-xl text-text-muted">How will you use Solutionizing?</p>
         </div>
 
         <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
@@ -135,12 +135,12 @@ function SelectRoleContent() {
               <div
                 className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
                   founderIsActive
-                    ? 'bg-gradient-to-br from-[#d77a57] to-[#c4673f]'
-                    : 'bg-[#f3f3f5] text-[#b8b0a8]'
+                    ? 'bg-gradient-to-br from-primary to-primary-hover'
+                    : 'bg-surface text-text-muted'
                 }`}
               >
                 <svg
-                  className={`h-8 w-8 ${founderIsActive ? 'text-white' : 'text-[#b8b0a8]'}`}
+                  className={`h-8 w-8 ${founderIsActive ? 'text-white' : 'text-text-muted'}`}
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -149,14 +149,14 @@ function SelectRoleContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="mb-2 text-2xl font-black text-[#1a1625]">I&apos;m a Founder</h2>
-              <p className="text-sm text-[#6b687a]">
+              <h2 className="mb-2 text-2xl font-black text-text-main">I&apos;m a Founder</h2>
+              <p className="text-sm text-text-muted">
                 I have a product and need real feedback from real people
               </p>
             </div>
 
             <div className="mb-4">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-text-muted">
                 DISPLAY NAME
               </label>
               <input
@@ -200,22 +200,22 @@ function SelectRoleContent() {
               <div
                 className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
                   testerIsActive
-                    ? 'bg-blue-100 text-blue-600'
-                    : 'bg-[#f3f3f5] text-[#b8b0a8]'
+                    ? 'bg-blue-600/10 text-blue-500'
+                    : 'bg-surface text-text-muted'
                 }`}
               >
                 <svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h2 className="mb-2 text-2xl font-black text-[#1a1625]">I&apos;m a Tester</h2>
-              <p className="text-sm text-[#6b687a]">
+              <h2 className="mb-2 text-2xl font-black text-text-main">I&apos;m a Tester</h2>
+              <p className="text-sm text-text-muted">
                 I want to earn by giving honest feedback on real products
               </p>
             </div>
 
             <div className="mb-4">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#1a1625]">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-text-muted">
                 DISPLAY NAME
               </label>
               <input
@@ -252,7 +252,7 @@ function SelectRoleContent() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-sm text-[#9b98a8]">
+        <p className="mt-8 text-center text-sm text-text-muted">
           Pick your path — you can always reach us if anything changes.
         </p>
         {globalError ? (

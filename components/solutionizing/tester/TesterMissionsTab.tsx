@@ -45,10 +45,10 @@ export function TesterMissionsTab({
       return (
         <div className="space-y-4">
           {[1, 2].map((card) => (
-            <div key={card} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
-              <div className="mb-4 h-20 animate-pulse rounded-2xl bg-[#f3f3f5] dark:bg-gray-700" />
-              <div className="h-12 animate-pulse rounded-[2rem] bg-[#e5e4e0] dark:bg-gray-700" />
+            <div key={card} className="rounded-card border border-border-subtle bg-surface p-6">
+              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-surface-elevated" />
+              <div className="mb-4 h-20 animate-pulse rounded-2xl bg-surface-elevated" />
+              <div className="h-12 animate-pulse rounded-[2rem] bg-surface-elevated" />
             </div>
           ))}
         </div>
@@ -68,7 +68,7 @@ export function TesterMissionsTab({
 
     if (assignments.length === 0) {
       return (
-        <div className="py-8 text-center text-[#6b687a] dark:text-gray-400">
+        <div className="py-8 text-center text-text-muted">
           No missions assigned yet. Make sure your profile is complete and check back soon.
         </div>
       )
@@ -89,15 +89,15 @@ export function TesterMissionsTab({
                 : `${Math.max(1, remainingHours)} hours`
 
           return (
-            <div key={assignment.id} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <div key={assignment.id} className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{assignment.mission.title}</h3>
-                  <p className="text-sm text-[#6b687a] dark:text-gray-400">{assignment.mission.goal}</p>
+                  <h3 className="text-lg font-black text-white">{assignment.mission.title}</h3>
+                  <p className="text-sm text-text-muted">{assignment.mission.goal}</p>
                 </div>
                 <div
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
-                    assignment.status === 'ASSIGNED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                    assignment.status === 'ASSIGNED' ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-900/60' : 'bg-amber-950/60 text-amber-400 border border-amber-900/60'
                   }`}
                 >
                   {assignment.status.replaceAll('_', ' ')}
@@ -106,29 +106,29 @@ export function TesterMissionsTab({
 
               <div className="mb-4 grid gap-4 md:grid-cols-3">
                 <div>
-                  <div className="mb-1 text-xs text-[#9b98a8] dark:text-gray-400">REWARD</div>
-                  <div className="text-lg font-black text-[#1a1625] dark:text-white">
+                  <div className="mb-1 text-xs text-text-muted">REWARD</div>
+                  <div className="text-lg font-black text-white">
                     {formatCoins(assignment.mission.coinPerTester)} coins
                   </div>
-                  <div className="text-xs text-[#6b687a] dark:text-gray-400">
+                  <div className="text-xs text-text-muted">
                     (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})
                   </div>
                 </div>
                 <div>
-                  <div className="mb-1 text-xs text-[#9b98a8] dark:text-gray-400">DURATION</div>
-                  <div className="text-lg font-black text-[#1a1625] dark:text-white">
+                  <div className="mb-1 text-xs text-text-muted">DURATION</div>
+                  <div className="text-lg font-black text-white">
                     {assignment.mission.estimatedMinutes} minutes
                   </div>
                 </div>
                 <div>
-                  <div className="mb-1 text-xs text-[#9b98a8] dark:text-gray-400">EXPIRES IN</div>
+                  <div className="mb-1 text-xs text-text-muted">EXPIRES IN</div>
                   <div
                     className={`text-lg font-black ${
                       preciseHours <= 0.5
-                        ? 'text-red-600'
+                        ? 'text-red-400'
                         : preciseHours <= 2
-                          ? 'text-amber-600'
-                          : 'text-[#6b687a] dark:text-gray-400'
+                          ? 'text-amber-400'
+                          : 'text-text-muted'
                     }`}
                   >
                     {preciseHours <= 0.5 ? (
@@ -148,7 +148,7 @@ export function TesterMissionsTab({
                   {assignment.status === 'IN_PROGRESS' ? 'CONTINUE →' : 'START MISSION →'}
                 </Link>
                 <button
-                  className="text-sm font-semibold text-[#9b98a8] hover:text-red-600 dark:text-gray-400"
+                  className="text-sm font-semibold text-text-muted hover:text-red-400 transition-colors"
                   onClick={() => onAbandon(assignment)}
                 >
                   Abandon
@@ -167,39 +167,39 @@ export function TesterMissionsTab({
 
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-3xl font-black text-[#1a1625] dark:text-white">Dashboard</h1>
-          <p className="text-[#6b687a] dark:text-gray-400">Welcome back! Here&apos;s your mission overview.</p>
+          <h1 className="text-3xl font-black text-white">Dashboard</h1>
+          <p className="text-text-muted">Welcome back! Here&apos;s your mission overview.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-[#e5e4e0] bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
-          <span className="text-sm font-semibold text-[#1a1625] dark:text-white">Ready for Missions</span>
+        <div className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-4 py-2">
+          <div className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="text-sm font-semibold text-white">Ready for Missions</span>
         </div>
       </div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950/60 text-emerald-400">
               <span className="material-symbols-outlined !text-xl">payments</span>
             </div>
-            <div className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">COIN BALANCE</div>
+            <div className="text-xs font-semibold text-text-muted">COIN BALANCE</div>
           </div>
-          <div className="mb-1 text-3xl font-black text-[#1a1625] dark:text-white">
-            {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" /> : formatCoins(balance)}
+          <div className="mb-1 text-3xl font-black text-white">
+            {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-surface-elevated" /> : formatCoins(balance)}
           </div>
-          <div className="text-sm text-[#6b687a] dark:text-gray-400">≈ {formatRupeesFromCoins(balance)}</div>
+          <div className="text-sm text-text-muted">≈ {formatRupeesFromCoins(balance)}</div>
         </div>
 
-        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-950/60 text-purple-400">
               <span className="material-symbols-outlined !text-xl">stars</span>
             </div>
-            <div className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">REPUTATION</div>
+            <div className="text-xs font-semibold text-text-muted">REPUTATION</div>
           </div>
-          <div className="mb-2 text-3xl font-black text-[#1a1625] dark:text-white">
+          <div className="mb-2 text-3xl font-black text-white">
             {isLoading ? (
-              <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+              <div className="h-8 w-24 animate-pulse rounded bg-surface-elevated" />
             ) : (
               user?.testerProfile?.reputationScore ?? stats?.reputationScore ?? 0
             )}
@@ -207,38 +207,38 @@ export function TesterMissionsTab({
           {user?.testerProfile?.reputationTier ? <ReputationTierBadge tier={user.testerProfile.reputationTier} /> : null}
         </div>
 
-        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-950/60 text-sky-400">
               <span className="material-symbols-outlined !text-xl">checklist</span>
             </div>
-            <div className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">COMPLETED</div>
+            <div className="text-xs font-semibold text-text-muted">COMPLETED</div>
           </div>
-          <div className="mb-1 text-3xl font-black text-[#1a1625] dark:text-white">
-            {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" /> : stats?.totalCompleted ?? 0}
+          <div className="mb-1 text-3xl font-black text-white">
+            {isLoading ? <div className="h-8 w-24 animate-pulse rounded bg-surface-elevated" /> : stats?.totalCompleted ?? 0}
           </div>
-          <div className="text-sm text-[#6b687a] dark:text-gray-400">missions</div>
+          <div className="text-sm text-text-muted">missions</div>
         </div>
 
-        <div className="rounded-card border border-[#e5e4e0] bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-950/60 text-amber-400">
               <span className="material-symbols-outlined !text-xl">trending_up</span>
             </div>
-            <div className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">SUCCESS RATE</div>
+            <div className="text-xs font-semibold text-text-muted">SUCCESS RATE</div>
           </div>
-          <div className="mb-1 text-3xl font-black text-[#1a1625] dark:text-white">
+          <div className="mb-1 text-3xl font-black text-white">
             {isLoading ? (
-              <div className="h-8 w-24 animate-pulse rounded bg-[#e5e4e0] dark:bg-gray-700" />
+              <div className="h-8 w-24 animate-pulse rounded bg-surface-elevated" />
             ) : (
               `${stats?.completionRate ?? 0}%`
             )}
           </div>
-          <div className="text-sm font-semibold text-green-600">Consistency</div>
+          <div className="text-sm font-semibold text-emerald-400">Consistency</div>
         </div>
       </div>
 
-      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] p-8 text-white shadow-lg">
+      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-[#F97C5A] to-[#E45D43] p-8 text-white shadow-[0_8px_32px_-8px_rgba(249,124,90,0.4)]">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
@@ -263,7 +263,7 @@ export function TesterMissionsTab({
 
           {balance >= minimumWithdrawalCoins ? (
             <button
-              className="rounded-2xl bg-white px-10 py-4 font-black text-[#d77a57] transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+              className="rounded-2xl bg-white px-10 py-4 font-black text-[#F97C5A] transition-all hover:scale-105 hover:shadow-xl active:scale-95"
               onClick={onOpenWithdrawal}
             >
               WITHDRAW NOW →
@@ -277,8 +277,8 @@ export function TesterMissionsTab({
       </div>
 
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-black text-[#1a1625] dark:text-white">Current Missions</h2>
-        <span className="rounded-full bg-[#f3f3f5] px-4 py-1 text-sm font-bold text-[#6b687a] dark:bg-gray-700 dark:text-gray-400">
+        <h2 className="text-2xl font-black text-white">Current Missions</h2>
+        <span className="rounded-full border border-border-subtle bg-surface-elevated px-4 py-1 text-sm font-bold text-text-muted">
           {assignments.length} ACTIVE
         </span>
       </div>

@@ -146,7 +146,8 @@ function AuthForm() {
         skipSessionHandling: true,
       })
 
-      setSignupSuccess(true)
+      await refetch()
+      router.push(nextPath ?? '/select-role')
     } catch (error) {
       if (isApiClientError(error) && error.status === 409) {
         setEmailError('An account with this email already exists.')
@@ -268,17 +269,17 @@ function AuthForm() {
   }
 
   return (
-    <main className="min-h-screen bg-[#faf9f7] flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-card bg-[#faf9f7] p-12">
+    <main className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-card bg-surface border border-border-subtle p-12">
         {signupSuccess ? (
           <div className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-900/50">
+              <svg className="w-10 h-10 text-emerald-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="mb-4 text-3xl font-black text-[#1a1625]">Check your inbox</h2>
-            <p className="mb-8 text-lg text-[#6b687a]">
+            <h2 className="mb-4 text-3xl font-black text-text-main">Check your inbox</h2>
+            <p className="mb-8 text-lg text-text-muted">
               Check your inbox — we sent you a verification link.
             </p>
             <button
@@ -289,7 +290,7 @@ function AuthForm() {
                 setSignupSuccess(false)
                 setPassword('')
               }}
-              className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]"
+              className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white"
             >
               ← Back to sign in
             </button>
@@ -304,8 +305,8 @@ function AuthForm() {
               <div
                 className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${
                   mode === 'forgot'
-                    ? 'bg-amber-100 text-amber-600'
-                    : 'bg-gradient-to-br from-[#d77a57] to-[#c4673f] text-white'
+                    ? 'bg-amber-900/30 text-amber-300'
+                    : 'bg-gradient-to-r from-[#F97C5A] to-[#E45D43] text-white'
                 }`}
               >
                 {mode === 'forgot' ? (
@@ -316,14 +317,14 @@ function AuthForm() {
                   <BrandMark className="w-9 h-9 text-white" />
                 )}
               </div>
-              <h1 className="mb-2 text-3xl font-black text-[#1a1625]">
+              <h1 className="mb-2 text-3xl font-black text-text-main">
                 {mode === 'signup'
                   ? 'SOLUTIONIZING'
                   : mode === 'forgot'
                     ? 'Reset your password'
                     : 'SOLUTIONIZING'}
               </h1>
-              <p className="text-[#6b687a]">
+              <p className="text-text-muted">
                 {mode === 'signup'
                   ? 'Create your account'
                   : mode === 'forgot'
@@ -334,7 +335,7 @@ function AuthForm() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#1a1625]">
+                <label className="mb-2 block text-sm font-semibold text-text-main">
                   EMAIL ADDRESS
                 </label>
                 <input
@@ -353,7 +354,7 @@ function AuthForm() {
                         onClick={() => {
                           requestModeChange('signin')
                         }}
-                        className="text-[#d77a57] underline"
+                        className="text-primary hover:text-primary-hover underline"
                       >
                         Sign in instead?
                       </button>
@@ -365,14 +366,14 @@ function AuthForm() {
               {mode !== 'forgot' ? (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <label className="text-sm font-semibold text-[#1a1625]">PASSWORD</label>
+                    <label className="text-sm font-semibold text-text-main">PASSWORD</label>
                     {mode === 'signin' ? (
                       <button
                         type="button"
                         onClick={() => {
                           requestModeChange('forgot')
                         }}
-                        className="text-sm font-semibold text-[#d77a57] hover:underline"
+                        className="text-sm font-semibold text-primary hover:text-primary-hover hover:underline"
                       >
                         Forgot password?
                       </button>
@@ -389,13 +390,13 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9b98a8] hover:text-[#1a1625]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
                     >
                       <EyeIcon open={showPassword} />
                     </button>
                   </div>
                   {mode === 'signup' ? (
-                    <p className="mt-2 text-xs text-[#9b98a8]">Min 8 chars, 1 uppercase, 1 number</p>
+                    <p className="mt-2 text-xs text-text-muted">Min 8 chars, 1 uppercase, 1 number</p>
                   ) : null}
                   {passwordError ? <p className="mt-1 text-sm text-red-600">{passwordError}</p> : null}
                 </div>
@@ -403,12 +404,12 @@ function AuthForm() {
 
               {mode === 'signin' ? (
                 <div className="flex items-center justify-between text-sm">
-                  <label className="flex cursor-pointer items-center gap-2 text-[#6b687a]">
+                  <label className="flex cursor-pointer items-center gap-2 text-text-muted">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(event) => setRememberMe(event.target.checked)}
-                      className="h-4 w-4 rounded border-[#e5e4e0] text-[#d77a57] focus:ring-[#d77a57]"
+                      className="h-4 w-4 rounded border-border-subtle bg-surface-elevated text-primary focus:ring-primary"
                     />
                     Remember me
                   </label>
@@ -438,21 +439,21 @@ function AuthForm() {
                 <>
                   <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#e5e4e0]" />
+                      <div className="w-full border-t border-border-subtle" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="bg-[#faf9f7] px-4 text-[#9b98a8]">Social login coming soon</span>
+                      <span className="bg-surface px-4 text-text-muted">Social login coming soon</span>
                     </div>
                   </div>
 
-                  <p className="text-center text-sm text-[#6b687a]">
+                  <p className="text-center text-sm text-text-muted">
                     {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
                     <button
                       type="button"
                       onClick={() => {
                         requestModeChange(mode === 'signup' ? 'signin' : 'signup')
                       }}
-                      className="font-semibold text-[#d77a57] hover:underline"
+                      className="font-semibold text-primary hover:text-primary-hover hover:underline"
                     >
                       {mode === 'signup' ? 'Sign in' : 'Sign up'}
                     </button>
@@ -470,20 +471,20 @@ function AuthForm() {
             </form>
 
             {mode === 'forgot' ? (
-              <div className="mt-8 border-t border-[#e5e4e0] pt-6 text-center">
+              <div className="mt-8 border-t border-border-subtle pt-6 text-center">
                 <button
                   type="button"
                   onClick={() => {
                     requestModeChange('signin')
                   }}
-                  className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]"
+                  className="text-sm font-semibold text-text-muted hover:text-text-main"
                 >
                   ← Back to sign in
                 </button>
               </div>
             ) : (
-              <div className="mt-8 border-t border-[#e5e4e0] pt-6 text-center">
-                <p className="text-xs text-[#9b98a8] flex items-center justify-center gap-2">
+              <div className="mt-8 border-t border-border-subtle pt-6 text-center">
+                <p className="text-xs text-text-muted flex items-center justify-center gap-2">
                   <span aria-hidden="true">🔒</span>
                   Secure, encrypted authentication
                 </p>
@@ -498,8 +499,8 @@ function AuthForm() {
 
 function AuthLoadingScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#faf9f7]">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D97757] border-t-transparent" />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   )
 }

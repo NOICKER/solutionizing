@@ -45,32 +45,32 @@ function WithdrawalModal({
   const middleAmount = Math.max(minimumWithdrawalCoins, balance - 1000)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-panel bg-white p-8 shadow-2xl">
+      <div className="relative z-10 w-full max-w-lg rounded-panel border border-border-subtle bg-surface p-8 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="mb-1 text-3xl font-black text-[#1a1625]">Withdraw Coins</h2>
-            <p className="text-[#6b687a]">Convert your coins to rupees</p>
+            <h2 className="mb-1 text-3xl font-black text-white">Withdraw Coins</h2>
+            <p className="text-text-muted">Convert your coins to rupees</p>
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f3f5] hover:bg-[#e5e4e0]" onClick={onClose}>
-            <svg className="w-5 h-5 text-[#6b687a]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated hover:bg-border-subtle" onClick={onClose}>
+            <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="mb-6 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-6">
-          <div className="mb-2 text-sm text-[#6b687a]">CURRENT BALANCE</div>
+        <div className="mb-6 rounded-card border border-emerald-900/60 bg-emerald-950/30 p-6">
+          <div className="mb-2 text-sm text-text-muted">CURRENT BALANCE</div>
           <div className="mb-2 flex items-baseline gap-3">
-            <span className="text-4xl font-black text-[#1a1625]">{formatCoins(balance)}</span>
-            <span className="text-xl text-[#6b687a]">coins</span>
+            <span className="text-4xl font-black text-white">{formatCoins(balance)}</span>
+            <span className="text-xl text-text-muted">coins</span>
           </div>
-          <div className="text-lg font-semibold text-green-600">≈ {formatRupeesFromCoins(balance)}</div>
+          <div className="text-lg font-semibold text-emerald-400">≈ {formatRupeesFromCoins(balance)}</div>
         </div>
 
         <div className="mb-6">
-          <label className="mb-3 block text-sm font-semibold text-[#1a1625]">HOW MANY COINS TO WITHDRAW?</label>
+          <label className="mb-3 block text-sm font-semibold text-white">HOW MANY COINS TO WITHDRAW?</label>
           <div className="relative">
             <input
               type="number"
@@ -78,33 +78,33 @@ function WithdrawalModal({
               max={balance}
               value={amount}
               onChange={(event) => onAmountChange(Number(event.target.value))}
-              className="w-full rounded-2xl border-2 border-[#e5e4e0] bg-[#f3f3f5] px-4 py-4 text-2xl font-black text-[#1a1625] placeholder:text-[#9b98a8] transition-all focus:border-[#d77a57] focus:outline-none"
+              className="w-full rounded-2xl border-2 border-border-subtle bg-surface-elevated px-4 py-4 text-2xl font-black text-white placeholder:text-text-muted transition-all focus:border-primary focus:outline-none"
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#9b98a8]">coins</div>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-text-muted">coins</div>
           </div>
           <div className="mt-2 flex items-center justify-between px-2">
-            <span className="text-xs text-[#9b98a8]">Min: 5,000 coins</span>
-            <span className="text-xs text-[#9b98a8]">Max: {formatCoins(balance)} coins</span>
+            <span className="text-xs text-text-muted">Min: 5,000 coins</span>
+            <span className="text-xs text-text-muted">Max: {formatCoins(balance)} coins</span>
           </div>
         </div>
 
-        <div className="mb-6 rounded-card border border-blue-100 bg-blue-50 p-6">
+        <div className="mb-6 rounded-card border border-sky-900/60 bg-sky-950/30 p-6">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-[#6b687a]">You will receive</span>
-            <span className="text-3xl font-black text-[#1a1625]">₹{(amount / 100).toFixed(0)}</span>
+            <span className="text-sm text-text-muted">You will receive</span>
+            <span className="text-3xl font-black text-white">₹{(amount / 100).toFixed(0)}</span>
           </div>
-          <div className="border-t border-blue-200 pt-3 text-xs text-[#6b687a]">Conversion rate: 100 coins = ₹1</div>
+          <div className="border-t border-sky-900/60 pt-3 text-xs text-text-muted">Conversion rate: 100 coins = ₹1</div>
         </div>
 
         <div className="mb-6 grid grid-cols-3 gap-3">
-          <button className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0]" onClick={() => onQuickPick(minimumWithdrawalCoins)}>
+          <button className="rounded-2xl bg-surface-elevated py-3 font-bold text-text-main transition-colors hover:bg-border-subtle" onClick={() => onQuickPick(minimumWithdrawalCoins)}>
             5,000
           </button>
-          <button className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0]" onClick={() => onQuickPick(middleAmount)}>
+          <button className="rounded-2xl bg-surface-elevated py-3 font-bold text-text-main transition-colors hover:bg-border-subtle" onClick={() => onQuickPick(middleAmount)}>
             {formatCoins(middleAmount)}
           </button>
           <button
-            className="rounded-2xl bg-[#f3f3f5] py-3 font-bold text-[#1a1625] transition-colors hover:bg-[#e5e4e0] disabled:cursor-not-allowed disabled:bg-[#f3f3f5]/70 disabled:text-[#9b98a8]"
+            className="rounded-2xl bg-surface-elevated py-3 font-bold text-text-main transition-colors hover:bg-border-subtle disabled:cursor-not-allowed disabled:opacity-40"
             onClick={() => onQuickPick(safeAllAmount)}
             disabled={!canUseAllAmount}
             title={!canUseAllAmount ? 'Minimum withdrawal is 5,000 coins' : undefined}
@@ -113,21 +113,21 @@ function WithdrawalModal({
           </button>
         </div>
         {!canUseAllAmount ? (
-          <p className="mb-6 text-sm text-[#9b98a8]">Minimum withdrawal is 5,000 coins.</p>
+          <p className="mb-6 text-sm text-text-muted">Minimum withdrawal is 5,000 coins.</p>
         ) : null}
 
-        <div className="mb-6 rounded-card border border-amber-100 bg-amber-50 p-4">
+        <div className="mb-6 rounded-card border border-amber-900/50 bg-amber-950/30 p-4">
           <div className="flex items-start gap-3">
-            <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
-            <div className="text-sm text-amber-900">
+            <div className="text-sm text-amber-300">
               <strong>Processing time:</strong> Withdrawals are processed within 3-5 business days. You&apos;ll receive a confirmation email once complete.
             </div>
           </div>
         </div>
 
-        {errorMessage ? <p className="mb-4 text-sm text-red-600">{errorMessage}</p> : null}
+        {errorMessage ? <p className="mb-4 text-sm text-red-400">{errorMessage}</p> : null}
 
         <button
           className={`flex w-full items-center justify-center gap-2 py-4 text-lg ${primaryButtonClass}`}
@@ -160,11 +160,11 @@ function TabButton({
   return (
     <button
       type="button"
-      className={`${className} flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-bold transition-all ${active ? 'bg-[#d77a57] text-white shadow-md' : 'text-[#6b687a] hover:bg-[#f3f3f5] hover:text-[#1a1625] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+      className={`${className} flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-bold transition-all ${active ? 'bg-primary text-white shadow-[0_4px_12px_rgba(249,124,90,0.35)]' : 'text-text-muted hover:bg-surface-elevated hover:text-text-main'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       onClick={disabled ? undefined : onClick}
       aria-disabled={disabled ? 'true' : undefined}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? 'bg-white/20' : 'bg-[#f3f3f5] dark:bg-gray-700'}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? 'bg-white/20' : 'bg-surface-elevated'}`}>
         {glyph}
       </div>
       {label}
@@ -327,16 +327,16 @@ function TesterDashboardContent() {
         : 'Track active missions, withdrawals, and your current tester status.'
 
   return (
-    <div className="flex min-h-screen flex-col gap-8 rounded-panel bg-[#faf9f7] p-8 dark:bg-gray-900 lg:flex-row">
+    <div className="flex min-h-screen flex-col gap-8 bg-background p-6 lg:flex-row">
       <aside className="flex-shrink-0 lg:w-64">
         <div className="sticky top-8 space-y-6">
           <div className="flex items-center gap-3 px-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#d77a57] to-[#c4673f]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#F97C5A] to-[#E45D43]">
               <BrandMark className="h-6 w-6 text-white" />
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#9b98a8] dark:text-gray-400">Solutionizing</div>
-              <div className="font-black text-[#1a1625] dark:text-white">TESTER</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Solutionizing</div>
+              <div className="font-black text-white">TESTER</div>
             </div>
           </div>
 
@@ -359,24 +359,24 @@ function TesterDashboardContent() {
               onClick={() => setActiveTab('support')}
               glyph={<span className="material-symbols-outlined !text-xl">help</span>}
             />
-            <div className="border-t border-[#e5e4e0] pt-4 dark:border-gray-700" />
+            <div className="border-t border-border-subtle pt-4" />
             <TabButton
               label="Sign Out"
               active={false}
               onClick={() => signOut()}
-              glyph={<span className="material-symbols-outlined !text-xl text-red-500">logout</span>}
-              className="text-red-500 hover:bg-red-50"
+              glyph={<span className="material-symbols-outlined !text-xl text-red-400">logout</span>}
+              className="text-red-400 hover:bg-red-900/20"
             />
           </nav>
         </div>
       </aside>
 
       <main className="flex-1 space-y-6">
-        <div className="flex flex-col gap-4 rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">Tester workspace</div>
-            <h1 className="mt-2 text-2xl font-black text-[#1a1625] dark:text-white">{topBarTitle}</h1>
-            <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">{topBarDescription}</p>
+            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Tester workspace</div>
+            <h1 className="mt-2 text-2xl font-black text-white">{topBarTitle}</h1>
+            <p className="mt-2 text-sm text-text-muted">{topBarDescription}</p>
           </div>
           <ThemeToggleButton />
         </div>

@@ -139,7 +139,7 @@ export function FounderOnboarding({
   }
 
   const footer = (
-    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-[#efe8e1] pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
@@ -180,19 +180,19 @@ export function FounderOnboarding({
     <OnboardingShell step={step} totalSteps={5}>
       {step === 1 ? (
         <div className="space-y-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#fff4ef] px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-primary">
             <span className="material-symbols-outlined text-base">rocket_launch</span>
             Founder setup
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white sm:text-5xl">
+            <h1 className="text-4xl font-black tracking-tight text-text-main sm:text-5xl">
               Welcome to Solutionizing{displayName.trim() ? `, ${displayName.trim()}` : ''}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               The fastest way to get real feedback on your product from real testers.
             </p>
           </div>
-          {errorMessage ? <p className="text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button
               type="button"
@@ -210,8 +210,8 @@ export function FounderOnboarding({
       {step === 2 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Here&apos;s how it works</h1>
-            <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">Here&apos;s how it works</h1>
+            <p className="mt-3 text-lg leading-8 text-text-muted">
               Launching your first mission only takes a few moves, and we keep the workflow structured from the start.
             </p>
           </div>
@@ -220,26 +220,26 @@ export function FounderOnboarding({
             {founderHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60"
+                className="flex gap-4 rounded-card border border-border-subtle bg-surface-elevated p-5"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
                   {index < founderHowItWorks.length - 1 ? (
-                    <div className="h-full w-px bg-[#ead8cf] dark:bg-gray-800" />
+                    <div className="h-full w-px bg-border-subtle" />
                   ) : null}
                 </div>
                 <div className="pt-1">
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-text-muted">
                     Step {index + 1}
                   </div>
-                  <h2 className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-[#6b687a] dark:text-gray-400">{item.description}</p>
+                  <h2 className="mt-2 text-xl font-black text-text-main">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-7 text-text-muted">{item.description}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -247,19 +247,19 @@ export function FounderOnboarding({
       {step === 3 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Tell us about yourself</h1>
-            <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">Tell us about yourself</h1>
+            <p className="mt-3 text-lg leading-8 text-text-muted">
               These details show up across your founder workspace and mission setup flow.
             </p>
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             <label className="block space-y-3">
-              <span className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+              <span className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                 Display Name
               </span>
               <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9b98a8] dark:text-gray-500">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
                   <span className="material-symbols-outlined">person</span>
                 </span>
                 <input
@@ -273,11 +273,11 @@ export function FounderOnboarding({
             </label>
 
             <label className="block space-y-3">
-              <span className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+              <span className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                 Company Name
               </span>
               <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9b98a8] dark:text-gray-500">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
                   <span className="material-symbols-outlined">apartment</span>
                 </span>
                 <input
@@ -291,7 +291,7 @@ export function FounderOnboarding({
             </label>
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -299,8 +299,8 @@ export function FounderOnboarding({
       {step === 4 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Fund your first mission</h1>
-            <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">Fund your first mission</h1>
+            <p className="mt-3 text-lg leading-8 text-text-muted">
               Pick a coin pack so you know how funding will work once payments go live.
             </p>
           </div>
@@ -318,21 +318,21 @@ export function FounderOnboarding({
                   key={pack.id}
                   className={`rounded-card border p-6 transition-all ${
                     isSelected
-                      ? 'border-[#d97757] bg-[#fff4ef] shadow-[0_22px_42px_-34px_rgba(217,119,87,0.6)] dark:bg-[#d97757]/10'
-                      : 'border-[#efe8e1] bg-[#fffdfa] dark:border-gray-800 dark:bg-gray-950/60'
+                      ? 'border-primary bg-primary/10 shadow-[0_22px_42px_-34px_rgba(217,119,87,0.6)]'
+                      : 'border-border-subtle bg-surface-elevated'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-500">
+                      <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                         {pack.name}
                       </div>
-                      <div className="mt-4 text-3xl font-black text-[#1a1625] dark:text-white">{pack.coins}</div>
+                      <div className="mt-4 text-3xl font-black text-text-main">{pack.coins}</div>
                     </div>
                     <ComingSoonPill />
                   </div>
 
-                  <p className="mt-4 text-sm leading-7 text-[#6b687a] dark:text-gray-400">
+                  <p className="mt-4 text-sm leading-7 text-text-muted">
                     This pack will be available once wallet funding goes live.
                   </p>
 
@@ -341,8 +341,8 @@ export function FounderOnboarding({
                     onClick={() => setSelectedPack(pack.id)}
                     className={`mt-6 w-full rounded-[1.25rem] px-4 py-3 text-sm font-black transition-colors ${
                       isSelected
-                        ? 'bg-[#d97757] text-white hover:bg-[#c4673f]'
-                        : 'border border-[#ead8cf] bg-white text-[#1a1625] hover:border-[#d97757] hover:text-[#d97757] dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                        ? 'bg-primary text-white hover:bg-primary-hover'
+                        : 'border border-border-subtle bg-surface text-text-main hover:border-primary hover:text-primary'
                     }`}
                   >
                     {isSelected ? 'Selected' : 'Select'}
@@ -364,24 +364,24 @@ export function FounderOnboarding({
             Skip for now
           </button>
 
-          {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
 
       {step === 5 ? (
         <div className="space-y-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4ef] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
             <span className="material-symbols-outlined !text-[2.6rem]">check_circle</span>
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">You&apos;re all set!</h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               Your profile is ready. Create your first mission and start collecting feedback.
             </p>
           </div>
           {selectedPack ? (
-            <div className="mx-auto inline-flex rounded-full border border-[#ead8cf] bg-[#fff4ef] px-4 py-2 text-sm font-semibold text-[#d97757] dark:border-[#d97757]/30 dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
+            <div className="mx-auto inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
               {coinPacks.find((pack) => pack.id === selectedPack)?.name} pack selected for later.
             </div>
           ) : null}

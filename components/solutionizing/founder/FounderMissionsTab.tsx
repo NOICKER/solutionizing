@@ -75,8 +75,8 @@ export function FounderMissionsTab({
   } else if (missions.length === 0) {
     content = (
       <EmptyStatePanel
-        buttonLabel="CREATE YOUR FIRST MISSION ->"
-        icon={<ClipboardList className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+        buttonLabel="INITIALIZE FIRST NODE ->"
+        icon={<ClipboardList className="h-16 w-16 text-text-muted" />}
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
@@ -100,7 +100,7 @@ export function FounderMissionsTab({
           return (
             <div
               key={mission.id}
-              className={`rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 ${isCardClickable ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}`}
+              className={`rounded-card border border-border-subtle bg-surface p-6 ${isCardClickable ? 'cursor-pointer transition-all hover:border-primary/30 hover:bg-surface-elevated' : ''}`}
               onClick={isCardClickable ? openMissionCard : undefined}
               onKeyDown={
                 isCardClickable
@@ -117,8 +117,8 @@ export function FounderMissionsTab({
             >
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="mb-1 text-lg font-black text-[#1a1625] dark:text-white">{mission.title}</h3>
-                  {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-[#6b687a] dark:text-gray-400">{mission.goal}</p> : null}
+                  <h3 className="mb-1 text-lg font-black text-white">{mission.title}</h3>
+                  {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-text-muted">{mission.goal}</p> : null}
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   <MissionStatusBadge status={mission.status} />
@@ -129,20 +129,20 @@ export function FounderMissionsTab({
               </div>
 
               {mission.status === 'PENDING_REVIEW' ? (
-                <p className="text-sm text-[#9b98a8] dark:text-gray-400">Under review - usually within 24 hours</p>
+                <p className="text-sm text-text-muted">Under review — usually within 24 hours</p>
               ) : null}
 
               {mission.status !== 'PENDING_REVIEW' ? (
                 <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-[#6b687a] dark:text-gray-400">
+                    <span className="text-text-muted">
                       {mission.testersCompleted} of {mission.testersRequired} testers
                     </span>
-                    <span className="font-bold text-[#1a1625] dark:text-white">{Math.round(progress)}%</span>
+                    <span className="font-bold text-white">{Math.round(progress)}%</span>
                   </div>
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#d77a57] to-[#c4673f]"
+                      className="h-full rounded-full bg-gradient-to-r from-[#F97C5A] to-[#E45D43]"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -192,7 +192,7 @@ export function FounderMissionsTab({
                     PAUSE
                   </button>
                   <button
-                    className="ml-auto text-sm font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                    className="ml-auto text-sm font-semibold text-red-400 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isAnyActionLoading}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -226,7 +226,7 @@ export function FounderMissionsTab({
                       RESUME
                     </button>
                     <button
-                      className="ml-auto text-sm font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      className="ml-auto text-sm font-semibold text-red-400 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={isAnyActionLoading}
                       onClick={(event) => {
                         event.stopPropagation()
@@ -249,16 +249,16 @@ export function FounderMissionsTab({
                     VIEW INSIGHTS {'->'}
                   </Link>
                   {mission.completedAt ? (
-                    <p className="text-sm text-[#9b98a8] dark:text-gray-400">Completed {format(new Date(mission.completedAt), 'MMM d, yyyy')}</p>
+                    <p className="text-sm text-text-muted">Completed {format(new Date(mission.completedAt), 'MMM d, yyyy')}</p>
                   ) : null}
                 </div>
               ) : null}
 
               {mission.status === 'REJECTED' ? (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/70 dark:bg-red-950/40">
-                    <h4 className="mb-1 text-sm font-bold text-red-900">Feedback from our team</h4>
-                    <p className="text-sm text-red-800">{mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
+                  <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4">
+                    <h4 className="mb-1 text-sm font-bold text-red-300">Feedback from our team</h4>
+                    <p className="text-sm text-red-400">{mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
                   </div>
                   <Link
                     href={`/mission/wizard?edit=true&missionId=${mission.id}`}
@@ -281,15 +281,15 @@ export function FounderMissionsTab({
   return (
     <section
       id="missions-section"
-      className="rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6"
+      className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-6"
     >
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">Mission overview</div>
-          <h2 className="mt-2 text-2xl font-black text-[#1a1625] dark:text-white">Your Missions</h2>
+          <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Control</div>
+          <h2 className="mt-2 text-2xl font-black text-white">Your Missions</h2>
         </div>
         <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
-          + CREATE NEW MISSION
+          + Initialize New Node
         </Link>
       </div>
 

@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/context/ThemeContext'
 
 function isThemeManagedPath(pathname: string) {
   return (
+    pathname.startsWith('/auth') ||
+    pathname === '/select-role' ||
     pathname === '/onboarding' ||
     pathname === '/contact' ||
     pathname.startsWith('/dashboard') ||

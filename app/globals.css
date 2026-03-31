@@ -15,7 +15,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html.dark {
@@ -24,7 +24,7 @@ html.dark {
 
 html,
 body {
-  @apply bg-neutral-bg text-text-main dark:bg-gray-900 dark:text-white;
+  @apply bg-neutral-bg text-text-main;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -33,7 +33,7 @@ body {
 }
 
 ::selection {
-  background-color: rgba(217, 119, 6, 0.22);
+  background-color: rgba(249, 124, 90, 0.22);
 }
 
 .material-symbols-outlined {

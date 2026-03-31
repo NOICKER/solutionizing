@@ -43,37 +43,66 @@ function CoinPackCard({
 
   return (
     <div
-      className={`relative rounded-card border bg-white p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:bg-gray-800 ${
-        pack.popular ? 'border-[#d77a57]/40' : 'border-[#ece6df]'
+      className={`relative rounded-card border bg-surface p-6 transition-all hover:border-primary/40 ${
+        pack.popular ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border-subtle'
       }`}
     >
       {pack.popular ? (
-        <div className="absolute right-6 top-6 rounded-full bg-[#d77a57] px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] text-white">
-          Popular
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#F97C5A] to-[#E45D43] px-4 py-1 text-[0.65rem] font-black uppercase tracking-[0.18em] text-white shadow-[0_4px_12px_rgba(249,124,90,0.4)]">
+          Most Recommended
         </div>
       ) : null}
 
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#faf5f0] text-lg font-black text-[#d77a57] dark:bg-gray-900">
-        C
+      <div className="mb-3 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
+        {pack.popular ? 'Mid Tier' : pack.packId === 'starter' ? 'Entry Tier' : 'Alpha Tier'}
+      </div>
+
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+        <span className="text-2xl font-black text-primary">C</span>
       </div>
 
       <div className="mt-6">
-        <h3 className="text-xl font-black text-[#1a1625] dark:text-white">{pack.name}</h3>
-        <div className="mt-3 text-4xl font-black text-[#1a1625] dark:text-white">{formatCoins(pack.coins)}</div>
-        <div className="mt-1 text-sm font-medium text-[#6b687a] dark:text-gray-400">coins</div>
-        <div className="mt-4 inline-flex rounded-full border border-[#ece6df] bg-[#faf5f0] px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#6b687a] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-          {pack.discount}
+        <h3 className="text-2xl font-black text-white">{pack.name}</h3>
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="text-4xl font-black text-primary">{formatCoins(pack.coins)}</span>
+          <span className="text-sm font-bold uppercase tracking-wider text-text-muted">COINS</span>
         </div>
-        <div className="mt-5 text-3xl font-black text-[#1a1625] dark:text-white">{pack.priceLabel}</div>
+        <div className="mt-5 space-y-2 text-sm text-text-muted">
+          {pack.packId === 'starter' && (
+            <>
+              <p>✓ Standard Mission Capacity</p>
+              <p>✓ Basic Architecture Tools</p>
+              <p className="opacity-50">✗ Priority Support</p>
+            </>
+          )}
+          {pack.packId === 'growth' && (
+            <>
+              <p>✓ Expanded Mission Logic</p>
+              <p>✓ Advanced Neural Clusters</p>
+              <p>✓ Priority Node Access</p>
+            </>
+          )}
+          {pack.packId === 'scale' && (
+            <>
+              <p>✓ Unlimited Mission Architect</p>
+              <p>✓ Global Deployment Cluster</p>
+              <p>✓ Dedicated Concierge</p>
+            </>
+          )}
+        </div>
       </div>
 
       <button
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-[2rem] bg-[#d77a57] py-3 text-sm font-black text-white transition-colors hover:bg-[#c4673f] disabled:pointer-events-none disabled:opacity-70"
+        className={`mt-8 flex w-full items-center justify-center gap-2 rounded-[2rem] py-3 text-sm font-black transition-all disabled:pointer-events-none disabled:opacity-70 ${
+          pack.popular
+            ? 'bg-gradient-to-r from-[#F97C5A] to-[#E45D43] text-white hover:shadow-[0_8px_24px_rgba(249,124,90,0.4)] hover:scale-[1.02]'
+            : 'border border-border-subtle text-text-main hover:border-primary/50 hover:text-primary'
+        }`}
         disabled={purchaseDisabled}
         onClick={() => onPurchase(pack.packId)}
       >
         {isLoading ? <SpinnerIcon className="h-4 w-4" /> : null}
-        PURCHASE
+        Buy for {pack.priceLabel}
       </button>
     </div>
   )
@@ -95,47 +124,47 @@ function PurchaseOutcomePanel({
   const isSuccess = purchaseResult.status === 'success'
 
   return (
-    <div className="rounded-panel border border-[#ece6df] bg-white/90 p-6 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-8">
+    <div className="rounded-panel border border-border-subtle bg-surface p-6 sm:p-8">
       <div
         className={`inline-flex h-16 w-16 items-center justify-center rounded-3xl ${
-          isSuccess ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300'
+          isSuccess ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'
         }`}
       >
         {isSuccess ? <CheckCircle2 className="h-8 w-8" /> : <AlertTriangle className="h-8 w-8" />}
       </div>
 
       <div className="mt-6 max-w-2xl">
-        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">
           {isSuccess ? 'Purchase complete' : 'Purchase failed'}
         </div>
-        <h2 className="mt-2 text-3xl font-black text-[#1a1625] dark:text-white">
-          {isSuccess ? 'Coins are now in your wallet' : 'Checkout did not complete'}
+        <h2 className="mt-2 text-3xl font-black text-white">
+          {isSuccess ? 'Coins credited to wallet' : 'Checkout did not complete'}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{purchaseResult.message}</p>
+        <p className="mt-3 text-sm leading-6 text-text-muted">{purchaseResult.message}</p>
       </div>
 
       {isSuccess ? (
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-card border border-[#ece6df] bg-[#fffdfa] p-5 dark:border-gray-700 dark:bg-gray-900/70">
-            <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#9b98a8] dark:text-gray-400">Pack</div>
-            <div className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">{purchaseResult.packName}</div>
+          <div className="rounded-card border border-border-subtle bg-surface-elevated p-5">
+            <div className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">Pack</div>
+            <div className="mt-2 text-xl font-black text-white">{purchaseResult.packName}</div>
           </div>
-          <div className="rounded-card border border-[#ece6df] bg-[#fffdfa] p-5 dark:border-gray-700 dark:bg-gray-900/70">
-            <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#9b98a8] dark:text-gray-400">Coins added</div>
-            <div className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">{formatCoins(purchaseResult.coinsAdded)} coins</div>
+          <div className="rounded-card border border-border-subtle bg-surface-elevated p-5">
+            <div className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">Coins added</div>
+            <div className="mt-2 text-xl font-black text-white">{formatCoins(purchaseResult.coinsAdded)} coins</div>
           </div>
-          <div className="rounded-card border border-[#ece6df] bg-[#fffdfa] p-5 dark:border-gray-700 dark:bg-gray-900/70">
-            <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#9b98a8] dark:text-gray-400">New balance</div>
-            <div className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">{formatCoins(purchaseResult.newBalance)} coins</div>
+          <div className="rounded-card border border-border-subtle bg-surface-elevated p-5">
+            <div className="text-xs font-bold uppercase tracking-[0.16em] text-text-muted">New balance</div>
+            <div className="mt-2 text-xl font-black text-white">{formatCoins(purchaseResult.newBalance)} coins</div>
           </div>
         </div>
       ) : (
-        <div className="mt-8 rounded-card border border-red-200 bg-red-50 p-5 dark:border-red-900/60 dark:bg-red-950/30">
+        <div className="mt-8 rounded-card border border-red-900/60 bg-red-950/30 p-5">
           <div className="flex items-start gap-3">
-            <LifeBuoy className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-300" />
+            <LifeBuoy className="mt-0.5 h-5 w-5 text-red-300" />
             <div>
-              <p className="text-sm font-bold text-red-800 dark:text-red-100">Need help?</p>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-200">
+              <p className="text-sm font-bold text-red-200">Need help?</p>
+              <p className="mt-1 text-sm text-red-300">
                 Retry the same pack, or contact support if the problem persists. Include the pack name and the time of the failed attempt so we can trace it quickly.
               </p>
             </div>
@@ -151,7 +180,7 @@ function PurchaseOutcomePanel({
             </button>
             <button
               type="button"
-              className="rounded-[2rem] border border-[#ece6df] px-5 py-3 text-sm font-bold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              className="rounded-[2rem] border border-border-subtle px-5 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-main"
               onClick={onReset}
             >
               BUY ANOTHER PACK
@@ -170,14 +199,14 @@ function PurchaseOutcomePanel({
             </button>
             <a
               href="mailto:hello@solutionizing.com?subject=Coin%20purchase%20support"
-              className="inline-flex items-center gap-2 rounded-[2rem] border border-[#ece6df] px-5 py-3 text-sm font-bold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              className="inline-flex items-center gap-2 rounded-[2rem] border border-border-subtle px-5 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-main"
             >
               <LifeBuoy className="h-4 w-4" />
               CONTACT SUPPORT
             </a>
             <button
               type="button"
-              className="rounded-[2rem] border border-[#ece6df] px-5 py-3 text-sm font-bold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              className="rounded-[2rem] border border-border-subtle px-5 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-main"
               onClick={onReset}
             >
               BACK TO PACKS
@@ -186,8 +215,8 @@ function PurchaseOutcomePanel({
         )}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
-        <strong>Audit note:</strong> This environment still uses the beta instant-credit purchase path. A verified Razorpay order flow and payment verification step still need to be wired before this can be treated as production checkout.
+      <div className="mt-8 rounded-2xl border border-amber-900/50 bg-amber-950/30 p-4 text-sm text-amber-300">
+        <strong>Audit note:</strong> This environment still uses the beta instant-credit purchase path. A verified Razorpay order flow and payment verification step still need to be wired before production.
       </div>
     </div>
   )
@@ -223,40 +252,52 @@ export function FounderWalletsTab({
   }
 
   return (
-    <section className="rounded-panel border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6">
+    <section className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6">
       <div className="mb-8">
-        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">Wallet overview</div>
-        <h2 className="mt-2 text-2xl font-black text-[#1a1625] dark:text-white">Wallets & Coins</h2>
-        <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">
+        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Architectural Capital</div>
+        <h2 className="mt-2 text-2xl font-black text-white">Available Balance</h2>
+        <p className="mt-2 max-w-2xl text-sm text-text-muted">
           Track your available balance and add more coins for upcoming research missions.
         </p>
       </div>
 
       <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <div className="rounded-card border border-[#ece6df] bg-[#fffdfa] p-6 dark:border-gray-700 dark:bg-gray-900/70">
+        <div className="rounded-card border border-border-subtle bg-surface-elevated p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#faf5f0] text-[#d77a57] dark:bg-gray-800">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Wallet className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Available balance</div>
+              <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">Available balance</div>
               <div className="mt-1 flex flex-wrap items-end gap-3">
-                <span className="text-4xl font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</span>
-                <span className="pb-1 text-sm font-medium text-[#9b98a8] dark:text-gray-400">~ Rs {(coinBalance / 100).toFixed(0)}</span>
+                <span className="text-4xl font-black text-white">{formatCoins(coinBalance)} COINS</span>
+                <span className="pb-1 text-sm font-medium text-text-muted">~ ₹{(coinBalance / 100).toFixed(0)} Value</span>
               </div>
             </div>
           </div>
-          <p className="mt-4 max-w-xl text-sm text-[#6b687a] dark:text-gray-400">
+          <p className="mt-4 max-w-xl text-sm text-text-muted">
             Use your coin balance to launch missions, fill tester slots, and keep studies moving without delays.
           </p>
         </div>
 
-        <div className="rounded-card border border-[#ece6df] bg-white p-6 dark:border-gray-700 dark:bg-gray-900/70">
-          <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">How it works today</div>
-          <div className="mt-4 space-y-3 text-sm text-[#6b687a] dark:text-gray-400">
-            <p>Choose a pack below to add credits to your founder wallet.</p>
-            <p>Coins are available immediately after a successful beta purchase response.</p>
-            <p>This environment does not yet run a verified Razorpay checkout flow, so payment availability depends on feature flags.</p>
+        <div className="rounded-card border border-primary/30 bg-gradient-to-br from-primary/20 to-primary/5 p-6">
+          <h3 className="text-xl font-black text-white">Instant Power Refresh</h3>
+          <p className="mt-2 text-sm text-text-muted">Auto-refill triggered at 5,000 coins.</p>
+          <button className="mt-6 w-full rounded-[2rem] bg-gradient-to-r from-[#F97C5A] to-[#E45D43] py-2.5 text-sm font-black text-white hover:shadow-[0_8px_24px_rgba(249,124,90,0.35)] transition-all">
+            MANAGE AUTO-PAY
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-black text-white">Acquire More Power</h3>
+            <p className="text-sm text-text-muted">Scale your architectural precision with high-density coin bundles.</p>
+          </div>
+          <div className="flex rounded-xl border border-border-subtle overflow-hidden">
+            <button className="px-4 py-1.5 text-xs font-bold bg-primary/10 text-primary">ONE-TIME</button>
+            <button className="px-4 py-1.5 text-xs font-bold text-text-muted hover:text-text-main">MONTHLY</button>
           </div>
         </div>
       </div>
@@ -267,7 +308,7 @@ export function FounderWalletsTab({
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
+      <div className="mt-6 rounded-2xl border border-amber-900/50 bg-amber-950/30 p-4 text-sm text-amber-300">
         <strong>Beta notice:</strong> Real Razorpay checkout is not wired in this environment yet. If a purchase fails, you will now land on a dedicated retry-and-support state instead of only seeing a transient banner.
       </div>
     </section>

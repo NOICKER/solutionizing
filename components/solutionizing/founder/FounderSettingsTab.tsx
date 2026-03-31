@@ -7,7 +7,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
-const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-[#ece6df] disabled:bg-[#f6f1ec] disabled:text-[#8a8693] disabled:opacity-100 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`
+const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-surface-elevated disabled:text-text-muted disabled:opacity-100`
 const transactionDateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',
@@ -39,7 +39,7 @@ interface FounderProfileResponse {
 
 function ComingSoonBadge() {
   return (
-    <span className="inline-flex rounded-full border border-[#ddd7d0] bg-[#f5f2ee] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#7f7986] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+    <span className="inline-flex rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">
       Coming Soon
     </span>
   )
@@ -60,12 +60,12 @@ function SettingsSectionCard({
 }) {
   return (
     <section
-      className={`rounded-card border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      className={`rounded-card border border-border-subtle bg-surface p-6 ${className}`}
     >
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{title}</h3>
-          <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">{description}</p>
+          <h3 className="text-lg font-black text-white">{title}</h3>
+          <p className="mt-2 max-w-2xl text-sm text-text-muted">{description}</p>
         </div>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
@@ -88,11 +88,11 @@ function SettingsField({
   return (
     <label className="block space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">{label}</span>
+        <span className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">{label}</span>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
       {children}
-      {hint ? <span className="block text-sm text-[#8c8897] dark:text-gray-400">{hint}</span> : null}
+      {hint ? <span className="block text-sm text-text-muted">{hint}</span> : null}
     </label>
   )
 }
@@ -113,10 +113,10 @@ function NotificationToggleRow({
   ariaLabel?: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-4 dark:border-gray-700 dark:bg-gray-900/60">
+    <div className="flex items-center justify-between gap-4 rounded-card border border-border-subtle bg-surface-elevated px-4 py-4">
       <div>
-        <div className="text-sm font-bold text-[#1a1625] dark:text-white">{title}</div>
-        <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">{description}</div>
+        <div className="text-sm font-bold text-white">{title}</div>
+        <div className="mt-1 text-sm text-text-muted">{description}</div>
       </div>
       <button
         type="button"
@@ -126,12 +126,12 @@ function NotificationToggleRow({
         aria-label={ariaLabel ?? `Toggle ${title} notifications`}
         className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border px-1 transition-colors ${
           checked
-            ? 'border-[#d77a57] bg-[#f2c8b6]'
-            : 'border-[#e2dbd4] bg-[#efe9e2] dark:border-gray-600 dark:bg-gray-700'
+            ? 'border-primary bg-primary/30'
+            : 'border-border-subtle bg-surface'
         } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
       >
         <span
-          className={`h-5 w-5 rounded-full bg-white shadow-[0_6px_16px_-12px_rgba(26,22,37,0.55)] transition-transform ${
+          className={`h-5 w-5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
         />
@@ -447,10 +447,10 @@ export function FounderSettingsTab({
   }
 
   return (
-    <section className="rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6">
+    <section className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-6">
       <div className="mb-8">
-        <h2 className="text-2xl font-black text-[#1a1625] dark:text-white">Account Settings</h2>
-        <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">
+        <h2 className="text-2xl font-black text-white">Account Settings</h2>
+        <p className="mt-2 max-w-2xl text-sm text-text-muted">
           Manage your founder profile, mission defaults, billing, and notifications from one place.
         </p>
       </div>
@@ -480,7 +480,7 @@ export function FounderSettingsTab({
                 className={isLoadingProfile || isSavingProfile ? settingsFieldClass : textFieldClass}
               />
             </SettingsField>
-            {profileError ? <p className="text-sm text-[#c4673f]">{profileError}</p> : null}
+            {profileError ? <p className="text-sm text-red-400">{profileError}</p> : null}
             <button
               type="button"
               onClick={handleSaveProfile}
@@ -518,9 +518,9 @@ export function FounderSettingsTab({
               >
                 {isSendingResetLink ? 'Sending Reset Link...' : 'Change Password'}
               </button>
-              {passwordResetMessage ? <p className="text-sm text-[#2f7a4b]">{passwordResetMessage}</p> : null}
+              {passwordResetMessage ? <p className="text-sm text-emerald-400">{passwordResetMessage}</p> : null}
               {passwordResetError ? (
-                <p className="text-sm text-[#c4673f]">{passwordResetError}</p>
+                <p className="text-sm text-red-400">{passwordResetError}</p>
               ) : null}
             </div>
           </div>
@@ -544,10 +544,10 @@ export function FounderSettingsTab({
               </select>
             </SettingsField>
             <SettingsField label="Default Number Of Testers" hint="Choose how many testers should be pre-filled by default.">
-              <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] p-4 dark:border-gray-700 dark:bg-gray-900/60">
+              <div className="rounded-card border border-border-subtle bg-surface-elevated p-4">
                 <div className="mb-3 flex items-center justify-between text-sm">
-                  <span className="font-bold text-[#1a1625] dark:text-white">{defaultTestersRequired} testers</span>
-                  <span className="text-[#9b98a8] dark:text-gray-400">5 to 50</span>
+                  <span className="font-bold text-white">{defaultTestersRequired} testers</span>
+                  <span className="text-text-muted">5 to 50</span>
                 </div>
                 <input
                   type="range"
@@ -556,16 +556,16 @@ export function FounderSettingsTab({
                   value={defaultTestersRequired}
                   onChange={(event) => setDefaultTestersRequired(Number(event.target.value))}
                   disabled={isLoadingProfile || isSavingMissionDefaults || !hasLoadedProfile}
-                  className="w-full accent-[#d77a57]"
+                  className="w-full accent-primary"
                 />
-                <div className="mt-3 flex justify-between text-xs font-semibold uppercase tracking-[0.14em] text-[#9b98a8] dark:text-gray-400">
+                <div className="mt-3 flex justify-between text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
                   <span>Lean</span>
                   <span>Balanced</span>
                   <span>Broad</span>
                 </div>
               </div>
             </SettingsField>
-            {missionDefaultsError ? <p className="text-sm text-[#c4673f]">{missionDefaultsError}</p> : null}
+            {missionDefaultsError ? <p className="text-sm text-red-400">{missionDefaultsError}</p> : null}
             <button
               type="button"
               onClick={handleSaveMissionDefaults}
@@ -581,32 +581,32 @@ export function FounderSettingsTab({
           title="Billing"
           description="Review coin purchases and future billing activity for your founder account."
         >
-          <div className="rounded-[1.75rem] border border-dashed border-[#e5ded7] bg-[#faf6f2] p-6 dark:border-gray-700 dark:bg-gray-900/60">
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Coin Purchase History</div>
-            <div className="mt-4 rounded-card border border-[#efe8e1] bg-white/80 dark:border-gray-700 dark:bg-gray-900/70">
+          <div className="rounded-[1.75rem] border border-dashed border-border-subtle bg-surface-elevated p-6">
+            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">Coin Purchase History</div>
+            <div className="mt-4 rounded-card border border-border-subtle bg-surface">
               {isLoadingTransactions ? (
-                <div className="px-4 py-8 text-center text-sm text-[#6b687a] dark:text-gray-400">Loading purchase history...</div>
+                <div className="px-4 py-8 text-center text-sm text-text-muted">Loading purchase history...</div>
               ) : transactionsError ? (
-                <div className="px-4 py-8 text-center text-sm text-[#c4673f]">{transactionsError}</div>
+                <div className="px-4 py-8 text-center text-sm text-red-400">{transactionsError}</div>
               ) : transactions.length === 0 ? (
-                <div className="px-4 py-8 text-center text-sm text-[#6b687a] dark:text-gray-400">
+                <div className="px-4 py-8 text-center text-sm text-text-muted">
                   Your purchase history will appear here
                 </div>
               ) : (
-                <ul className="divide-y divide-[#efe8e1] dark:divide-gray-700">
+                <ul className="divide-y divide-border-subtle">
                   {transactions.map((transaction) => (
                     <li
                       key={transaction.id}
                       className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
-                        <div className="text-sm font-bold text-[#1a1625] dark:text-white">{transaction.description}</div>
-                        <div className="mt-1 text-sm text-[#8c8897] dark:text-gray-400">
+                        <div className="text-sm font-bold text-white">{transaction.description}</div>
+                        <div className="mt-1 text-sm text-text-muted">
                           {transactionDateFormatter.format(new Date(transaction.createdAt))}
                         </div>
                       </div>
                       <div
-                        className={`text-sm font-bold ${transaction.amount >= 0 ? 'text-[#2f7a4b]' : 'text-[#c4673f]'}`}
+                        className={`text-sm font-bold ${transaction.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                       >
                         {transaction.amount >= 0 ? '+' : '-'}
                         {formatCoins(Math.abs(transaction.amount))} coins
@@ -631,7 +631,7 @@ export function FounderSettingsTab({
               onToggle={toggleDarkMode}
               ariaLabel="Toggle dark mode"
             />
-            {notificationError ? <p className="text-sm text-[#c4673f]">{notificationError}</p> : null}
+            {notificationError ? <p className="text-sm text-red-400">{notificationError}</p> : null}
             <NotificationToggleRow
               title="Mission approved"
               description="Receive a notification when your mission clears review."
@@ -659,11 +659,11 @@ export function FounderSettingsTab({
         <SettingsSectionCard
           title="Danger Zone"
           description="Once you delete your account, there is no going back. Please be certain."
-          className="border-red-100 bg-red-50/50 dark:border-red-900/70 dark:bg-red-950/30 xl:col-span-2"
+          className="border-red-900/60 bg-red-950/20 xl:col-span-2"
         >
           <button
             onClick={onOpenDeleteModal}
-            className="rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-700"
+            className="rounded-xl bg-red-700 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-600"
           >
             DELETE ACCOUNT
           </button>

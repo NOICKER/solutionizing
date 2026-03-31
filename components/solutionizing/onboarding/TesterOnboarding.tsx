@@ -73,31 +73,31 @@ function BankingDetailsStepSkeleton() {
   return (
     <div className="animate-pulse space-y-8">
       <div className="max-w-2xl space-y-3">
-        <div className="h-5 w-32 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
-        <div className="h-10 w-full max-w-xl rounded-3xl bg-[#f5ede7] dark:bg-gray-800" />
-        <div className="h-5 w-full max-w-2xl rounded-full bg-[#f2e7df] dark:bg-gray-900" />
+        <div className="h-5 w-32 rounded-full bg-surface-elevated" />
+        <div className="h-10 w-full max-w-xl rounded-3xl bg-surface-elevated" />
+        <div className="h-5 w-full max-w-2xl rounded-full bg-surface-elevated" />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-6 dark:border-gray-800 dark:bg-gray-950/60">
+      <div className="rounded-[1.75rem] border border-border-subtle bg-surface p-6">
         <div className="space-y-4">
-          <div className="h-4 w-40 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
-          <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+          <div className="h-4 w-40 rounded-full bg-border-subtle" />
+          <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-3">
-              <div className="h-4 w-32 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
-              <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+              <div className="h-4 w-32 rounded-full bg-border-subtle" />
+              <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
             </div>
             <div className="space-y-3">
-              <div className="h-4 w-24 rounded-full bg-[#f2e7df] dark:bg-gray-800" />
-              <div className="h-14 rounded-[1.5rem] bg-[#f5ede7] dark:bg-gray-900" />
+              <div className="h-4 w-24 rounded-full bg-border-subtle" />
+              <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60">
-        <div className="h-4 w-full max-w-xl rounded-full bg-[#f2e7df] dark:bg-gray-800" />
-        <div className="mt-3 h-4 w-full max-w-lg rounded-full bg-[#f2e7df] dark:bg-gray-900" />
+      <div className="rounded-[1.75rem] border border-border-subtle bg-surface p-5">
+        <div className="h-4 w-full max-w-xl rounded-full bg-border-subtle" />
+        <div className="mt-3 h-4 w-full max-w-lg rounded-full bg-border-subtle" />
       </div>
     </div>
   )
@@ -254,7 +254,7 @@ export function TesterOnboarding({
   }
 
   const footer = (
-    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-[#efe8e1] pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
@@ -302,19 +302,19 @@ export function TesterOnboarding({
     <OnboardingShell step={step} totalSteps={5}>
       {step === 1 ? (
         <div className="space-y-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#fff4ef] px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-primary">
             <span className="material-symbols-outlined text-base">verified_user</span>
             Tester setup
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white sm:text-5xl">
+            <h1 className="text-4xl font-black tracking-tight text-text-main sm:text-5xl">
               Welcome to Solutionizing{initialDisplayName.trim() ? `, ${initialDisplayName.trim()}` : ''}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               Test real products, give real feedback, and earn coins you can withdraw as cash.
             </p>
           </div>
-          {errorMessage ? <p className="text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="text-sm text-red-500">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button
               type="button"
@@ -332,8 +332,8 @@ export function TesterOnboarding({
       {step === 2 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Here&apos;s how it works</h1>
-            <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">Here&apos;s how it works</h1>
+            <p className="mt-3 text-lg leading-8 text-text-muted">
               The platform is built to get you into the right missions quickly and reward strong feedback.
             </p>
           </div>
@@ -342,26 +342,26 @@ export function TesterOnboarding({
             {testerHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60"
+                className="flex gap-4 rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-5"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
                   {index < testerHowItWorks.length - 1 ? (
-                    <div className="h-full w-px bg-[#ead8cf] dark:bg-gray-800" />
+                    <div className="h-full w-px bg-border-subtle" />
                   ) : null}
                 </div>
                 <div className="pt-1">
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-text-muted">
                     Step {index + 1}
                   </div>
-                  <h2 className="mt-2 text-xl font-black text-[#1a1625] dark:text-white">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-[#6b687a] dark:text-gray-400">{item.description}</p>
+                  <h2 className="mt-2 text-xl font-black text-text-main">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-7 text-text-muted">{item.description}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -369,8 +369,8 @@ export function TesterOnboarding({
       {step === 3 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Set up your tester profile</h1>
-            <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+            <h1 className="text-4xl font-black tracking-tight text-text-main">Set up your tester profile</h1>
+            <p className="mt-3 text-lg leading-8 text-text-muted">
               Pick the spaces where your feedback is strongest and tell us the devices you use most.
             </p>
           </div>
@@ -378,10 +378,10 @@ export function TesterOnboarding({
           <div className="mt-8 grid gap-8">
             <section className="space-y-4">
               <div>
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                   Expertise Tags
                 </div>
-                <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+                <p className="mt-2 text-sm text-text-muted">
                   Highlight the kinds of products and spaces where your feedback is strongest.
                 </p>
               </div>
@@ -398,8 +398,8 @@ export function TesterOnboarding({
                       aria-pressed={active}
                       className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all ${
                         active
-                          ? 'border-[#d77a57] bg-[#fff4ef] text-[#a85034] dark:bg-[#d77a57]/10'
-                          : 'border-[#efe8e1] bg-[#fffdfa] text-[#6b687a] hover:border-[#dfcfc2] hover:text-[#1a1625] dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border-subtle bg-surface text-text-muted hover:border-border hover:text-text-main'
                       }`}
                     >
                       {tag}
@@ -408,15 +408,15 @@ export function TesterOnboarding({
                 })}
               </div>
 
-              <div className="text-sm text-[#8c8897] dark:text-gray-400">{expertiseTags.length}/10 tags selected.</div>
+              <div className="text-sm text-text-muted">{expertiseTags.length}/10 tags selected.</div>
             </section>
 
             <section className="space-y-4">
               <div>
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                   Device Profile
                 </div>
-                <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+                <p className="mt-2 text-sm text-text-muted">
                   Choose the setup you use most often so new missions can be matched to the right context.
                 </p>
               </div>
@@ -436,19 +436,21 @@ export function TesterOnboarding({
                       aria-pressed={active}
                       className={`rounded-2xl border px-4 py-4 text-left transition-all ${
                         active
-                          ? 'border-[#d77a57] bg-[#fff4ef] shadow-[0_20px_40px_-34px_rgba(215,122,87,0.7)] dark:bg-[#d77a57]/10'
-                          : 'border-[#efe8e1] bg-[#fffdfa] hover:border-[#dfcfc2] hover:bg-white dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600 dark:hover:bg-gray-800'
+                          ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/20'
+                          : 'border-border-subtle bg-surface hover:border-border hover:bg-surface-elevated'
                       }`}
                     >
                       <span
-                        className={`material-symbols-outlined !mb-4 !text-[1.65rem] ${
-                          active ? 'text-[#d77a57]' : 'text-[#8b8797]'
+                        className={`material-symbols-outlined text-3xl transition-colors ${
+                          active ? 'text-primary' : 'text-text-muted'
                         }`}
                       >
                         {option.glyph}
                       </span>
-                      <div className="text-sm font-black text-[#1a1625] dark:text-white">{option.label}</div>
-                      <div className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{option.description}</div>
+                      <div>
+                        <div className="text-sm font-black text-text-main">{option.label}</div>
+                        <div className="mt-2 text-sm leading-6 text-text-muted">{option.description}</div>
+                      </div>
                     </button>
                   )
                 })}
@@ -456,7 +458,7 @@ export function TesterOnboarding({
             </section>
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -467,27 +469,27 @@ export function TesterOnboarding({
         ) : (
           <div>
             <div className="max-w-2xl">
-              <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">Add your banking details</h1>
-              <p className="mt-3 text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+              <h1 className="text-4xl font-black tracking-tight text-text-main">Add your banking details</h1>
+              <p className="mt-3 text-lg leading-8 text-text-muted">
                 These details are used only for tester withdrawals so payouts can be processed without chasing you later.
               </p>
             </div>
 
             <div className="mt-8 grid gap-6">
-              <section className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-6 dark:border-gray-800 dark:bg-gray-950/60">
+              <section className="rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-6">
                 <div className="space-y-5">
                   <div>
-                    <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">
+                    <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
                       Bank transfer details
                     </div>
-                    <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+                    <p className="mt-2 text-sm text-text-muted">
                       Enter the bank account where you want your withdrawals sent.
                     </p>
                   </div>
 
                   <div className="grid gap-4">
                     <div>
-                      <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                      <label className="mb-2 block text-sm font-bold text-text-main">
                         Account Holder Name
                       </label>
                       <input
@@ -499,13 +501,13 @@ export function TesterOnboarding({
                         className={textFieldClass}
                       />
                       {getVisibleBankFieldError('accountHolderName') ? (
-                        <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('accountHolderName')}</p>
+                        <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('accountHolderName')}</p>
                       ) : null}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                        <label className="mb-2 block text-sm font-bold text-text-main">
                           Account Number
                         </label>
                         <input
@@ -518,12 +520,12 @@ export function TesterOnboarding({
                           className={textFieldClass}
                         />
                         {getVisibleBankFieldError('accountNumber') ? (
-                          <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('accountNumber')}</p>
+                          <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('accountNumber')}</p>
                         ) : null}
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-bold text-[#1a1625] dark:text-white">
+                        <label className="mb-2 block text-sm font-bold text-text-main">
                           IFSC Code
                         </label>
                         <input
@@ -535,7 +537,7 @@ export function TesterOnboarding({
                           className={textFieldClass}
                         />
                         {getVisibleBankFieldError('ifscCode') ? (
-                          <p className="mt-2 text-sm text-[#c4673f]">{getVisibleBankFieldError('ifscCode')}</p>
+                          <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('ifscCode')}</p>
                         ) : null}
                       </div>
                     </div>
@@ -543,12 +545,12 @@ export function TesterOnboarding({
                 </div>
               </section>
 
-              <section className="rounded-[1.75rem] border border-[#efe8e1] bg-[#fffdfa] p-5 dark:border-gray-800 dark:bg-gray-950/60">
-                <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[#d77a57]">shield_lock</span>
-                  <div>
-                    <div className="text-sm font-black text-[#1a1625] dark:text-white">Security reassurance</div>
-                    <p className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">
+              <section className="rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-5">
+                <div className="flex items-start gap-4">
+                  <span className="material-symbols-outlined text-primary">shield_lock</span>
+                  <div className="pt-1">
+                    <div className="text-sm font-black text-text-main">Security reassurance</div>
+                    <p className="mt-2 text-sm leading-6 text-text-muted">
                       Your banking details are encrypted at rest and used only when a withdrawal is processed. They are not shown to founders and are never included in mission data.
                     </p>
                   </div>
@@ -556,24 +558,24 @@ export function TesterOnboarding({
               </section>
             </div>
 
-            {errorMessage ? <p className="mt-6 text-sm text-[#c4673f]">{errorMessage}</p> : null}
+            {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
             {footer}
           </div>
         )
       ) : null}
 
       {step === 5 ? (
-        <div className="space-y-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff4ef] text-[#d97757] dark:bg-[#d97757]/10 dark:text-[#f2b29d]">
-            <span className="material-symbols-outlined !text-[2.6rem]">check_circle</span>
+        <div className="space-y-8 text-center mt-10">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <span className="material-symbols-outlined text-4xl">check_circle</span>
           </div>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-[#1a1625] dark:text-white">You&apos;re all set!</h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-[#6b687a] dark:text-gray-400">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               We&apos;ll match you with missions that fit your skills. Keep your availability on to get notified.
             </p>
           </div>
-          {errorMessage ? <p className="text-sm text-[#c4673f]">{errorMessage}</p> : null}
+          {errorMessage ? <p className="text-sm text-red-500">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button
               type="button"

@@ -53,13 +53,13 @@ function SidebarNavItem({
   onClick?: () => void
 }) {
   const className = active
-    ? 'flex items-center gap-3 rounded-2xl bg-[#f7ede8] px-4 py-3 text-sm font-bold text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#d77a57]'
-    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-[#6b687a] transition-colors hover:bg-[#f6f1ec] hover:text-[#1a1625] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
+    ? 'flex items-center gap-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-bold text-primary'
+    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-main'
 
   if (href) {
     return (
       <Link href={href} className={className}>
-        <GlyphChip className={active ? 'bg-[#f3ddd3] text-[#d77a57] dark:bg-[#d77a57]/30 dark:text-[#d77a57]' : 'bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400'}>
+        <GlyphChip className={active ? 'bg-primary/20 text-primary' : 'bg-surface-elevated text-text-muted'}>
           {glyph}
         </GlyphChip>
         {label}
@@ -70,11 +70,11 @@ function SidebarNavItem({
   return (
     <button
       type="button"
-      className={`${className} w-full text-left ${disabled ? 'cursor-default text-[#a39ead] hover:bg-transparent hover:text-[#a39ead] dark:text-gray-500 dark:hover:text-gray-500' : ''}`}
+      className={`${className} w-full text-left ${disabled ? 'cursor-default text-text-muted/50 hover:bg-transparent hover:text-text-muted/50' : ''}`}
       onClick={disabled ? undefined : onClick}
       aria-disabled={disabled ? 'true' : undefined}
     >
-      <GlyphChip className={active ? 'bg-[#f3ddd3] text-[#d77a57] dark:bg-[#d77a57]/30 dark:text-[#d77a57]' : 'bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400'}>
+      <GlyphChip className={active ? 'bg-primary/20 text-primary' : 'bg-surface-elevated text-text-muted'}>
         {glyph}
       </GlyphChip>
       {label}
@@ -95,10 +95,10 @@ function GetStartedChecklist({
   const step2Complete = missionsCount > 0
 
   return (
-    <div className="rounded-3xl border border-[#e5e4e0] bg-white p-8 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-3xl border border-border-subtle bg-surface p-8">
       <div className="mb-8">
-        <h2 className="mb-2 text-2xl font-black text-[#1a1625] dark:text-white">Get started with Solutionizing</h2>
-        <p className="text-[#6b687a] dark:text-gray-400">Three steps to your first insight</p>
+        <h2 className="mb-2 text-2xl font-black text-white">Get started with Solutionizing</h2>
+        <p className="text-text-muted">Three steps to your first insight</p>
       </div>
 
       <div className="space-y-6">
@@ -108,19 +108,19 @@ function GetStartedChecklist({
             {step1Complete ? (
               <CheckCircle2 className="h-6 w-6 text-green-500" />
             ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#d77a57] bg-white text-xs font-bold text-[#d77a57]">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-surface text-xs font-bold text-primary">
                 1
               </div>
             )}
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[#1a1625] dark:text-white">Buy coins</div>
-            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+            <div className="font-semibold text-white">Buy coins</div>
+            <p className="mt-1 text-sm text-text-muted">
               {step1Complete ? 'Coins purchased ✓' : 'Get coins to fund your first mission'}
             </p>
           </div>
           {!step1Complete && (
-            <button className="mt-1 flex-shrink-0 text-sm font-bold text-[#d77a57] transition-colors hover:text-[#c4673f]" onClick={onBuyCoins}>
+            <button className="mt-1 flex-shrink-0 text-sm font-bold text-primary transition-colors hover:text-primary-hover" onClick={onBuyCoins}>
               Buy Coins →
             </button>
           )}
@@ -132,19 +132,19 @@ function GetStartedChecklist({
             {step2Complete ? (
               <CheckCircle2 className="h-6 w-6 text-green-500" />
             ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#d77a57] bg-white text-xs font-bold text-[#d77a57]">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-surface text-xs font-bold text-primary">
                 2
               </div>
             )}
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[#1a1625] dark:text-white">Create your first mission</div>
-            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+            <div className="font-semibold text-white">Create your first mission</div>
+            <p className="mt-1 text-sm text-text-muted">
               {step2Complete ? 'Mission created ✓' : 'Launch your first mission to get feedback'}
             </p>
           </div>
           {!step2Complete && (
-            <Link href="/mission/wizard" className="mt-1 flex-shrink-0 rounded-2xl bg-gradient-to-r from-[#d77a57] to-[#c4673f] px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg">
+            <Link href="/mission/wizard" className="mt-1 flex-shrink-0 rounded-2xl bg-gradient-to-r from-primary to-primary-hover px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg">
               Create Mission →
             </Link>
           )}
@@ -153,11 +153,11 @@ function GetStartedChecklist({
         {/* Step 3: Get feedback */}
         <div className="flex items-start gap-4 opacity-50">
           <div className="flex-shrink-0">
-            <Circle className="h-6 w-6 text-[#d77a57]" />
+            <Circle className="h-6 w-6 text-primary" />
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[#1a1625] dark:text-white">Get feedback</div>
-            <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">Launches after your mission is live</p>
+            <div className="font-semibold text-white">Get feedback</div>
+            <p className="mt-1 text-sm text-text-muted">Launches after your mission is live</p>
           </div>
         </div>
       </div>
@@ -425,17 +425,17 @@ function FounderDashboardContent() {
         : 'Keep your launches, reviews, and completed studies moving from one place. Everything below is powered by your live mission data.'
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] px-4 py-4 dark:bg-gray-900 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background px-4 py-4 sm:px-6 lg:px-8 text-text-main">
       <PageLoadingBar isLoading={isLoading} />
       <div className="mx-auto grid max-w-[1600px] gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-[#ece6df] lg:bg-white/90 lg:p-5 lg:shadow-[0_30px_80px_-52px_rgba(26,22,37,0.32)] dark:lg:border-gray-700 dark:lg:bg-gray-800">
-          <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-[#fcf6f2] px-4 py-4 dark:bg-gray-900/80">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] shadow-[0_18px_35px_-18px_rgba(215,122,87,0.75)]">
+        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-border-subtle lg:bg-surface lg:p-5">
+          <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-surface-elevated px-4 py-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97C5A] to-[#E45D43] shadow-[0_18px_35px_-18px_rgba(249,124,90,0.4)]">
               <BrandMark className="h-7 w-7 text-white" />
             </div>
             <div>
-              <div className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-[#9b98a8] dark:text-gray-400">Solutionizing</div>
-              <div className="mt-1 text-base font-black text-[#1a1625] dark:text-white">Founder Hub</div>
+              <div className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-text-muted">Obsidian</div>
+              <div className="mt-1 text-base font-black text-white">Precision Core</div>
             </div>
           </div>
 
@@ -455,20 +455,20 @@ function FounderDashboardContent() {
             })}
           </nav>
 
-          <div className="mt-auto rounded-[1.75rem] border border-[#ece6df] bg-[#fffdfa] p-4 dark:border-gray-700 dark:bg-gray-900/70">
+          <div className="mt-auto rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-4">
             <div className="flex items-center gap-3">
-              <GlyphChip className="bg-[#f7ede8] text-[#d77a57]">{userInitials}</GlyphChip>
+              <GlyphChip className="bg-primary/20 text-primary">{userInitials}</GlyphChip>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-black text-[#1a1625] dark:text-white">{userName}</div>
-                <div className="text-xs font-medium uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">Founder</div>
+                <div className="truncate text-sm font-black text-white">{userName}</div>
+                <div className="text-xs font-medium uppercase tracking-[0.18em] text-text-muted">Founder</div>
               </div>
             </div>
             <button
               type="button"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-[#ece6df] px-4 py-3 text-sm font-bold text-[#6b687a] transition-colors hover:bg-[#f5f1ed] hover:text-[#1a1625] dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface hover:text-text-main"
               onClick={() => void signOut()}
             >
-              <GlyphChip className="h-8 w-8 bg-[#f6f1ec] text-[#8b8797] dark:bg-gray-800 dark:text-gray-400">
+              <GlyphChip className="h-8 w-8 bg-surface text-text-muted">
                 <LogOut className="h-4 w-4" />
               </GlyphChip>
               Log out
@@ -477,40 +477,39 @@ function FounderDashboardContent() {
         </aside>
 
         <main className="min-w-0 pb-28 lg:pb-0">
-          <div className="relative overflow-hidden rounded-panel border border-[#ece6df] bg-white/75 p-5 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.2)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/90 sm:p-6 lg:p-8">
-            <div className="pointer-events-none absolute -right-20 top-0 h-72 w-72 rounded-full bg-[#f7dfd3] opacity-55 blur-3xl dark:bg-[#d77a57]/20" />
-            <div className="pointer-events-none absolute bottom-8 left-0 h-64 w-64 rounded-full bg-[#f5f0eb] opacity-90 blur-3xl dark:bg-gray-900" />
+          <div className="relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-5 sm:p-6 lg:p-8">
+            <div className="pointer-events-none absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
 
             <div className="relative z-10">
               <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
                 <div className="max-w-3xl">
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#eee5df] bg-white/85 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:border-gray-700 dark:bg-gray-900/80 dark:text-gray-400">
-                    <BrandMark className="h-3.5 w-3.5 text-[#d77a57]" />
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">
+                    <BrandMark className="h-3.5 w-3.5 text-primary" />
                     {headerLabel}
                   </div>
-                  <h1 className="text-3xl font-black leading-tight text-[#1a1625] dark:text-white sm:text-4xl">
-                    Welcome back, <span className="text-[#d77a57]">{userName}</span>
+                  <h1 className="text-3xl font-black leading-tight text-white sm:text-4xl">
+                    Welcome back, <span className="text-primary">{userName}</span>
                   </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6b687a] dark:text-gray-400 sm:text-base">{headerDescription}</p>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base">{headerDescription}</p>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-end">
                   {isBalanceLoading ? (
                     <CoinBalanceSkeleton />
                   ) : (
-                    <div className="flex items-center gap-3 rounded-[1.7rem] border border-[#ece6df] bg-white/95 px-4 py-3 shadow-[0_18px_40px_-28px_rgba(26,22,37,0.18)] dark:border-gray-700 dark:bg-gray-900/80">
-                      <GlyphChip className="bg-amber-50 text-amber-500">C</GlyphChip>
+                    <div className="flex items-center gap-3 rounded-[1.7rem] border border-border-subtle bg-surface-elevated px-4 py-3">
+                      <GlyphChip className="bg-primary/20 text-primary">C</GlyphChip>
                       <div>
-                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">Coin balance</div>
+                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Architectural Capital</div>
                         <div className="mt-1 flex items-baseline gap-2">
-                          <span className="text-2xl font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</span>
-                          <span className="text-sm font-medium text-[#9b98a8] dark:text-gray-400">~ Rs {(coinBalance / 100).toFixed(0)}</span>
+                          <span className="text-2xl font-black text-white">{formatCoins(coinBalance)} coins</span>
+                          <span className="text-sm font-medium text-text-muted">~ Rs {(coinBalance / 100).toFixed(0)}</span>
                         </div>
                       </div>
                     </div>
                   )}
                   <button className={`px-5 py-3 text-sm ${primaryButtonClass}`} onClick={() => setActiveTab('wallets')}>
-                    BUY COINS +
+                    Deploy +
                   </button>
                   <ThemeToggleButton />
                 </div>
@@ -574,7 +573,7 @@ function FounderDashboardContent() {
         </main>
       </div>
 
-      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-panel border border-[#ece6df] bg-white/95 px-2 py-2 shadow-[0_30px_80px_-52px_rgba(26,22,37,0.3)] backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 lg:hidden">
+      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-panel border border-border-subtle bg-surface-elevated px-2 py-2 lg:hidden">
         {founderNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
@@ -586,15 +585,15 @@ function FounderDashboardContent() {
               onClick={() => setActiveTab(item.id)}
               className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
                 isActive
-                  ? 'bg-[#f5ede7] text-[#D97757] dark:bg-[#d77a57]/20 dark:text-[#D97757]'
-                  : 'text-[#6e6882] hover:bg-[#f8f3ef] dark:text-gray-400 dark:hover:bg-gray-700'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-muted hover:bg-surface hover:text-text-main'
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
                   isActive
-                    ? 'bg-[#f3ddd3] text-[#D97757] dark:bg-[#d77a57]/30 dark:text-[#D97757]'
-                    : 'bg-[#f3efe8] text-[#6b6477] dark:bg-gray-700 dark:text-gray-300'
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-surface text-text-muted'
                 }`}
               >
                 <Icon className="h-5 w-5" />

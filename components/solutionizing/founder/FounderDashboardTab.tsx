@@ -60,16 +60,16 @@ function StatCard({
   isLoading: boolean
 }) {
   return (
-    <div className="rounded-card border border-[#ece6df] bg-white/95 p-5 shadow-[0_20px_60px_-42px_rgba(26,22,37,0.28)] dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-card border border-border-subtle bg-surface p-5">
       <div className="mb-4 flex items-center justify-between">
         <DashboardGlyphChip className={className}>{glyph}</DashboardGlyphChip>
-        <div className="rounded-full bg-[#faf5f0] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:bg-gray-900 dark:text-gray-400">
+        <div className="rounded-full bg-surface-elevated px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
           Live
         </div>
       </div>
-      <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">{label}</div>
-      <div className="text-3xl font-black text-[#1a1625] dark:text-white">
-        {isLoading ? <span className="inline-block h-8 w-14 animate-pulse rounded-xl bg-[#f1ebe5] dark:bg-gray-700" /> : value}
+      <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.2em] text-text-muted">{label}</div>
+      <div className="text-3xl font-black text-white">
+        {isLoading ? <span className="inline-block h-8 w-14 animate-pulse rounded-xl bg-surface-elevated" /> : value}
       </div>
     </div>
   )
@@ -88,10 +88,10 @@ function RecentMissionCard({
     <Link
       href={href}
       aria-label={`Open ${mission.title}`}
-      className="group block rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] transition-all hover:-translate-y-0.5 hover:bg-[#fdf9f7] hover:shadow-[0_24px_50px_-32px_rgba(26,22,37,0.24)] focus:outline-none focus:ring-2 focus:ring-[#d77a57] focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-700/80 dark:focus:ring-offset-gray-900"
+      className="group block rounded-card border border-border-subtle bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
     >
       <div className="mb-4 flex items-start justify-between gap-4">
-        <h3 className="text-lg font-black text-[#1a1625] transition-colors group-hover:text-[#d77a57] dark:text-white dark:group-hover:text-[#f0a98c]">
+        <h3 className="text-lg font-black text-white transition-colors group-hover:text-primary">
           {mission.title}
         </h3>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -104,20 +104,20 @@ function RecentMissionCard({
 
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="text-[#6b687a] dark:text-gray-400">
+          <span className="text-text-muted">
             {mission.testersCompleted} of {mission.testersRequired} testers
           </span>
-          <span className="font-bold text-[#1a1625] dark:text-white">{Math.round(progress)}%</span>
+          <span className="font-bold text-white">{Math.round(progress)}%</span>
         </div>
-        <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#d77a57] to-[#c4673f]"
+            className="h-full rounded-full bg-gradient-to-r from-[#F97C5A] to-[#E45D43]"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-1 text-sm font-bold text-[#d77a57] transition-colors group-hover:text-[#c4673f] dark:text-[#e8956d] dark:group-hover:text-[#f0a98c]">
+      <div className="flex items-center gap-1 text-sm font-bold text-primary transition-colors group-hover:text-primary-hover">
         View
         <svg
           className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
@@ -172,10 +172,10 @@ export function FounderDashboardTab({
   )
 
   const statsCards = [
-    { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-emerald-50 text-emerald-600' },
-    { label: 'TOTAL MISSIONS', value: missionStats.total, glyph: 'T', className: 'bg-[#faf1eb] text-[#d77a57]' },
-    { label: 'COMPLETED', value: missionStats.completed, glyph: 'C', className: 'bg-sky-50 text-sky-600' },
-    { label: 'DRAFTS', value: missionStats.drafts, glyph: 'D', className: 'bg-amber-50 text-amber-600' },
+    { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-emerald-900/30 text-emerald-300' },
+    { label: 'TOTAL MISSIONS', value: missionStats.total, glyph: 'T', className: 'bg-primary/10 text-primary' },
+    { label: 'COMPLETED', value: missionStats.completed, glyph: 'C', className: 'bg-sky-900/30 text-sky-300' },
+    { label: 'DRAFTS', value: missionStats.drafts, glyph: 'D', className: 'bg-amber-900/30 text-amber-300' },
   ] as const
 
   let content
@@ -231,26 +231,26 @@ export function FounderDashboardTab({
 
       <section
         id="missions-section"
-        className="rounded-panel border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6"
+        className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6"
       >
         <div className="mb-6">
           <div>
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8] dark:text-gray-400">Recent activity</div>
-            <h2 className="mt-2 text-2xl font-black text-[#1a1625] dark:text-white">Recent Missions</h2>
-            <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">A quick look at your three most recent missions.</p>
+            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Pulse</div>
+            <h2 className="mt-2 text-2xl font-black text-white">Recent Missions</h2>
+            <p className="mt-2 max-w-2xl text-sm text-text-muted">A quick look at your three most recent missions.</p>
           </div>
         </div>
 
         {content}
 
         {!isLoading && !loadError ? (
-          <div className="mt-6 flex flex-col gap-3 border-t border-[#ece6df] pt-6 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
             <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
-              + CREATE NEW MISSION
+              + Initialize New Node
             </Link>
             <button
               type="button"
-              className="text-sm font-bold text-[#6b687a] transition-colors hover:text-[#1a1625] hover:underline dark:text-gray-400 dark:hover:text-white"
+              className="text-sm font-bold text-text-muted transition-colors hover:text-text-main hover:underline"
               onClick={onViewAllMissions}
             >
               View all missions
