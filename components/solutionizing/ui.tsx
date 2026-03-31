@@ -130,7 +130,7 @@ export function PageLoadingBar({ isLoading }: { isLoading: boolean }) {
 
   useEffect(() => {
     let animationFrame = 0
-    let fadeTimeout: ReturnType<typeof setTimeout> | undefined
+    let fadeTimeout: number | undefined
 
     if (isLoading) {
       setIsVisible(true)
