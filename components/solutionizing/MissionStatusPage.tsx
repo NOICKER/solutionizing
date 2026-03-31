@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   ConfirmationDialog,
   MissionStatusBadge,
@@ -16,6 +16,288 @@ import {
   SpinnerIcon,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
+
+// ─── Tester Responses Types ───────────────────────────────────────────────────
+
+interface TesterResponseAnswer {
+  id: string
+  questionId: string
+  responseText: string | null
+  responseRating: number | null
+  responseChoice: string | null
+  question: {
+    text: string
+    type: string
+    order: number
+  }
+}
+
+interface TesterResponse {
+  id: string
+  completedAt: string | null
+  coinsEarned: number
+  tester: {
+    displayName: string
+  }
+  responses: TesterResponseAnswer[]
+}
+
+// ─── Answer renderer ──────────────────────────────────────────────────────────
+
+function AnswerDisplay({ answer }: { answer: TesterResponseAnswer }) {
+  const { type } = answer.question
+
+  if (type === 'RATING_1_5' && answer.responseRating !== null) {
+    return (
+      <div className="flex items-center gap-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <span
+            key={i}
+            className={`text-lg ${
+              i < answer.responseRating! ? 'text-amber-400' : 'text-gray-600 dark:text-gray-600'
+            }`}
+          >
+            ★
+          </span>
+        ))}
+        <span className="ml-2 text-sm font-semibold text-amber-400">
+          {answer.responseRating} / 5
+        </span>
+      </div>
+    )
+  }
+
+  if ((type === 'YES_NO' || type === 'MULTIPLE_CHOICE') && answer.responseChoice) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-sm font-semibold text-teal-400">
+        {answer.responseChoice}
+      </span>
+    )
+  }
+
+  if ((type === 'TEXT_SHORT' || type === 'TEXT_LONG') && answer.responseText) {
+    return (
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300 dark:text-gray-300">
+        {answer.responseText}
+      </p>
+    )
+  }
+
+  return <span className="text-sm italic text-gray-500">No answer provided</span>
+}
+
+// ─── Single tester card ───────────────────────────────────────────────────────
+
+function TesterResponseCard({
+  response,
+  index,
+}: {
+  response: TesterResponse
+  index: number
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const initials = response.tester.displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('') || 'T'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06 }}
+      className="overflow-hidden rounded-2xl border border-gray-700/60 bg-gray-800/70 backdrop-blur-sm"
+    >
+      {/* Card header — always visible */}
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-white/5"
+        aria-expanded={isOpen}
+      >
+        {/* Avatar */}
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-sm font-black text-emerald-400">
+          {initials}
+        </div>
+
+        {/* Name + timestamp */}
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-semibold text-white">
+            {response.tester.displayName}
+          </div>
+          <div className="mt-0.5 text-xs text-gray-400">
+            Completed{' '}
+            {response.completedAt
+              ? format(new Date(response.completedAt), 'MMM d, yyyy · h:mm a')
+              : 'Unknown time'}
+          </div>
+        </div>
+
+        {/* Completed badge */}
+        <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Completed
+        </span>
+
+        {/* Chevron */}
+        <svg
+          className={`h-5 w-5 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Expanded answers */}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-4 border-t border-gray-700/50 px-5 py-5">
+              {response.responses.length === 0 ? (
+                <p className="text-sm italic text-gray-500">No answers recorded for this submission.</p>
+              ) : (
+                response.responses.map((answer, ansIdx) => (
+                  <div key={answer.id} className="space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gray-700 text-[0.6rem] font-bold text-gray-300">
+                        {ansIdx + 1}
+                      </span>
+                      <p className="text-sm font-semibold text-gray-200">{answer.question.text}</p>
+                    </div>
+                    <div className="pl-7">
+                      <AnswerDisplay answer={answer} />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+// ─── Full Tester Responses section ────────────────────────────────────────────
+
+function TesterResponsesSection({ missionId, completedCount }: { missionId: string; completedCount: number }) {
+  const [responses, setResponses] = useState<TesterResponse[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadResponses = useCallback(async () => {
+    if (completedCount === 0) return
+    setIsLoading(true)
+    setError('')
+    try {
+      const data = await apiFetch<TesterResponse[]>(`/api/v1/missions/${missionId}/responses`)
+      setResponses(data)
+    } catch (fetchError) {
+      setError(
+        isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'
+          ? 'Check your internet connection'
+          : 'Could not load responses'
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }, [missionId, completedCount])
+
+  useEffect(() => {
+    void loadResponses()
+  }, [loadResponses])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.35 }}
+      className="mt-8 rounded-panel border border-[#ece6df] bg-white/80 p-8 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.22)] backdrop-blur-xl dark:border-gray-700 dark:bg-[#1a1f2e]/90"
+    >
+      {/* Section header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-[#1a1625] dark:text-white">
+            Tester Responses
+          </h2>
+          <p className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+            {completedCount === 0
+              ? 'Responses will appear here as testers complete the mission.'
+              : `${completedCount} tester${completedCount !== 1 ? 's' : ''} completed this mission.`}
+          </p>
+        </div>
+        {completedCount > 0 && (
+          <span className="rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-bold text-emerald-500 dark:bg-emerald-500/15 dark:text-emerald-400">
+            {completedCount} completed
+          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: Math.min(completedCount || 2, 3) }).map((_, i) => (
+            <div
+              key={i}
+              className="h-16 animate-pulse rounded-2xl border border-gray-700/40 bg-gray-800/50 dark:bg-gray-700/30"
+            />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          {error}
+          <button
+            type="button"
+            className="ml-3 font-bold underline"
+            onClick={() => void loadResponses()}
+          >
+            Retry
+          </button>
+        </div>
+      ) : completedCount === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-600/50 bg-gray-800/30 px-8 py-12 text-center dark:bg-[#1e2433]/50">
+          <div className="mb-3 flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-700/50">
+              <svg className="h-7 w-7 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"
+                />
+              </svg>
+            </div>
+          </div>
+          <p className="font-semibold text-gray-300">No responses yet</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Check back once testers complete the mission.
+          </p>
+        </div>
+      ) : responses.length === 0 && !isLoading ? (
+        <div className="rounded-2xl border border-dashed border-gray-600/50 bg-gray-800/30 px-8 py-12 text-center">
+          <p className="text-sm text-gray-500">Response data is loading…</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {responses.map((response, index) => (
+            <TesterResponseCard key={response.id} response={response} index={index} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  )
+}
 
 function MissionStatusPageSkeleton() {
   const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
@@ -400,6 +682,8 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
             {error}
           </motion.p>
         ) : null}
+
+        <TesterResponsesSection missionId={mission.id} completedCount={completedCount} />
       </motion.div>
 
       {dialogType ? (

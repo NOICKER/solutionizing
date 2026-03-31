@@ -88,7 +88,7 @@ function RecentMissionCard({
     <Link
       href={href}
       aria-label={`Open ${mission.title}`}
-      className="group block rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-32px_rgba(26,22,37,0.24)] focus:outline-none focus:ring-2 focus:ring-[#d77a57] focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:focus:ring-offset-gray-900"
+      className="group block rounded-card border border-[#e5e4e0] bg-white p-5 shadow-[0_18px_40px_-34px_rgba(26,22,37,0.18)] transition-all hover:-translate-y-0.5 hover:bg-[#fdf9f7] hover:shadow-[0_24px_50px_-32px_rgba(26,22,37,0.24)] focus:outline-none focus:ring-2 focus:ring-[#d77a57] focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-700/80 dark:focus:ring-offset-gray-900"
     >
       <div className="mb-4 flex items-start justify-between gap-4">
         <h3 className="text-lg font-black text-[#1a1625] transition-colors group-hover:text-[#d77a57] dark:text-white dark:group-hover:text-[#f0a98c]">
@@ -117,8 +117,16 @@ function RecentMissionCard({
         </div>
       </div>
 
-      <div className="text-sm font-bold text-[#d77a57] transition-colors group-hover:text-[#c4673f]">
-        View details
+      <div className="flex items-center gap-1 text-sm font-bold text-[#d77a57] transition-colors group-hover:text-[#c4673f] dark:text-[#e8956d] dark:group-hover:text-[#f0a98c]">
+        View
+        <svg
+          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
       </div>
     </Link>
   )
