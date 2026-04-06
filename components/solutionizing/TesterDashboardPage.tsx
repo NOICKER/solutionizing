@@ -1,5 +1,6 @@
 "use client"
 
+import { ClipboardList, HelpCircle, LogOut, Settings } from 'lucide-react'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
@@ -345,26 +346,26 @@ function TesterDashboardContent() {
               label="Missions"
               active={activeTab === 'missions'}
               onClick={() => setActiveTab('missions')}
-              glyph={<span className="material-symbols-outlined !text-xl">task</span>}
+              glyph={<ClipboardList className="h-5 w-5" />}
             />
             <TabButton
               label="Settings"
               active={activeTab === 'settings'}
               onClick={() => setActiveTab('settings')}
-              glyph={<span className="material-symbols-outlined !text-xl">settings</span>}
+              glyph={<Settings className="h-5 w-5" />}
             />
             <TabButton
               label="Support"
               active={activeTab === 'support'}
               onClick={() => setActiveTab('support')}
-              glyph={<span className="material-symbols-outlined !text-xl">help</span>}
+              glyph={<HelpCircle className="h-5 w-5" />}
             />
             <div className="border-t border-border-subtle pt-4" />
             <TabButton
               label="Sign Out"
               active={false}
               onClick={() => signOut()}
-              glyph={<span className="material-symbols-outlined !text-xl text-red-400">logout</span>}
+              glyph={<LogOut className="h-5 w-5 text-red-400" />}
               className="text-red-400 hover:bg-red-900/20"
             />
           </nav>

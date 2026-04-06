@@ -1,5 +1,6 @@
 "use client"
 
+import { CheckCircle2, Coins, FlaskConical, MessageSquare, Monitor, ShieldCheck, Smartphone, TabletSmartphone, UserSearch } from 'lucide-react'
 import posthog from 'posthog-js'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -36,22 +37,22 @@ interface TesterOnboardingProps {
 
 const testerHowItWorks = [
   {
-    icon: 'person_search',
+    icon: <UserSearch className="h-5 w-5" />,
     title: 'Get matched with missions',
     description: 'We look at your skills and device setup so the right missions reach you first.',
   },
   {
-    icon: 'experiment',
+    icon: <FlaskConical className="h-5 w-5" />,
     title: 'Test the product',
     description: 'Work through the product flow and capture what feels confusing, strong, or broken.',
   },
   {
-    icon: 'forum',
+    icon: <MessageSquare className="h-5 w-5" />,
     title: 'Give structured feedback',
     description: 'Submit clear, actionable answers that founders can actually use.',
   },
   {
-    icon: 'payments',
+    icon: <Coins className="h-5 w-5" />,
     title: 'Earn coins and withdraw',
     description: 'Complete missions, build trust, and cash out the coins you earn.',
   },
@@ -303,7 +304,7 @@ export function TesterOnboarding({
       {step === 1 ? (
         <div className="space-y-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-primary">
-            <span className="material-symbols-outlined text-base">verified_user</span>
+            <ShieldCheck className="h-4 w-4" />
             Tester setup
           </div>
           <div className="space-y-4">
@@ -440,13 +441,12 @@ export function TesterOnboarding({
                           : 'border-border-subtle bg-surface hover:border-border hover:bg-surface-elevated'
                       }`}
                     >
-                      <span
-                        className={`material-symbols-outlined text-3xl transition-colors ${
-                          active ? 'text-primary' : 'text-text-muted'
-                        }`}
-                      >
-                        {option.glyph}
-                      </span>
+                      {(() => {
+                        const iconClass = `h-7 w-7 transition-colors ${active ? 'text-primary' : 'text-text-muted'}`
+                        if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
+                        if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
+                        return <TabletSmartphone className={iconClass} />
+                      })()}
                       <div>
                         <div className="text-sm font-black text-text-main">{option.label}</div>
                         <div className="mt-2 text-sm leading-6 text-text-muted">{option.description}</div>
@@ -547,7 +547,7 @@ export function TesterOnboarding({
 
               <section className="rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-5">
                 <div className="flex items-start gap-4">
-                  <span className="material-symbols-outlined text-primary">shield_lock</span>
+                  <ShieldCheck className="h-6 w-6 text-primary" />
                   <div className="pt-1">
                     <div className="text-sm font-black text-text-main">Security reassurance</div>
                     <p className="mt-2 text-sm leading-6 text-text-muted">
@@ -567,7 +567,7 @@ export function TesterOnboarding({
       {step === 5 ? (
         <div className="space-y-8 text-center mt-10">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <span className="material-symbols-outlined text-4xl">check_circle</span>
+            <CheckCircle2 className="h-10 w-10" />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>

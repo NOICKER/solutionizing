@@ -1,8 +1,9 @@
 "use client"
 
+import { Clock, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { differenceInHours } from 'date-fns'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { differenceInSeconds } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
@@ -12,6 +13,55 @@ import { NotFoundPanel, SpinnerIcon, StarRow, formatCoins, formatRupeesFromCoins
 import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { useAuth } from '@/context/AuthContext'
 import { type FlagReasonValue } from '@/lib/flags'
+
+function formatTimeLeft(totalSeconds: number) {
+  if (totalSeconds <= 0) return '0:00'
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+function TimesUpOverlay({ onReturn }: { onReturn: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+      <div className="mx-4 max-w-lg rounded-3xl border border-red-900/50 bg-gray-900 p-10 text-center shadow-2xl">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-500/20">
+          <Clock className="h-10 w-10 text-red-400" />
+        </div>
+        <h1 className="mb-3 text-3xl font-black text-white">Time&apos;s up!</h1>
+        <p className="mb-8 text-base text-gray-400">Your mission has expired. Any partial answers were not submitted.</p>
+        <button className={`px-10 py-4 text-lg ${primaryButtonClass}`} onClick={onReturn}>
+          RETURN TO DASHBOARD
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function OutboundLinkWarning({ url, onContinue, onCancel }: { url: string; onContinue: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="mx-4 max-w-lg rounded-3xl border border-amber-900/50 bg-gray-900 p-8 shadow-2xl">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20">
+          <ExternalLink className="h-7 w-7 text-amber-400" />
+        </div>
+        <h2 className="mb-2 text-center text-xl font-black text-white">External link</h2>
+        <p className="mb-2 text-center text-sm text-gray-400">You are being redirected to an external product page. This link was provided by the founder.</p>
+        <p className="mb-6 break-all rounded-xl bg-gray-800 p-3 text-center text-xs text-gray-300">{url}</p>
+        <div className="flex gap-3">
+          <button className="flex-1 rounded-[2rem] border-2 border-gray-700 px-5 py-3 font-black text-white transition-colors hover:bg-gray-800" onClick={onCancel}>
+            CANCEL
+          </button>
+          <button className={`flex-1 px-5 py-3 ${primaryButtonClass}`} onClick={onContinue}>
+            CONTINUE →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 type WorkspacePhase = 'briefing' | 'questions' | 'review' | 'success'
 
@@ -91,6 +141,11 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   const [reportDetails, setReportDetails] = useState('')
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError] = useState('')
+  const [timedOut, setTimedOut] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  const [outboundWarningUrl, setOutboundWarningUrl] = useState<string | null>(null)
+  const autosaveKey = `tester-workspace-autosave:${assignmentId}`
+  const autosaveLoadedRef = useRef(false)
 
   const loadAssignment = useCallback(async () => {
     setIsLoading(true)
@@ -124,6 +179,45 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [phase])
+
+  // --- Countdown Timer ---
+  useEffect(() => {
+    if (!assignment?.timeoutAt) return
+    const computeRemaining = () => Math.max(0, differenceInSeconds(new Date(assignment.timeoutAt), new Date()))
+    setSecondsLeft(computeRemaining())
+    const interval = setInterval(() => {
+      const remaining = computeRemaining()
+      setSecondsLeft(remaining)
+      if (remaining <= 0) {
+        clearInterval(interval)
+        setTimedOut(true)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [assignment?.timeoutAt])
+
+  // --- Autosave: load from localStorage on mount ---
+  useEffect(() => {
+    if (autosaveLoadedRef.current) return
+    autosaveLoadedRef.current = true
+    try {
+      const saved = localStorage.getItem(autosaveKey)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed && typeof parsed === 'object') {
+          setAnswers(parsed)
+        }
+      }
+    } catch { /* ignore */ }
+  }, [autosaveKey])
+
+  // --- Autosave: persist answers to localStorage ---
+  useEffect(() => {
+    if (Object.keys(answers).length === 0) return
+    try {
+      localStorage.setItem(autosaveKey, JSON.stringify(answers))
+    } catch { /* ignore */ }
+  }, [answers, autosaveKey])
 
   const questions = useMemo(
     () => [...(assignment?.mission.questions ?? [])].sort((left, right) => left.order - right.order),
@@ -161,8 +255,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   }
 
   const activeAssignment = assignment
-  const hoursLeft = differenceInHours(new Date(assignment.timeoutAt), new Date())
+  const hoursLeft = Math.max(0, Math.floor((secondsLeft ?? 0) / 3600))
   const current = questions[currentQuestion]
+
+  // --- Time's Up Overlay (blocks everything) ---
+  if (timedOut && phase !== 'success') {
+    return <TimesUpOverlay onReturn={() => router.push('/dashboard/tester')} />
+  }
 
   async function handleStart() {
     setStartError('')
@@ -186,15 +285,20 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     const answer = answers[currentQuestion]
 
     if (current.isRequired && (answer === undefined || answer === '')) {
-      return 'Please answer this question to continue'
+      if (current.type === 'TEXT_SHORT') return 'Please write a short response to continue.'
+      if (current.type === 'TEXT_LONG') return 'Please share your detailed thoughts before moving on.'
+      if (current.type === 'RATING_1_5') return 'Please select a star rating to continue.'
+      if (current.type === 'MULTIPLE_CHOICE') return 'Please pick one of the choices before continuing.'
+      if (current.type === 'YES_NO') return 'Please choose Yes or No to continue.'
+      return 'Please answer this question to continue.'
     }
 
     if (current.type === 'TEXT_SHORT' && typeof answer === 'string' && answer.trim().length < 6) {
-      return 'Please answer this question to continue'
+      return 'Your answer is too short — give at least a few words so the founder can act on it.'
     }
 
     if (current.type === 'TEXT_LONG' && typeof answer === 'string' && answer.trim().length < 11) {
-      return 'Please answer this question to continue'
+      return 'Please write at least a couple of sentences for this detailed question.'
     }
 
     return ''
@@ -252,6 +356,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       })
       setSuccessState({ coinsEarned: response.coinsEarned, newTier: response.newTier, stats })
       setPhase('success')
+      // Clear autosave on successful submit
+      try { localStorage.removeItem(autosaveKey) } catch { /* ignore */ }
       void refetch().catch(() => undefined)
     } catch (error) {
       if (isApiClientError(error)) {
@@ -340,9 +446,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                     </div>
                   </div>
                   {asset.type === 'TEXT_DESCRIPTION' ? null : (
-                    <a href={asset.url} target="_blank" rel="noreferrer" className="rounded-[2rem] bg-blue-600 px-6 py-2.5 font-bold text-white transition-all hover:shadow-lg hover:scale-105">
+                    <button
+                      type="button"
+                      onClick={() => setOutboundWarningUrl(asset.url)}
+                      className="rounded-[2rem] bg-blue-600 px-6 py-2.5 font-bold text-white transition-all hover:shadow-lg hover:scale-105"
+                    >
                       {asset.type === 'LINK' ? 'OPEN →' : 'VIEW →'}
-                    </a>
+                    </button>
                   )}
                 </div>
               ))}
@@ -382,6 +492,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               onSubmit={() => void handleReportIssue()}
             />
           ) : null}
+          {outboundWarningUrl ? (
+            <OutboundLinkWarning
+              url={outboundWarningUrl}
+              onContinue={() => { window.open(outboundWarningUrl, '_blank', 'noopener,noreferrer'); setOutboundWarningUrl(null) }}
+              onCancel={() => setOutboundWarningUrl(null)}
+            />
+          ) : null}
         </div>
       </div>
     )
@@ -395,7 +512,19 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
         <div className="mx-auto max-w-3xl rounded-panel bg-[#faf9f7] p-8 dark:bg-gray-900">
           <div className="mb-6">
-            <div className="mb-2 text-sm text-[#6b687a] dark:text-gray-400">Question {currentQuestion + 1} of {questions.length}</div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm text-[#6b687a] dark:text-gray-400">Question {currentQuestion + 1} of {questions.length}</span>
+              {secondsLeft !== null ? (
+                <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${
+                  secondsLeft < 300
+                    ? 'animate-pulse bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300'
+                    : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'
+                }`}>
+                  <Clock className="h-3.5 w-3.5" />
+                  {formatTimeLeft(secondsLeft)}
+                </div>
+              ) : null}
+            </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-[#f3f3f5] dark:bg-gray-700">
               <div className="h-full rounded-full bg-[#d77a57]" style={{ width: `${progress}%` }} />
             </div>

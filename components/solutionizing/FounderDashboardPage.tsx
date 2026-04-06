@@ -529,6 +529,8 @@ function FounderDashboardContent() {
                     isLoading={isLoading}
                     loadError={loadError}
                     missions={missions}
+                    coinBalance={coinBalance}
+                    isBalanceLoading={isBalanceLoading}
                     loadingMessage={dashboardLoadingMessages[loadingMessageIndex]}
                     onSkeletonClick={handleSkeletonClick}
                     onRetry={() => void loadDashboard()}

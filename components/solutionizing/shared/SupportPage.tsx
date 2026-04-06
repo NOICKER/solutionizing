@@ -1,5 +1,6 @@
 "use client"
 
+import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode, useState } from 'react'
 import { outlineButtonClass, primaryButtonClass } from '@/components/solutionizing/ui'
@@ -98,13 +99,11 @@ function FaqCard({
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
       >
         <span className="text-sm font-bold leading-6 text-[#1a1625] dark:text-white">{question}</span>
-        <span
-          className={`material-symbols-outlined !text-xl text-[#8b8797] transition-transform dark:text-gray-400 ${
+        <ChevronDown
+          className={`h-5 w-5 text-[#8b8797] transition-transform dark:text-gray-400 ${
             isOpen ? 'rotate-180' : ''
           }`}
-        >
-          expand_more
-        </span>
+        />
       </button>
       {isOpen ? <div className="px-4 pb-4 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{answer}</div> : null}
     </div>

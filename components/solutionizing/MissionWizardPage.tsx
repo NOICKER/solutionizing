@@ -1087,6 +1087,23 @@ function MissionWizardContent() {
                 <div className="my-3 border-t border-white/20" />
                 <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><span className="text-xl font-black">{formatCoins(total)} coins</span></div>
               </div>
+              <div className="mt-4 space-y-2 border-t border-white/20 pt-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/70">Your balance</span>
+                  <span className="font-bold">{isBalanceLoading ? '...' : `${formatCoins(coinBalance)} coins`}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-white/70">After this mission</span>
+                  <span className={`font-black ${coinBalance >= total ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {isBalanceLoading ? '...' : `${formatCoins(coinBalance - total)} coins`}
+                  </span>
+                </div>
+                {!isBalanceLoading && coinBalance < total ? (
+                  <p className="mt-2 rounded-xl bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
+                    ⚠ You need {formatCoins(total - coinBalance)} more coins to launch this mission. Top up your wallet first.
+                  </p>
+                ) : null}
+              </div>
             </div>
             {reviewAssets}
             {reviewQuestions}

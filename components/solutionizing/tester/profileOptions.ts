@@ -17,24 +17,25 @@ export const preferredDeviceOptions: Array<{
   value: PreferredDevice
   label: string
   description: string
-  glyph: string
+  glyphName: 'Monitor' | 'Smartphone' | 'TabletSmartphone'
 }> = [
   {
     value: 'desktop',
     label: 'Desktop',
     description: 'Best when you mostly test full web flows and detailed layouts.',
-    glyph: 'desktop_windows',
+    glyphName: 'Monitor',
   },
   {
     value: 'mobile',
     label: 'Mobile',
     description: 'Ideal for app journeys, mobile-first checks, and quick feedback loops.',
-    glyph: 'smartphone',
+    glyphName: 'Smartphone',
   },
   {
     value: 'both',
     label: 'Both',
     description: 'Use this if you regularly switch between desktop and mobile test sessions.',
-    glyph: 'devices',
+    glyphName: 'TabletSmartphone',
   },
 ]
+

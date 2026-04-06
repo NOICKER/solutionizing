@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { BrandMark } from '@/components/solutionizing/ui'
 
 export const onboardingPrimaryButtonClass =
@@ -70,10 +70,10 @@ export function OnboardingShell({
   )
 }
 
-export function OnboardingStepIcon({ icon }: { icon: string }) {
+export function OnboardingStepIcon({ icon }: { icon: ReactNode }) {
   return (
     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-      <span className="material-symbols-outlined !text-[1.4rem]">{icon}</span>
+      {icon}
     </div>
   )
 }

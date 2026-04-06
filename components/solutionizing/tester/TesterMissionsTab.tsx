@@ -1,5 +1,7 @@
 "use client"
 
+import { CheckSquare, Coins, Info, Star, TrendingUp } from 'lucide-react'
+
 import Link from 'next/link'
 import { differenceInHours } from 'date-fns'
 import { useMemo } from 'react'
@@ -180,7 +182,7 @@ export function TesterMissionsTab({
         <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950/60 text-emerald-400">
-              <span className="material-symbols-outlined !text-xl">payments</span>
+              <Coins className="h-5 w-5" />
             </div>
             <div className="text-xs font-semibold text-text-muted">COIN BALANCE</div>
           </div>
@@ -193,7 +195,7 @@ export function TesterMissionsTab({
         <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-950/60 text-purple-400">
-              <span className="material-symbols-outlined !text-xl">stars</span>
+              <Star className="h-5 w-5" />
             </div>
             <div className="text-xs font-semibold text-text-muted">REPUTATION</div>
           </div>
@@ -210,7 +212,7 @@ export function TesterMissionsTab({
         <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-950/60 text-sky-400">
-              <span className="material-symbols-outlined !text-xl">checklist</span>
+              <CheckSquare className="h-5 w-5" />
             </div>
             <div className="text-xs font-semibold text-text-muted">COMPLETED</div>
           </div>
@@ -223,7 +225,7 @@ export function TesterMissionsTab({
         <div className="rounded-card border border-border-subtle bg-surface p-6 transition-all hover:border-primary/30 hover:bg-surface-elevated">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-950/60 text-amber-400">
-              <span className="material-symbols-outlined !text-xl">trending_up</span>
+              <TrendingUp className="h-5 w-5" />
             </div>
             <div className="text-xs font-semibold text-text-muted">SUCCESS RATE</div>
           </div>
@@ -256,7 +258,7 @@ export function TesterMissionsTab({
               <span className="text-sm font-black">{Math.floor((balance / minimumWithdrawalCoins) * 100)}%</span>
             </div>
             <p className="mt-3 flex items-center gap-2 text-sm font-medium text-white/75">
-              <span className="material-symbols-outlined text-sm">info</span>
+              <Info className="h-4 w-4" />
               Minimum withdrawal: 5,000 coins (₹50)
             </p>
           </div>

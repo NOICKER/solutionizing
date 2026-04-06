@@ -1,5 +1,6 @@
 "use client"
 
+import { Building2, CheckCircle2, Coins, FlaskConical, Lightbulb, Rocket, SquarePen, User } from 'lucide-react'
 import posthog from 'posthog-js'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -24,22 +25,22 @@ interface FounderOnboardingProps {
 
 const founderHowItWorks = [
   {
-    icon: 'toll',
+    icon: <Coins className="h-5 w-5" />,
     title: 'Buy coins',
     description: 'Top up your workspace so each mission is funded before it goes live.',
   },
   {
-    icon: 'edit_square',
+    icon: <SquarePen className="h-5 w-5" />,
     title: 'Create a mission',
     description: 'Define what you want tested and the exact questions you want answered.',
   },
   {
-    icon: 'experiment',
+    icon: <FlaskConical className="h-5 w-5" />,
     title: 'Testers test your product',
     description: 'Qualified testers walk through your product and document what they find.',
   },
   {
-    icon: 'insights',
+    icon: <Lightbulb className="h-5 w-5" />,
     title: 'You get structured feedback and insights',
     description: 'Review the feedback in one place and spot the patterns that matter.',
   },
@@ -181,7 +182,7 @@ export function FounderOnboarding({
       {step === 1 ? (
         <div className="space-y-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-primary">
-            <span className="material-symbols-outlined text-base">rocket_launch</span>
+            <Rocket className="h-4 w-4" />
             Founder setup
           </div>
           <div className="space-y-4">
@@ -260,7 +261,7 @@ export function FounderOnboarding({
               </span>
               <div className="relative">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-                  <span className="material-symbols-outlined">person</span>
+                  <User className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
@@ -278,7 +279,7 @@ export function FounderOnboarding({
               </span>
               <div className="relative">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-                  <span className="material-symbols-outlined">apartment</span>
+                  <Building2 className="h-6 w-6" />
                 </span>
                 <input
                   type="text"
@@ -372,7 +373,7 @@ export function FounderOnboarding({
       {step === 5 ? (
         <div className="space-y-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <span className="material-symbols-outlined !text-[2.6rem]">check_circle</span>
+            <CheckCircle2 className="h-10 w-10" />
           </div>
           <div className="space-y-4">
             <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>

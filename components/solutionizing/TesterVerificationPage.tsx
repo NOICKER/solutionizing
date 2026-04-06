@@ -1,5 +1,6 @@
 "use client"
 
+import { CheckCircle2, Circle, CircleDot, Monitor, ShieldCheck, Smartphone, TabletSmartphone } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from '@/components/ui/sonner'
@@ -75,9 +76,7 @@ export function TesterVerificationPage() {
 
         <div className="rounded-panel border border-[#e5e4e0] bg-white p-10 text-center shadow-sm">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-            <span className="material-symbols-outlined text-4xl">
-              {successMessage ? 'verified' : 'verified_user'}
-            </span>
+            {successMessage ? <ShieldCheck className="h-10 w-10" /> : <ShieldCheck className="h-10 w-10" />}
           </div>
 
           <h1 className={`${testerDisplayFont.className} mb-4 text-3xl font-black text-[#1a1625]`}>
@@ -103,15 +102,15 @@ export function TesterVerificationPage() {
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-green-500">check_circle</span>
+                    <CheckCircle2 className="h-6 w-6 text-green-500" />
                     <span className="font-medium text-[#1a1625]">Account created & verified</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-[#d77a57]">radio_button_checked</span>
+                    <CircleDot className="h-6 w-6 text-[#d77a57]" />
                     <span className="font-medium text-[#1a1625]">Choose the device you use for testing</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-[#d77a57]">radio_button_unchecked</span>
+                    <Circle className="h-6 w-6 text-[#d77a57]" />
                     <span className="font-medium text-[#1a1625]">Confirm your environment details</span>
                   </li>
                 </ul>
@@ -133,13 +132,12 @@ export function TesterVerificationPage() {
                           : 'border-[#e5e4e0] bg-white hover:border-[#dfcfc2] hover:bg-[#fffdfa]'
                       }`}
                     >
-                      <span
-                        className={`material-symbols-outlined mb-4 text-[1.65rem] ${
-                          active ? 'text-[#d77a57]' : 'text-[#8b8797]'
-                        }`}
-                      >
-                        {option.glyph}
-                      </span>
+                      {(() => {
+                        const iconClass = `h-6 w-6 mb-4 transition-colors ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
+                        if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
+                        if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
+                        return <TabletSmartphone className={iconClass} />
+                      })()}
                       <div className="text-sm font-black text-[#1a1625]">{option.label}</div>
                       <div className="mt-2 text-sm leading-6 text-[#6b687a]">{option.description}</div>
                     </button>

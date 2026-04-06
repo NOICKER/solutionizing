@@ -1,5 +1,6 @@
 "use client"
 
+import { Landmark, Monitor, QrCode, Smartphone, TabletSmartphone } from 'lucide-react'
 import { ReactNode, startTransition, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { useAuth } from '@/context/AuthContext'
@@ -625,13 +626,12 @@ export function TesterSettingsTab({
                         : 'border-[#efe8e1] bg-[#fffdfa] hover:border-[#dfcfc2] hover:bg-white dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600 dark:hover:bg-gray-800'
                     } ${isLoadingProfile || isSavingDevice || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
                   >
-                    <span
-                      className={`material-symbols-outlined !mb-4 !text-[1.65rem] ${
-                        active ? 'text-[#d77a57]' : 'text-[#8b8797]'
-                      }`}
-                    >
-                      {option.glyph}
-                    </span>
+                    {(() => {
+                      const iconClass = `mb-4 h-6 w-6 ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
+                      if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
+                      if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
+                      return <TabletSmartphone className={iconClass} />
+                    })()}
                     <div className="text-sm font-black text-[#1a1625] dark:text-white">{option.label}</div>
                     <div className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{option.description}</div>
                   </button>
@@ -704,13 +704,10 @@ export function TesterSettingsTab({
                     } ${isLoadingProfile || isSavingPayout || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span
-                        className={`material-symbols-outlined !text-[1.35rem] ${
-                          active ? 'text-[#d77a57]' : 'text-[#8b8797]'
-                        }`}
-                      >
-                        {method === 'UPI' ? 'qr_code_2' : 'account_balance'}
-                      </span>
+                      {(() => {
+                        const iconClass = `h-5 w-5 ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
+                        return method === 'UPI' ? <QrCode className={iconClass} /> : <Landmark className={iconClass} />
+                      })()}
                       <div>
                         <div className="text-sm font-black text-[#1a1625] dark:text-white">
                           {method === 'UPI' ? 'UPI' : 'Bank Transfer'}

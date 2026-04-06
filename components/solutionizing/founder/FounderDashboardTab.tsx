@@ -1,6 +1,6 @@
 "use client"
 
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Coins } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
@@ -12,6 +12,7 @@ import {
   MissionStatusBadge,
   RetestCountChip,
   clampPercent,
+  formatCoins,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
@@ -136,6 +137,8 @@ interface FounderDashboardTabProps {
   isLoading: boolean
   loadError: string
   missions: ApiMission[]
+  coinBalance: number
+  isBalanceLoading?: boolean
   loadingMessage?: string
   onSkeletonClick?: () => void
   onRetry: () => void
@@ -146,6 +149,8 @@ export function FounderDashboardTab({
   isLoading,
   loadError,
   missions,
+  coinBalance,
+  isBalanceLoading,
   loadingMessage,
   onSkeletonClick,
   onRetry,
@@ -216,7 +221,25 @@ export function FounderDashboardTab({
 
   return (
     <>
-      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="rounded-card border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+              <Coins className="h-5 w-5" />
+            </div>
+            <div className="rounded-full bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primary">
+              Wallet
+            </div>
+          </div>
+          <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.2em] text-text-muted">COIN BALANCE</div>
+          <div className="text-3xl font-black text-white">
+            {isBalanceLoading ? (
+              <span className="inline-block h-8 w-14 animate-pulse rounded-xl bg-surface-elevated" />
+            ) : (
+              formatCoins(coinBalance)
+            )}
+          </div>
+        </div>
         {statsCards.map((card) => (
           <StatCard
             key={card.label}

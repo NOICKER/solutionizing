@@ -1,5 +1,6 @@
 "use client"
 
+import { PartyPopper, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const welcomeStorageKey = 'welcomeSeen'
@@ -36,7 +37,7 @@ export function WelcomeBanner() {
     <div className="mb-6 flex items-start justify-between gap-4 rounded-[1.75rem] border border-[#f0d4ca] bg-[#fff4ef] px-5 py-4 shadow-[0_18px_40px_-34px_rgba(217,119,87,0.45)] dark:border-[#d97757]/30 dark:bg-[#d97757]/10">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d97757] text-white">
-          <span className="material-symbols-outlined !text-xl">celebration</span>
+          <PartyPopper className="h-5 w-5" />
         </div>
         <div>
           <div className="text-[0.7rem] font-black uppercase tracking-[0.22em] text-[#d97757] dark:text-[#f2b29d]">
@@ -54,7 +55,7 @@ export function WelcomeBanner() {
         aria-label="Dismiss welcome banner"
         className="rounded-full p-2 text-[#8f857d] transition-colors hover:bg-white/70 hover:text-[#1a1625] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
       >
-        <span className="material-symbols-outlined !text-lg">close</span>
+        <X className="h-5 w-5" />
       </button>
     </div>
   )
