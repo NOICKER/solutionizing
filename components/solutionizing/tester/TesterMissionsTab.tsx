@@ -69,9 +69,27 @@ export function TesterMissionsTab({
     }
 
     if (assignments.length === 0) {
+      const activeMissionLabel =
+        typeof stats?.activeMissionCount === 'number'
+          ? `${stats.activeMissionCount} mission${stats.activeMissionCount === 1 ? ' is' : 's are'} currently active on the platform.`
+          : null
+
       return (
-        <div className="py-8 text-center text-text-muted">
-          No missions assigned yet. Make sure your profile is complete and check back soon.
+        <div className="rounded-card border border-sky-900/50 bg-sky-950/20 p-8 text-left">
+          <div className="flex items-start gap-4">
+            <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-900/50 text-sky-300">
+              <Info className="h-5 w-5" />
+            </div>
+            <div className="space-y-2">
+              <div className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">In Queue</div>
+              <p className="text-base font-semibold text-white">
+                You&apos;re eligible and in the queue. Missions are assigned automatically when founders launch — check back soon.
+              </p>
+              {activeMissionLabel ? (
+                <p className="text-sm text-sky-100/80">{activeMissionLabel}</p>
+              ) : null}
+            </div>
+          </div>
         </div>
       )
     }
@@ -161,7 +179,7 @@ export function TesterMissionsTab({
         })}
       </div>
     )
-  }, [assignments, isLoading, loadError, now, onAbandon, onRetry])
+  }, [assignments, isLoading, loadError, now, onAbandon, onRetry, stats?.activeMissionCount])
 
   return (
     <div className="mx-auto max-w-6xl">

@@ -14,18 +14,27 @@ const BLOCKED_EXTENSIONS = [
 export interface UrlCheckResult {
   safe: boolean
   reason?: string
+  code?: string
 }
 export async function checkUrl(url: string): Promise<UrlCheckResult> {
   // Check for blocked domains
   for (const domain of BLOCKED_DOMAINS) {
     if (url.toLowerCase().includes(domain)) {
-      return { safe: false, reason: `URL contains blocked domain: ${domain}` }
+      return {
+        safe: false,
+        reason: `URL contains blocked domain: ${domain}`,
+        code: 'DOMAIN_NOT_ALLOWED',
+      }
     }
   }
   // Check for blocked extensions
   for (const ext of BLOCKED_EXTENSIONS) {
     if (url.toLowerCase().endsWith(ext)) {
-      return { safe: false, reason: `URL links to a blocked file type: ${ext}` }
+      return {
+        safe: false,
+        reason: `URL links to a blocked file type: ${ext}`,
+        code: 'URL_NOT_ALLOWED',
+      }
     }
   }
   // Verify URL is reachable (HEAD request, 5 second timeout)
@@ -35,10 +44,14 @@ export async function checkUrl(url: string): Promise<UrlCheckResult> {
     const res = await fetch(url, { method: 'HEAD', signal: controller.signal })
     clearTimeout(timeout)
     if (res.status === 401 || res.status === 403) {
-      return { safe: false, reason: 'URL requires login or is access-restricted' }
+      return { safe: false, reason: 'URL requires login or is access-restricted', code: 'URL_UNREACHABLE' }
+    }
+
+    if (!res.ok) {
+      return { safe: false, reason: 'URL is not reachable', code: 'URL_UNREACHABLE' }
     }
   } catch {
-    return { safe: false, reason: 'URL is not reachable' }
+    return { safe: false, reason: 'URL is not reachable', code: 'URL_UNREACHABLE' }
   }
   return { safe: true }
 }

@@ -9,7 +9,16 @@ import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiTesterAssignmentDetail, ApiTesterStats } from '@/types/api'
-import { NotFoundPanel, SpinnerIcon, StarRow, formatCoins, formatRupeesFromCoins, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import {
+  ErrorStatePanel,
+  NotFoundPanel,
+  SpinnerIcon,
+  StarRow,
+  formatCoins,
+  formatRupeesFromCoins,
+  primaryButtonClass,
+  textFieldClass,
+} from '@/components/solutionizing/ui'
 import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { useAuth } from '@/context/AuthContext'
 import { type FlagReasonValue } from '@/lib/flags'
@@ -71,6 +80,57 @@ interface SuccessState {
   stats: ApiTesterStats | null
 }
 
+type WorkspaceQuestion = ApiTesterAssignmentDetail['mission']['questions'][number]
+
+const TEXT_RESPONSE_RULES = {
+  TEXT_SHORT: { min: 5, max: 500 },
+  TEXT_LONG: { min: 10, max: 1000 },
+} as const
+
+function getTextResponseRule(type: WorkspaceQuestion['type']) {
+  if (type === 'TEXT_SHORT' || type === 'TEXT_LONG') {
+    return TEXT_RESPONSE_RULES[type]
+  }
+
+  return null
+}
+
+function getTextResponseError(
+  question: Pick<WorkspaceQuestion, 'type' | 'isRequired'>,
+  answer: string | number | undefined
+) {
+  const rule = getTextResponseRule(question.type)
+
+  if (!rule) {
+    return ''
+  }
+
+  const trimmedLength = typeof answer === 'string' ? answer.trim().length : 0
+
+  if (!question.isRequired && trimmedLength === 0) {
+    return ''
+  }
+
+  if (trimmedLength < rule.min) {
+    return `Answer too short (min ${rule.min} characters)`
+  }
+
+  return ''
+}
+
+function getTooShortAnswerIndexes(
+  questions: WorkspaceQuestion[],
+  answers: Record<number, string | number>
+) {
+  return questions.reduce<number[]>((indexes, question, index) => {
+    if (getTextResponseError(question, answers[index])) {
+      indexes.push(index)
+    }
+
+    return indexes
+  }, [])
+}
+
 function TesterWorkspaceSkeleton() {
   const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
   const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
@@ -127,10 +187,12 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   const [assignment, setAssignment] = useState<ApiTesterAssignmentDetail | null>(null)
   const [phase, setPhase] = useState<WorkspacePhase>('briefing')
   const [answers, setAnswers] = useState<Record<number, string | number>>({})
+  const [touchedTextQuestions, setTouchedTextQuestions] = useState<Record<number, boolean>>({})
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [currentError, setCurrentError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
+  const [workspaceLoadError, setWorkspaceLoadError] = useState('')
   const [startError, setStartError] = useState('')
   const [startLoading, setStartLoading] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -149,6 +211,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
   const loadAssignment = useCallback(async () => {
     setIsLoading(true)
+    setWorkspaceLoadError('')
 
     try {
       const response = await apiFetch<ApiTesterAssignmentDetail>(`/api/v1/tester/assignments/${assignmentId}`)
@@ -158,6 +221,10 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     } catch (error) {
       if (isApiClientError(error) && error.status === 404) {
         setIsNotFound(true)
+        setAssignment(null)
+      } else {
+        setIsNotFound(false)
+        setWorkspaceLoadError('Something went wrong loading your workspace. Please refresh.')
       }
     } finally {
       setIsLoading(false)
@@ -228,6 +295,17 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     return <TesterWorkspaceSkeleton />
   }
 
+  if (workspaceLoadError) {
+    return (
+      <ErrorStatePanel
+        title="Unable to load workspace"
+        body={workspaceLoadError}
+        onRetry={() => void loadAssignment()}
+        backHref="/dashboard/tester"
+      />
+    )
+  }
+
   if (isNotFound || !assignment) {
     return <NotFoundPanel title="Assignment not found" backHref="/dashboard/tester" />
   }
@@ -284,33 +362,36 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   function validateCurrentQuestion() {
     const answer = answers[currentQuestion]
 
+    if (current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') {
+      return getTextResponseError(current, answer)
+    }
+
     if (current.isRequired && (answer === undefined || answer === '')) {
-      if (current.type === 'TEXT_SHORT') return 'Please write a short response to continue.'
-      if (current.type === 'TEXT_LONG') return 'Please share your detailed thoughts before moving on.'
       if (current.type === 'RATING_1_5') return 'Please select a star rating to continue.'
       if (current.type === 'MULTIPLE_CHOICE') return 'Please pick one of the choices before continuing.'
       if (current.type === 'YES_NO') return 'Please choose Yes or No to continue.'
       return 'Please answer this question to continue.'
     }
 
-    if (current.type === 'TEXT_SHORT' && typeof answer === 'string' && answer.trim().length < 6) {
-      return 'Your answer is too short — give at least a few words so the founder can act on it.'
-    }
-
-    if (current.type === 'TEXT_LONG' && typeof answer === 'string' && answer.trim().length < 11) {
-      return 'Please write at least a couple of sentences for this detailed question.'
-    }
-
     return ''
   }
 
   function handleNextQuestion() {
+    if (current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') {
+      setTouchedTextQuestions((currentTouched) => ({
+        ...currentTouched,
+        [currentQuestion]: true,
+      }))
+    }
+
     const error = validateCurrentQuestion()
     setCurrentError(error)
 
     if (error) {
       return
     }
+
+    setCurrentError('')
 
     if (currentQuestion === questions.length - 1) {
       setPhase('review')
@@ -321,18 +402,38 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   }
 
   async function handleSubmitFeedback() {
+    const tooShortIndexes = getTooShortAnswerIndexes(questions, answers)
+
+    if (tooShortIndexes.length > 0) {
+      setTouchedTextQuestions((currentTouched) => ({
+        ...currentTouched,
+        ...Object.fromEntries(tooShortIndexes.map((index) => [index, true])),
+      }))
+      return
+    }
+
     setSubmitError('')
     setSubmitLoading(true)
 
     try {
       const responses = questions.map((question, index) => {
         const answer = answers[index]
+        const trimmedTextAnswer = typeof answer === 'string' ? answer.trim() : ''
+        const shouldSkipOptionalAnswer =
+          !question.isRequired &&
+          ((question.type === 'TEXT_SHORT' || question.type === 'TEXT_LONG')
+            ? trimmedTextAnswer.length === 0
+            : answer === undefined || answer === '')
+
+        if (shouldSkipOptionalAnswer) {
+          return null
+        }
 
         return {
           questionId: question.id,
           responseText:
             question.type === 'TEXT_SHORT' || question.type === 'TEXT_LONG'
-              ? String(answer ?? '')
+              ? trimmedTextAnswer
               : undefined,
           responseRating: question.type === 'RATING_1_5' ? Number(answer) : undefined,
           responseChoice:
@@ -340,7 +441,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               ? String(answer ?? '')
               : undefined,
         }
-      })
+      }).filter((response): response is NonNullable<typeof response> => response !== null)
 
       const response = await apiFetch<{ coinsEarned: number; newTier?: string }>(
         `/api/v1/tester/assignments/${activeAssignment.id}/submit`,
@@ -363,6 +464,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       if (isApiClientError(error)) {
         if (error.code === 'MISSION_FULL' && error.status === 409) {
           setSubmitError("This mission just filled up. If your submission was accepted you'll still receive your coins.")
+        } else if (error.code === 'ASSIGNMENT_EXPIRED') {
+          setTimedOut(true)
         } else if (error.status === 400) {
           setSubmitError(error.message)
         } else if (error.code === 'NETWORK_ERROR') {
@@ -507,6 +610,12 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   if (phase === 'questions') {
     const answer = answers[currentQuestion]
     const progress = ((currentQuestion + 1) / Math.max(questions.length, 1)) * 100
+    const currentTextRule = getTextResponseRule(current.type)
+    const currentTextError =
+      currentTextRule && touchedTextQuestions[currentQuestion]
+        ? getTextResponseError(current, answer)
+        : ''
+    const currentTextLength = typeof answer === 'string' ? answer.length : 0
 
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
@@ -538,18 +647,32 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <h2 className="mb-6 text-2xl font-black text-[#1a1625] dark:text-white">{current.text}</h2>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
-              <div className="relative">
+              <div>
                 <textarea
                   value={typeof answer === 'string' ? answer : ''}
-                  onChange={(event) => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: event.target.value }))}
+                  onChange={(event) => {
+                    setAnswers((currentAnswers) => ({
+                      ...currentAnswers,
+                      [currentQuestion]: event.target.value,
+                    }))
+                    setTouchedTextQuestions((currentTouched) => ({
+                      ...currentTouched,
+                      [currentQuestion]: true,
+                    }))
+                    setCurrentError('')
+                  }}
                   rows={current.type === 'TEXT_LONG' ? 6 : 4}
-                  maxLength={current.type === 'TEXT_LONG' ? 1000 : 500}
+                  maxLength={currentTextRule?.max}
                   placeholder={current.type === 'TEXT_LONG' ? 'Share your detailed thoughts...' : 'Your answer...'}
                   className={`${textFieldClass} resize-none`}
                 />
-                <div className="absolute bottom-3 right-3 text-sm text-[#9b98a8] dark:text-gray-400">
-                  {String(answer ?? '').length} / {current.type === 'TEXT_LONG' ? 1000 : 500}
+                <div className="mt-2 flex items-center justify-between text-xs text-[#9b98a8] dark:text-gray-400">
+                  <span>{currentTextRule ? `Minimum ${currentTextRule.min} characters` : ''}</span>
+                  <span>
+                    {currentTextLength} / {currentTextRule?.max} characters
+                  </span>
                 </div>
+                {currentTextError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{currentTextError}</p> : null}
               </div>
             ) : null}
 
@@ -596,7 +719,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ) : null}
           </div>
 
-          {currentError ? <p className="mb-4 text-sm text-red-600">{currentError}</p> : null}
+          {currentError && !currentTextRule ? <p className="mb-4 text-sm text-red-600">{currentError}</p> : null}
 
           <div className="mb-4 flex items-center justify-between">
             <button className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white" onClick={() => setCurrentQuestion((value) => Math.max(0, value - 1))}>← Back</button>
@@ -632,6 +755,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   }
 
   if (phase === 'review') {
+    const tooShortIndexes = getTooShortAnswerIndexes(questions, answers)
+    const tooShortSet = new Set(tooShortIndexes)
+
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
         <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
@@ -648,6 +774,11 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                     <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
                     <h3 className="mb-3 text-lg font-black text-[#1a1625] dark:text-white">{question.text}</h3>
                     <p className="rounded-2xl bg-[#faf9f7] p-4 text-[#1a1625] dark:bg-gray-700 dark:text-white">{String(answers[index] ?? '')}</p>
+                    {tooShortSet.has(index) ? (
+                      <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                        {getTextResponseError(question, answers[index])}
+                      </p>
+                    ) : null}
                   </div>
                   <button className="text-sm font-semibold text-[#d77a57] hover:underline" onClick={() => { setCurrentQuestion(index); setPhase('questions') }}>
                     Edit
@@ -670,11 +801,20 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <button className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white" onClick={() => setPhase('questions')}>
               ← Previous Question
             </button>
-            <button className={`flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`} disabled={submitLoading} onClick={() => void handleSubmitFeedback()}>
+            <button
+              className={`flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`}
+              disabled={submitLoading || tooShortIndexes.length > 0}
+              onClick={() => void handleSubmitFeedback()}
+            >
               {submitLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
               SUBMIT FEEDBACK →
             </button>
           </div>
+          {tooShortIndexes.length > 0 ? (
+            <p className="mt-3 text-right text-sm text-red-600 dark:text-red-400">
+              {tooShortIndexes.length === 1 ? '1 answer is too short' : `${tooShortIndexes.length} answers are too short`}
+            </p>
+          ) : null}
           <div className="mt-4 text-right">
             <button
               type="button"

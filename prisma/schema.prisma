@@ -20,6 +20,7 @@ enum RepTier {
 enum MissionStatus {
   DRAFT
   PENDING_REVIEW
+  APPROVED
   ACTIVE
   PAUSED
   COMPLETED
@@ -158,6 +159,7 @@ model Mission {
   coinCostTotal     Int
   status            MissionStatus @default(DRAFT)
   reviewNote        String?
+  rejectionReason   String?
   reviewedBy        String?
   reviewedAt        DateTime?
   launchedAt        DateTime?

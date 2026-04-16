@@ -2,6 +2,7 @@ export type ReputationTier = 'NEWCOMER' | 'RELIABLE' | 'TRUSTED' | 'ELITE'
 export type MissionStatus =
   | 'DRAFT'
   | 'PENDING_REVIEW'
+  | 'APPROVED'
   | 'ACTIVE'
   | 'PAUSED'
   | 'COMPLETED'
@@ -70,6 +71,7 @@ export interface ApiMission {
   coinCostTotal: number
   status: MissionStatus
   reviewNote: string | null
+  rejectionReason: string | null
   reviewedBy: string | null
   reviewedAt: string | null
   launchedAt: string | null
@@ -132,6 +134,7 @@ export interface ApiTesterStats {
   totalAbandoned: number
   completionRate: number
   avgRating: number | null
+  activeMissionCount: number
   recentActivity: Array<{
     id: string
     missionId: string

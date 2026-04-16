@@ -82,6 +82,7 @@ export function MissionStatusBadge({ status }: { status: string }) {
   const styleMap: Record<string, string> = {
     DRAFT: 'bg-zinc-700 text-zinc-300',
     PENDING_REVIEW: 'bg-amber-900/50 text-amber-300',
+    APPROVED: 'bg-blue-900/50 text-blue-300',
     ACTIVE: 'bg-emerald-900/50 text-emerald-300',
     PAUSED: 'bg-orange-900/50 text-orange-300',
     COMPLETED: 'bg-sky-900/50 text-sky-300',
@@ -92,7 +93,11 @@ export function MissionStatusBadge({ status }: { status: string }) {
 
   return (
     <div className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${styleMap[status] ?? 'bg-gray-100 text-gray-600'}`}>
-      {status === 'PENDING_REVIEW' ? 'UNDER REVIEW' : status.replaceAll('_', ' ')}
+      {status === 'PENDING_REVIEW'
+        ? 'UNDER REVIEW'
+        : status === 'APPROVED'
+          ? 'READY TO LAUNCH'
+          : status.replaceAll('_', ' ')}
     </div>
   )
 }

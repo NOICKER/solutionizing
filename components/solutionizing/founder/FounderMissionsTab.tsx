@@ -31,6 +31,10 @@ function getMissionDestination(mission: ApiMission) {
     return `/mission/wizard?edit=true&missionId=${mission.id}`
   }
 
+  if (mission.status === 'REJECTED') {
+    return `/mission/safety-review/${mission.id}`
+  }
+
   return null
 }
 
@@ -42,6 +46,7 @@ interface FounderMissionsTabProps {
   actionLoading: { missionId: string; action: string } | null
   onRetry: () => void
   onSubmitMission: (mission: ApiMission) => void
+  onLaunchMission: (mission: ApiMission) => void
   onResumeMission: (mission: ApiMission) => void
   onOpenDialog: (type: 'pause' | 'close', mission: ApiMission) => void
 }
@@ -54,6 +59,7 @@ export function FounderMissionsTab({
   actionLoading,
   onRetry,
   onSubmitMission,
+  onLaunchMission,
   onResumeMission,
   onOpenDialog,
 }: FounderMissionsTabProps) {
@@ -86,6 +92,7 @@ export function FounderMissionsTab({
         {missions.map((mission) => {
           const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
           const isSubmitting = actionLoading?.missionId === mission.id && actionLoading.action === 'submit'
+          const isLaunching = actionLoading?.missionId === mission.id && actionLoading.action === 'launch'
           const isResuming = actionLoading?.missionId === mission.id && actionLoading.action === 'resume'
           const isAnyActionLoading = actionLoading?.missionId === mission.id
           const missionHref = getMissionDestination(mission)
@@ -132,7 +139,26 @@ export function FounderMissionsTab({
                 <p className="text-sm text-text-muted">Under review — usually within 24 hours</p>
               ) : null}
 
-              {mission.status !== 'PENDING_REVIEW' ? (
+              {mission.status === 'APPROVED' ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-text-muted">
+                    Approved and ready to launch. Once you launch, tester assignment begins immediately.
+                  </p>
+                  <button
+                    className={`flex items-center gap-2 px-6 py-2 text-sm ${primaryButtonClass}`}
+                    disabled={isLaunching}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onLaunchMission(mission)
+                    }}
+                  >
+                    {isLaunching ? <SpinnerIcon /> : null}
+                    LAUNCH MISSION {'->'}
+                  </button>
+                </div>
+              ) : null}
+
+              {mission.status !== 'PENDING_REVIEW' && mission.status !== 'APPROVED' ? (
                 <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-text-muted">
@@ -258,7 +284,7 @@ export function FounderMissionsTab({
                 <div className="space-y-4">
                   <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4">
                     <h4 className="mb-1 text-sm font-bold text-red-300">Feedback from our team</h4>
-                    <p className="text-sm text-red-400">{mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
+                    <p className="text-sm text-red-400">{mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
                   </div>
                   <Link
                     href={`/mission/wizard?edit=true&missionId=${mission.id}`}

@@ -27,6 +27,12 @@ interface BalanceResponse {
   coinBalance?: number
 }
 
+interface MissionCostEstimate {
+  coinPerTester: number
+  coinPlatformFee: number
+  coinCostTotal: number
+}
+
 const initialState: WizardState = {
   title: '',
   goal: '',
@@ -35,12 +41,6 @@ const initialState: WizardState = {
   testersRequired: 10,
   assets: [{ type: 'LINK', url: '', label: '' }],
   questions: [{ text: '', type: 'TEXT_SHORT', required: true, order: 0 }],
-}
-
-const coinRates: Record<Difficulty, number> = {
-  EASY: 500,
-  MEDIUM: 1500,
-  HARD: 3000,
 }
 
 const questionTypeDescriptions: Record<WizardQuestion['type'], string> = {
@@ -112,6 +112,68 @@ function isValidUrl(value: string) {
   }
 }
 
+function trimOptionalString(value?: string) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : undefined
+}
+
+function isAssetDraftBlank(asset: WizardAsset) {
+  const label = trimOptionalString(asset.label)
+
+  if (asset.type === 'TEXT') {
+    return !trimOptionalString(asset.text) && !label
+  }
+
+  return !trimOptionalString(asset.url) && !label
+}
+
+function normalizeWizardAsset(asset: WizardAsset): WizardAsset {
+  return {
+    ...asset,
+    url: trimOptionalString(asset.url),
+    text: trimOptionalString(asset.text),
+    label: trimOptionalString(asset.label),
+  }
+}
+
+function getCommittedAssets(assets: WizardAsset[]) {
+  return assets
+    .map((asset, index) => ({
+      asset: normalizeWizardAsset(asset),
+      index,
+    }))
+    .filter(({ asset }) => !isAssetDraftBlank(asset))
+}
+
+function prepareAssetsForValidation(state: WizardState) {
+  const committedAssets = getCommittedAssets(state.assets)
+
+  if (committedAssets.length === 0) {
+    return state
+  }
+
+  return {
+    ...state,
+    assets: committedAssets.map(({ asset }) => asset),
+  }
+}
+
+function getMeaningfulQuestionCount(questions: WizardQuestion[]) {
+  return questions.filter((question) => question.text.trim().length > 0).length
+}
+
+function getSafetyErrorMessage(code: string) {
+  if (code === 'DOMAIN_NOT_ALLOWED') {
+    return "This URL's domain isn't permitted on Solutionizing."
+  }
+
+  if (code === 'CONTENT_POLICY_VIOLATION') {
+    return 'This content was flagged by our safety check. Please review your mission description.'
+  }
+
+  return 'Something looks off. Check your URL and mission details.'
+}
+
 function StepIndicator({ step }: { step: number }) {
   return (
     <div className="mb-8">
@@ -168,7 +230,13 @@ function validateStep(step: number, state: WizardState) {
   }
 
   if (step === 2) {
-    state.assets.forEach((asset, index) => {
+    const committedAssets = getCommittedAssets(state.assets)
+
+    if (committedAssets.length === 0) {
+      errors.assets = 'Add at least one asset before continuing'
+    }
+
+    committedAssets.forEach(({ asset, index }) => {
       if (asset.type === 'TEXT') {
         const text = asset.text?.trim() ?? ''
         if (!text) {
@@ -215,7 +283,7 @@ function getStepForFieldKey(fieldKey: string) {
     return 1
   }
 
-  if (fieldKey.startsWith('asset-')) {
+  if (fieldKey === 'assets' || fieldKey.startsWith('asset-')) {
     return 2
   }
 
@@ -281,6 +349,9 @@ function MissionWizardContent() {
   const [goalWarning, setGoalWarning] = useState('')
   const [assetChecks, setAssetChecks] = useState<Record<number, 'checking' | 'reachable' | 'unreachable'>>({})
   const [coinBalance, setCoinBalance] = useState(0)
+  const [costEstimate, setCostEstimate] = useState<MissionCostEstimate | null>(null)
+  const [isCostEstimateLoading, setIsCostEstimateLoading] = useState(true)
+  const [costEstimateError, setCostEstimateError] = useState('')
   const [isBalanceLoading, setIsBalanceLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
@@ -298,10 +369,13 @@ function MissionWizardContent() {
     () => (editMissionId ? `solutionizing-draft-refresh:${editMissionId}` : 'solutionizing-draft-refresh'),
     [editMissionId]
   )
-
-  const subtotal = coinRates[state.difficulty] * state.testersRequired
-  const fee = Math.ceil(subtotal * 0.2)
-  const total = subtotal + fee
+  const costEstimateRequestRef = useRef(0)
+  const committedAssetCount = getCommittedAssets(state.assets).length
+  const meaningfulQuestionCount = getMeaningfulQuestionCount(state.questions)
+  const subtotal = costEstimate ? costEstimate.coinCostTotal - costEstimate.coinPlatformFee : null
+  const fee = costEstimate?.coinPlatformFee ?? null
+  const total = costEstimate?.coinCostTotal ?? null
+  const canReviewChecklistSubmit = committedAssetCount > 0 && meaningfulQuestionCount > 0
 
   const clearLocalDraft = useCallback(() => {
     sessionStorage.removeItem(draftStorageKey)
@@ -364,7 +438,7 @@ function MissionWizardContent() {
         }
         if (mission.status === 'REJECTED') {
           setRejectedReviewNote(
-            mission.reviewNote ?? 'Your mission was rejected. Review the feedback and update it before resubmitting.'
+            mission.rejectionReason ?? mission.reviewNote ?? 'Your mission was rejected. Review the feedback and update it before resubmitting.'
           )
           setShowRejectedBanner(true)
         } else {
@@ -408,6 +482,48 @@ function MissionWizardContent() {
   }, [loadBalance, step])
 
   useEffect(() => {
+    const requestId = ++costEstimateRequestRef.current
+
+    setIsCostEstimateLoading(true)
+    setCostEstimateError('')
+
+    const timeoutId = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const estimate = await apiFetch<MissionCostEstimate>('/api/v1/missions/estimate-cost', {
+            method: 'POST',
+            body: {
+              difficulty: state.difficulty,
+              testersRequired: state.testersRequired,
+            },
+          })
+
+          if (costEstimateRequestRef.current !== requestId) {
+            return
+          }
+
+          setCostEstimate(estimate)
+        } catch {
+          if (costEstimateRequestRef.current !== requestId) {
+            return
+          }
+
+          setCostEstimate(null)
+          setCostEstimateError('Live estimate unavailable right now.')
+        } finally {
+          if (costEstimateRequestRef.current === requestId) {
+            setIsCostEstimateLoading(false)
+          }
+        }
+      })()
+    }, 500)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [state.difficulty, state.testersRequired])
+
+  useEffect(() => {
     const onBeforeUnload = () => {
       if (dirtyRef.current) {
         sessionStorage.setItem(refreshFlagKey, '1')
@@ -428,12 +544,18 @@ function MissionWizardContent() {
   }, [draftStorageKey])
 
   function handleNext() {
-    const nextErrors = validateStep(step, state)
+    const nextState = step === 2 ? prepareAssetsForValidation(state) : state
+
+    if (step === 2 && JSON.stringify(nextState.assets) !== JSON.stringify(state.assets)) {
+      updateState(() => nextState)
+    }
+
+    const nextErrors = validateStep(step, nextState)
     setErrors(nextErrors)
 
     const firstError = Object.keys(nextErrors)[0]
     if (firstError) {
-      scrollToField(firstError)
+      scrollToField(firstError === 'assets' ? 'asset-0' : firstError)
       return
     }
 
@@ -466,12 +588,18 @@ function MissionWizardContent() {
 
   async function handleSave(action: 'draft' | 'submit') {
     setSubmitError('')
-    const validationErrors = getMissionValidationErrors(state)
+    const preparedState = prepareAssetsForValidation(state)
+
+    if (JSON.stringify(preparedState.assets) !== JSON.stringify(state.assets)) {
+      updateState(() => preparedState)
+    }
+
+    const validationErrors = getMissionValidationErrors(preparedState)
     const firstErrorKey = Object.keys(validationErrors)[0]
     if (firstErrorKey) {
       setErrors(validationErrors)
       setStep(getStepForFieldKey(firstErrorKey))
-      window.setTimeout(() => scrollToField(firstErrorKey), 0)
+      window.setTimeout(() => scrollToField(firstErrorKey === 'assets' ? 'asset-0' : firstErrorKey), 0)
       return
     }
 
@@ -479,19 +607,19 @@ function MissionWizardContent() {
 
     try {
       const payload = {
-        title: state.title.trim(),
-        goal: state.goal.trim(),
-        difficulty: state.difficulty,
-        estimatedMinutes: state.estimatedMinutes,
-        testersRequired: state.testersRequired,
-        assets: state.assets.map((asset, index) => ({
+        title: preparedState.title.trim(),
+        goal: preparedState.goal.trim(),
+        difficulty: preparedState.difficulty,
+        estimatedMinutes: preparedState.estimatedMinutes,
+        testersRequired: preparedState.testersRequired,
+        assets: preparedState.assets.map((asset, index) => ({
           type: asset.type === 'TEXT' ? 'TEXT_DESCRIPTION' : asset.type === 'VIDEO' ? 'SHORT_VIDEO' : asset.type,
           url: asset.type === 'TEXT' ? undefined : asset.url?.trim(),
           text: asset.type === 'TEXT' ? asset.text?.trim() : undefined,
           label: asset.label?.trim() || undefined,
           order: index,
         })),
-        questions: state.questions.map((question, index) => ({
+        questions: preparedState.questions.map((question, index) => ({
           order: index + 1,
           type: question.type,
           text: question.text.trim(),
@@ -534,7 +662,15 @@ function MissionWizardContent() {
         if (error.code === 'INSUFFICIENT_COINS') {
           setSubmitError("You don't have enough coins. Buy coins from your dashboard.")
         } else if (error.status === 400) {
-          setSubmitError(getValidationMessage(error.details) ?? error.message)
+          if (
+            error.code === 'DOMAIN_NOT_ALLOWED' ||
+            error.code === 'CONTENT_POLICY_VIOLATION' ||
+            error.code === 'URL_UNREACHABLE'
+          ) {
+            setSubmitError(getSafetyErrorMessage(error.code))
+          } else {
+            setSubmitError(getValidationMessage(error.details) ?? error.message)
+          }
         } else if (error.code === 'NETWORK_ERROR') {
           setSubmitError('Check your internet connection')
         } else {
@@ -550,7 +686,7 @@ function MissionWizardContent() {
 
   const reviewAssets = useMemo(
     () =>
-      state.assets.map((asset, index) => (
+      getCommittedAssets(state.assets).map(({ asset }, index) => (
         <div key={`${asset.type}-${index}`} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-2 text-sm font-bold text-[#d77a57]">ASSET {index + 1}</div>
           <div className="mb-2 text-lg font-black text-[#1a1625] dark:text-white">{asset.type}</div>
@@ -756,7 +892,7 @@ function MissionWizardContent() {
             </button>
             <button
               type="button"
-              disabled={pendingAction !== null}
+              disabled={pendingAction !== null || !canReviewChecklistSubmit}
               className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`}
               onClick={() => void handleSave('submit')}
             >
@@ -821,7 +957,12 @@ function MissionWizardContent() {
         <StepIndicator step={step} />
 
         <div className="mb-8 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-2 text-sm font-bold text-[#d77a57]">
-          {state.difficulty} — {formatCoins(coinRates[state.difficulty])} coins per tester
+          {state.difficulty}{' '}
+          {isCostEstimateLoading
+            ? '— loading live estimate...'
+            : costEstimate
+              ? `— ${formatCoins(costEstimate.coinPerTester)} coins per tester`
+              : `— ${costEstimateError}`}
         </div>
 
         <h2 className="mb-8 text-3xl font-black text-[#1a1625] dark:text-white">
@@ -885,21 +1026,21 @@ function MissionWizardContent() {
                 {([
                   {
                     value: 'EASY',
-                    price: '500 coins per tester',
+                    price: 'Live estimate updates in setup',
                     note: 'Quick impressions',
                     detail:
                       'Testers spend 2 minutes, visit your link, and answer a few quick questions. Best for first impressions and top-of-funnel clarity.',
                   },
                   {
                     value: 'MEDIUM',
-                    price: '1,500 coins per tester',
+                    price: 'Live estimate updates in setup',
                     note: 'Detailed feedback',
                     detail:
                       'Testers spend up to 4 minutes, explore key flows, and give structured written feedback. Best for UX and messaging.',
                   },
                   {
                     value: 'HARD',
-                    price: '3,000 coins per tester',
+                    price: 'Live estimate updates in setup',
                     note: 'Complex analysis',
                     detail:
                       'Testers spend up to 6 minutes, dig into specific features, and write detailed analysis. Best for product decisions and conversion problems.',
@@ -941,20 +1082,30 @@ function MissionWizardContent() {
 
             <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-white/50">LIVE COST ESTIMATE</div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between"><span>{formatCoins(coinRates[state.difficulty])} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal)} coins</span></div>
-                <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee)} coins</span></div>
-                <div className="my-3 border-t border-white/20" />
-                <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><div className="text-right"><div className="text-xl font-black">{formatCoins(total)} coins</div><div className="text-sm text-white/70">≈ ₹{(total / 100).toFixed(0)}</div></div></div>
-              </div>
+              {isCostEstimateLoading ? (
+                <div className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-sm text-white/80">
+                  <SpinnerIcon className="h-4 w-4" />
+                  Updating live estimate...
+                </div>
+              ) : costEstimate ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between"><span>{formatCoins(costEstimate.coinPerTester)} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal ?? 0)} coins</span></div>
+                  <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee ?? 0)} coins</span></div>
+                  <div className="my-3 border-t border-white/20" />
+                  <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><div className="text-right"><div className="text-xl font-black">{formatCoins(total ?? 0)} coins</div><div className="text-sm text-white/70">≈ ₹{((total ?? 0) / 100).toFixed(0)}</div></div></div>
+                </div>
+              ) : (
+                <p className="rounded-2xl bg-white/5 px-4 py-4 text-sm text-red-200">{costEstimateError}</p>
+              )}
             </div>
 
-            {!isBalanceLoading && coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
+            {!isBalanceLoading && total !== null && coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
 
             <div className="space-y-4">
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">
                 <p>How to make your mission work: use links that testers can open without logging in, confirm they still work in an incognito window, and if the product needs login, add a TEXT asset with a demo account and password.</p>
               </div>
+              {errors.assets ? <p className="text-sm text-red-600 dark:text-red-400">{errors.assets}</p> : null}
               {state.assets.map((asset, index) => (
                 <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`asset-${index}`}>
                   <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -1079,13 +1230,47 @@ function MissionWizardContent() {
               <div className="mb-2 text-sm font-bold text-[#d77a57]">GOAL</div>
               <p className="text-[#1a1625] dark:text-white">{state.goal}</p>
             </div>
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-4 text-sm font-bold uppercase tracking-wide text-[#d77a57]">Pre-submission checklist</div>
+              <div className="space-y-3">
+                <div className={`flex items-start justify-between rounded-2xl border px-4 py-3 ${committedAssetCount > 0 ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/20' : 'border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/20'}`}>
+                  <div className="flex items-start gap-3">
+                    {committedAssetCount > 0 ? <CheckCircle className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400" /> : <XCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />}
+                    <div>
+                      <p className="font-semibold text-[#1a1625] dark:text-white">At least one asset added</p>
+                      {committedAssetCount === 0 ? <p className="mt-1 text-sm text-red-600 dark:text-red-400">Add at least one asset before submitting</p> : null}
+                    </div>
+                  </div>
+                  <span className={`text-sm font-bold ${committedAssetCount > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>{committedAssetCount > 0 ? 'Ready' : 'Blocked'}</span>
+                </div>
+                <div className={`flex items-start justify-between rounded-2xl border px-4 py-3 ${meaningfulQuestionCount > 0 ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/20' : 'border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/20'}`}>
+                  <div className="flex items-start gap-3">
+                    {meaningfulQuestionCount > 0 ? <CheckCircle className="mt-0.5 h-5 w-5 text-emerald-600 dark:text-emerald-400" /> : <XCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />}
+                    <div>
+                      <p className="font-semibold text-[#1a1625] dark:text-white">At least one question added</p>
+                      {meaningfulQuestionCount === 0 ? <p className="mt-1 text-sm text-red-600 dark:text-red-400">Add at least one question before submitting</p> : null}
+                    </div>
+                  </div>
+                  <span className={`text-sm font-bold ${meaningfulQuestionCount > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>{meaningfulQuestionCount > 0 ? 'Ready' : 'Blocked'}</span>
+                </div>
+              </div>
+            </div>
             <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-white/50">COST BREAKDOWN</div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between"><span>{formatCoins(coinRates[state.difficulty])} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal)} coins</span></div>
-                <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee)} coins</span></div>
+              {isCostEstimateLoading ? (
+                <div className="mb-4 flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-sm text-white/80">
+                  <SpinnerIcon className="h-4 w-4" />
+                  Updating live estimate...
+                </div>
+              ) : null}
+              {!isCostEstimateLoading && !costEstimate ? (
+                <p className="mb-4 rounded-2xl bg-white/5 px-4 py-4 text-sm text-red-200">{costEstimateError}</p>
+              ) : null}
+              <div className={`space-y-3 ${(isCostEstimateLoading || !costEstimate) ? 'opacity-50' : ''}`}>
+                <div className="flex items-center justify-between"><span>{formatCoins(costEstimate?.coinPerTester ?? 0)} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal ?? 0)} coins</span></div>
+                <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee ?? 0)} coins</span></div>
                 <div className="my-3 border-t border-white/20" />
-                <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><span className="text-xl font-black">{formatCoins(total)} coins</span></div>
+                <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><span className="text-xl font-black">{formatCoins(total ?? 0)} coins</span></div>
               </div>
               <div className="mt-4 space-y-2 border-t border-white/20 pt-4">
                 <div className="flex items-center justify-between text-sm">
@@ -1094,11 +1279,11 @@ function MissionWizardContent() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-white/70">After this mission</span>
-                  <span className={`font-black ${coinBalance >= total ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {isBalanceLoading ? '...' : `${formatCoins(coinBalance - total)} coins`}
+                  <span className={`font-black ${coinBalance >= (total ?? 0) ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {isBalanceLoading ? '...' : `${formatCoins(coinBalance - (total ?? 0))} coins`}
                   </span>
                 </div>
-                {!isBalanceLoading && coinBalance < total ? (
+                {!isBalanceLoading && total !== null && coinBalance < total ? (
                   <p className="mt-2 rounded-xl bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300">
                     ⚠ You need {formatCoins(total - coinBalance)} more coins to launch this mission. Top up your wallet first.
                   </p>

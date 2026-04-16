@@ -120,6 +120,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentUsers, setRecentUsers] = useState<User[]>([])
   const [pendingMissions, setPendingMissions] = useState<any[]>([])
+  const [pendingMissionsError, setPendingMissionsError] = useState('')
   const [flaggedItems, setFlaggedItems] = useState<ApiMissionFlagGroup[]>([])
   const [userList, setUserList] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -160,10 +161,12 @@ export default function AdminDashboardPage() {
   const fetchPendingMissions = useCallback(async () => {
     try {
       setIsLoading(true)
+      setPendingMissionsError('')
       const res = await apiFetch<any[]>('/api/v1/admin/missions/pending')
       setPendingMissions(res)
     } catch (err) {
       console.error('Failed to fetch pending missions', err)
+      setPendingMissionsError('Failed to load pending missions.')
     } finally {
       setIsLoading(false)
     }
@@ -540,7 +543,15 @@ export default function AdminDashboardPage() {
                   <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
                     <h3 className="text-xl font-bold">Pending Review ({pendingMissions.length})</h3>
                   </div>
-                  {pendingMissions.length > 0 ? (
+                  {pendingMissionsError ? (
+                    <div className="p-6">
+                      <ErrorStatePanel
+                        title="Failed to load pending missions."
+                        body="Please refresh and try again."
+                        onRetry={() => void fetchPendingMissions()}
+                      />
+                    </div>
+                  ) : pendingMissions.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>

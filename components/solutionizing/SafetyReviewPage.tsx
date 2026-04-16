@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
-import { NotFoundPanel, primaryButtonClass } from '@/components/solutionizing/ui'
+import { MissionStatusBadge, NotFoundPanel, primaryButtonClass } from '@/components/solutionizing/ui'
 
 function SafetyReviewPageSkeleton() {
   const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
@@ -87,12 +87,15 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
           </div>
         </div>
 
+        <div className="mb-4 flex justify-center">
+          <MissionStatusBadge status={mission.status} />
+        </div>
         <h1 className="mb-2 text-center text-3xl font-black text-[#1a1625]">Mission Rejected</h1>
         <p className="mb-8 text-center text-lg text-[#6b687a]">{mission.title}</p>
 
         <div className="mb-8 rounded-card border border-red-200 bg-red-50 p-8">
           <h2 className="mb-3 text-lg font-black text-red-900">Feedback from our team</h2>
-          <p className="text-sm leading-relaxed text-red-800">{mission.reviewNote ?? 'Your mission needs updates before it can be reviewed again.'}</p>
+          <p className="text-sm font-semibold text-red-900">Rejection reason: {mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs updates before it can be reviewed again.'}</p>
         </div>
 
         <div className="mb-8 rounded-card border border-blue-200 bg-blue-50 p-6">

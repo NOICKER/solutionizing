@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
-import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
 import { computeFeedback } from '@/lib/business/feedback'
-import { synthesizeFeedback } from '@/lib/ai/synthesize'
+import { SynthesisError, synthesizeFeedback } from '@/lib/ai/synthesize'
 import { logApiRouteError } from '@/lib/api/log'
 
 const synthesisCache = new Map<string, { result: any; expires: number }>()
@@ -59,6 +59,9 @@ export async function GET(
 
     return ok(synthesis)
   } catch (err) {
+    if (err instanceof SynthesisError) {
+      return apiError('Synthesis failed — please try again.', err.code, err.status)
+    }
     if (err instanceof Response) return err
     logApiRouteError(request, err)
     return serverError()

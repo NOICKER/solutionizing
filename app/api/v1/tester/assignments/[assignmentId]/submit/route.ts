@@ -7,7 +7,7 @@ import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/respo
 import { releaseOpenAssignmentsForMission } from '@/lib/business/mission-assignments'
 import { validateBody } from '@/lib/api/validate'
 import { updateReputation } from '@/lib/business/reputation'
-import { notificationQueue } from '@/lib/queue'
+import { assignmentQueue, notificationQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
 import { invalidateTesterAvailabilityCache } from '@/lib/business/tester-availability'
 
@@ -25,7 +25,10 @@ const SubmitAssignmentSchema = z.object({
 
 type SubmitAssignmentResult =
   | {
-      outcome: 'mission_full'
+      outcome: 'expired'
+      missionId: string
+      penaltyApplied: boolean
+      shouldReassign: boolean
     }
   | {
       outcome: 'completed'
@@ -35,6 +38,27 @@ type SubmitAssignmentResult =
       missionId: string
       shortTextPenaltyApplied: boolean
     }
+
+function hasMeaningfulResponse(
+  question: {
+    type: QuestionType
+  },
+  response: {
+    responseText?: string
+    responseRating?: number
+    responseChoice?: string
+  }
+) {
+  if (question.type === QuestionType.TEXT_SHORT || question.type === QuestionType.TEXT_LONG) {
+    return (response.responseText?.trim().length ?? 0) > 0
+  }
+
+  if (question.type === QuestionType.RATING_1_5) {
+    return response.responseRating !== undefined
+  }
+
+  return (response.responseChoice?.trim().length ?? 0) > 0
+}
 
 function validateSubmissionResponses(
   questions: Array<{
@@ -100,6 +124,10 @@ function validateSubmissionResponses(
 
     const responseText = response.responseText?.trim()
     const responseChoice = response.responseChoice?.trim()
+
+    if (!question.isRequired && !hasMeaningfulResponse(question, response)) {
+      continue
+    }
 
     switch (question.type) {
       case QuestionType.TEXT_SHORT:
@@ -171,11 +199,68 @@ export async function POST(
           missionId: true,
           testerId: true,
           status: true,
+          timeoutAt: true,
+          mission: {
+            select: {
+              status: true,
+              testersCompleted: true,
+              testersRequired: true,
+            },
+          },
         },
       })
 
       if (!assignment) {
         throw notFound('Assignment')
+      }
+
+      const now = new Date()
+
+      if (
+        assignment.status === AssignmentStatus.TIMED_OUT ||
+        (assignment.status === AssignmentStatus.IN_PROGRESS && assignment.timeoutAt <= now)
+      ) {
+        if (assignment.status === AssignmentStatus.IN_PROGRESS) {
+          const updatedAssignments = await tx.missionAssignment.updateMany({
+            where: {
+              id: assignment.id,
+              status: AssignmentStatus.IN_PROGRESS,
+              timeoutAt: {
+                lte: now,
+              },
+            },
+            data: {
+              status: AssignmentStatus.TIMED_OUT,
+              timedOutAt: now,
+            },
+          })
+
+          if (updatedAssignments.count > 0) {
+            await tx.testerProfile.update({
+              where: { id: tester.testerProfile!.id },
+              data: {
+                isAvailable: true,
+                totalTimedOut: { increment: 1 },
+              },
+            })
+
+            return {
+              outcome: 'expired',
+              missionId: assignment.missionId,
+              penaltyApplied: true,
+              shouldReassign:
+                assignment.mission.status === MissionStatus.ACTIVE &&
+                assignment.mission.testersCompleted < assignment.mission.testersRequired,
+            }
+          }
+        }
+
+        return {
+          outcome: 'expired',
+          missionId: assignment.missionId,
+          penaltyApplied: false,
+          shouldReassign: false,
+        }
       }
 
       if (assignment.status !== AssignmentStatus.IN_PROGRESS) {
@@ -207,24 +292,6 @@ export async function POST(
         throw notFound('Mission')
       }
 
-      if (mission.testersCompleted >= mission.testersRequired) {
-        await tx.missionAssignment.update({
-          where: { id: assignment.id },
-          data: {
-            status: AssignmentStatus.MISSION_FULL,
-          },
-        })
-
-        await tx.testerProfile.update({
-          where: { id: tester.testerProfile!.id },
-          data: {
-            isAvailable: true,
-          },
-        })
-
-        return { outcome: 'mission_full' }
-      }
-
       const questions = await tx.missionQuestion.findMany({
         where: { missionId: mission.id },
         orderBy: { order: 'asc' },
@@ -238,7 +305,6 @@ export async function POST(
 
       validateSubmissionResponses(questions, body.responses)
 
-      const now = new Date()
       const questionMap = new Map(questions.map((question) => [question.id, question]))
 
       await tx.missionResponse.createMany({
@@ -254,7 +320,14 @@ export async function POST(
 
       const textResponses = body.responses.filter((response) => {
         const question = questionMap.get(response.questionId)
-        return question?.type === QuestionType.TEXT_SHORT || question?.type === QuestionType.TEXT_LONG
+        if (!question) {
+          return false
+        }
+
+        return (
+          (question.type === QuestionType.TEXT_SHORT || question.type === QuestionType.TEXT_LONG) &&
+          (response.responseText?.trim().length ?? 0) > 0
+        )
       })
       const shortTextResponses = textResponses.filter((response) => {
         const trimmedResponse = response.responseText?.trim() ?? ''
@@ -298,13 +371,15 @@ export async function POST(
         },
       })
 
-      const missionCompleted = mission.testersCompleted + 1 >= mission.testersRequired
+      const missionReachedQuotaNow =
+        mission.status !== MissionStatus.COMPLETED &&
+        mission.testersCompleted + 1 >= mission.testersRequired
 
       await tx.mission.update({
         where: { id: mission.id },
         data: {
           testersCompleted: { increment: 1 },
-          ...(missionCompleted
+          ...(missionReachedQuotaNow
             ? {
                 status: MissionStatus.COMPLETED,
                 completedAt: now,
@@ -313,26 +388,43 @@ export async function POST(
         },
       })
 
-      if (missionCompleted) {
+      if (missionReachedQuotaNow) {
         await releaseOpenAssignmentsForMission(
           tx,
           mission.id,
-          AssignmentStatus.MISSION_FULL
+          AssignmentStatus.MISSION_FULL,
+          [AssignmentStatus.ASSIGNED]
         )
       }
 
       return {
         outcome: 'completed',
         coinsEarned: mission.coinPerTester,
-        missionCompleted,
+        missionCompleted: missionReachedQuotaNow,
         founderUserId: mission.founder.userId,
         missionId: mission.id,
         shortTextPenaltyApplied,
       }
     })
 
-    if (result.outcome === 'mission_full') {
-      return apiError('Mission is already full', 'MISSION_FULL', 409)
+    if (result.outcome === 'expired') {
+      if (result.penaltyApplied) {
+        await updateReputation(tester.testerProfile.id, 'TIMEOUT')
+        await invalidateTesterAvailabilityCache()
+      }
+
+      if (result.penaltyApplied && result.shouldReassign) {
+        await assignmentQueue.add('reassign', {
+          missionId: result.missionId,
+          isReassignment: true,
+        })
+      }
+
+      return apiError(
+        'Your session expired — this assignment has been released',
+        'ASSIGNMENT_EXPIRED',
+        410
+      )
     }
 
     if (result.missionCompleted && result.founderUserId) {

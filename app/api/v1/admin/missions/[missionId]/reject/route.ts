@@ -44,6 +44,7 @@ export async function POST(
       data: {
         status: MissionStatus.REJECTED,
         reviewNote: body.reason,
+        rejectionReason: body.reason,
         reviewedBy: admin.id,
         reviewedAt: new Date(),
       },

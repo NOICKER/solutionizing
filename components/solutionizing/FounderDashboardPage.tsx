@@ -223,14 +223,8 @@ function FounderDashboardContent() {
   }, [])
 
   const loadMissions = useCallback(async () => {
-    try {
-      const response = await apiFetch<ApiMission[]>('/api/v1/missions?page=1&limit=20')
-      setMissions(response)
-    } catch (error) {
-      // Empty missions list is not an error - it's a valid state for new founders
-      // Treat empty response as successful load with zero missions
-      setMissions([])
-    }
+    const response = await apiFetch<ApiMission[]>('/api/v1/missions?page=1&limit=20')
+    setMissions(response)
   }, [])
 
   const loadDashboard = useCallback(async () => {
@@ -292,7 +286,10 @@ function FounderDashboardContent() {
     }
   }
 
-  async function handleMissionAction(mission: ApiMission, action: 'submit' | 'pause' | 'resume' | 'close') {
+  async function handleMissionAction(
+    mission: ApiMission,
+    action: 'submit' | 'launch' | 'pause' | 'resume' | 'close'
+  ) {
     setCardErrors((current) => ({ ...current, [mission.id]: '' }))
     setActionLoading({ missionId: mission.id, action })
 
@@ -301,6 +298,10 @@ function FounderDashboardContent() {
         await apiFetch(`/api/v1/missions/${mission.id}/submit`, { method: 'POST' })
         toast.success('Mission submitted for review!')
         await loadMissions()
+      } else if (action === 'launch') {
+        await apiFetch(`/api/v1/missions/${mission.id}/launch`, { method: 'POST' })
+        await Promise.all([loadMissions(), loadBalance()])
+        toast.success('Mission launched.')
       } else if (action === 'pause') {
         await apiFetch(`/api/v1/missions/${mission.id}/pause`, { method: 'POST' })
         await loadMissions()
@@ -318,10 +319,13 @@ function FounderDashboardContent() {
         toast.success(`Mission closed. ${formatCoins(refund)} coins refunded to your balance.`)
       }
     } catch (error) {
-      const message =
-        isApiClientError(error) && error.code === 'NETWORK_ERROR'
-          ? 'Check your internet connection'
-          : 'Something went wrong. Please try again.'
+      const message = isApiClientError(error)
+        ? error.code === 'INSUFFICIENT_COINS'
+          ? "You don't have enough coins to launch this mission. Top up your wallet first."
+          : error.code === 'NETWORK_ERROR'
+            ? 'Check your internet connection'
+            : error.message
+        : 'Something went wrong. Please try again.'
       setCardErrors((current) => ({ ...current, [mission.id]: message }))
       throw error
     } finally {
@@ -546,6 +550,7 @@ function FounderDashboardContent() {
                   actionLoading={actionLoading}
                   onRetry={() => void loadDashboard()}
                   onSubmitMission={(mission) => void handleMissionAction(mission, 'submit')}
+                  onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
                   onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
                   onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
                 />

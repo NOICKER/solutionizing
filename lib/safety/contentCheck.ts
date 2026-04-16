@@ -35,17 +35,22 @@ const PROFANITY = [
 export interface ContentCheckResult {
   safe: boolean
   reason?: string
+  code?: string
 }
 export function checkContent(text: string): ContentCheckResult {
   const lower = text.toLowerCase()
   for (const keyword of PII_KEYWORDS) {
     if (lower.includes(keyword)) {
-      return { safe: false, reason: `Text contains a disallowed keyword: '${keyword}'` }
+      return {
+        safe: false,
+        reason: `Text contains a disallowed keyword: '${keyword}'`,
+        code: 'CONTENT_POLICY_VIOLATION',
+      }
     }
   }
   for (const word of PROFANITY) {
     if (lower.includes(word)) {
-      return { safe: false, reason: 'Text contains prohibited language' }
+      return { safe: false, reason: 'Text contains prohibited language', code: 'CONTENT_POLICY_VIOLATION' }
     }
   }
   return { safe: true }

@@ -8,13 +8,14 @@ export const OPEN_ASSIGNMENT_STATUSES = [
 export async function releaseOpenAssignmentsForMission(
   tx: Prisma.TransactionClient,
   missionId: string,
-  nextStatus: AssignmentStatus = AssignmentStatus.MISSION_FULL
+  nextStatus: AssignmentStatus = AssignmentStatus.MISSION_FULL,
+  statuses: readonly AssignmentStatus[] = OPEN_ASSIGNMENT_STATUSES
 ) {
   const openAssignments = await tx.missionAssignment.findMany({
     where: {
       missionId,
       status: {
-        in: [...OPEN_ASSIGNMENT_STATUSES],
+        in: [...statuses],
       },
     },
     select: {
@@ -30,7 +31,7 @@ export async function releaseOpenAssignmentsForMission(
     where: {
       missionId,
       status: {
-        in: [...OPEN_ASSIGNMENT_STATUSES],
+        in: [...statuses],
       },
     },
     data: {

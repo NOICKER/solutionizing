@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { AssignmentStatus } from '@prisma/client'
+import { AssignmentStatus, MissionStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, notFound, serverError } from '@/lib/api/response'
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     await touchTesterPresence(tester.testerProfile.id)
 
     const testerProfileId = tester.testerProfile.id
-    const [testerProfile, avgRatingResult, recentActivity] = await Promise.all([
+    const [testerProfile, avgRatingResult, recentActivity, activeMissionCount] = await Promise.all([
       prisma.testerProfile.findUnique({
         where: { id: testerProfileId },
         select: {
@@ -57,6 +57,11 @@ export async function GET(request: Request) {
           },
         },
       }),
+      prisma.mission.count({
+        where: {
+          status: MissionStatus.ACTIVE,
+        },
+      }),
     ])
 
     if (!testerProfile) {
@@ -78,6 +83,7 @@ export async function GET(request: Request) {
       avgRating: avgRatingResult._avg.score === null
         ? null
         : roundToTwo(avgRatingResult._avg.score),
+      activeMissionCount,
       recentActivity,
     })
   } catch (err) {

@@ -20,6 +20,7 @@ interface LoginResponse {
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const SUPPORT_EMAIL = 'hello@solutionizing.com'
 
 function sanitizeNextPath(value: string | null) {
   if (!value || !value.startsWith('/')) {
@@ -59,6 +60,7 @@ function AuthForm() {
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [formError, setFormError] = useState('')
+  const [formErrorCode, setFormErrorCode] = useState<string | null>(null)
   const [forgotSuccess, setForgotSuccess] = useState(false)
   const [signupSuccess, setSignupSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -80,6 +82,7 @@ function AuthForm() {
     const timer = window.setTimeout(() => {
       setMode(pendingMode)
       setFormError('')
+      setFormErrorCode(null)
       setEmailError('')
       setPasswordError('')
       setForgotSuccess(false)
@@ -129,6 +132,7 @@ function AuthForm() {
     setEmailError(nextEmailError)
     setPasswordError(nextPasswordError)
     setFormError('')
+    setFormErrorCode(null)
 
     if (nextEmailError || nextPasswordError) {
       return
@@ -146,8 +150,7 @@ function AuthForm() {
         skipSessionHandling: true,
       })
 
-      await refetch()
-      router.push(nextPath ?? '/select-role')
+      setSignupSuccess(true)
     } catch (error) {
       if (isApiClientError(error) && error.status === 409) {
         setEmailError('An account with this email already exists.')
@@ -166,6 +169,7 @@ function AuthForm() {
     setEmailError('')
     setPasswordError('')
     setFormError('')
+    setFormErrorCode(null)
     setIsSubmitting(true)
 
     try {
@@ -190,7 +194,8 @@ function AuthForm() {
         } else if (error.status === 403 && error.code === 'EMAIL_NOT_VERIFIED') {
           setFormError('Please verify your email before signing in. Check your inbox.')
         } else if (error.status === 403 && error.code === 'ACCOUNT_SUSPENDED') {
-          setFormError('Your account has been suspended. Contact support for help.')
+          setFormError('Your account has been suspended.')
+          setFormErrorCode('ACCOUNT_SUSPENDED')
         } else if (error.code === 'NETWORK_ERROR') {
           setFormError('Check your internet connection')
         } else {
@@ -212,6 +217,7 @@ function AuthForm() {
 
     setEmailError(nextEmailError)
     setFormError('')
+    setFormErrorCode(null)
 
     if (nextEmailError) {
       return
@@ -427,7 +433,19 @@ function AuthForm() {
 
               {mode === 'signin' && formError ? (
                 <div className="rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  {formError}
+                  <p>{formError}</p>
+                  {formErrorCode === 'ACCOUNT_SUSPENDED' ? (
+                    <p className="mt-2">
+                      If you believe this is a mistake, contact support at{' '}
+                      <a
+                        href={`mailto:${SUPPORT_EMAIL}`}
+                        className="font-semibold text-primary hover:text-primary-hover hover:underline"
+                      >
+                        {SUPPORT_EMAIL}
+                      </a>
+                      .
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 

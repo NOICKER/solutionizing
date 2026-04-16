@@ -984,6 +984,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const [notReady, setNotReady] = useState(false)
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null)
   const [synthesisLoading, setSynthesisLoading] = useState(false)
+  const [synthesisError, setSynthesisError] = useState('')
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -1025,11 +1026,14 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
   const loadSynthesis = useCallback(async () => {
     setSynthesisLoading(true)
+    setSynthesisError('')
     try {
       const synthesisResponse = await apiFetch<SynthesisResult>(`/api/v1/missions/${missionId}/synthesize`)
       setSynthesis(synthesisResponse)
     } catch (error) {
-      console.error('Failed to load synthesis:', error)
+      setSynthesisError(
+        isApiClientError(error) ? error.message : 'Synthesis failed — please try again.'
+      )
     } finally {
       setSynthesisLoading(false)
     }
@@ -1288,6 +1292,24 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                   {synthesis.signalStrength}
                 </span>
               </div>
+            </div>
+          ) : synthesisError ? (
+            <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
+              <p className="text-sm font-semibold text-red-700">{synthesisError}</p>
+              <button
+                type="button"
+                onClick={() => void loadSynthesis()}
+                disabled={synthesisLoading}
+                className={`mt-4 inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+              >
+                {synthesisLoading ? (
+                  <>
+                    <SpinnerIcon /> Retrying…
+                  </>
+                ) : (
+                  'Retry synthesis'
+                )}
+              </button>
             </div>
           ) : (
             <div className="text-center py-8">

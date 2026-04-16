@@ -6,6 +6,8 @@ import type { TimeoutCheckPayload } from '@/types/jobs'
 
 export async function processTimeoutJob({ assignmentId }: TimeoutCheckPayload) {
   const now = new Date()
+  const timeoutStatuses = [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS]
+  const timeoutStatusSet = new Set<AssignmentStatus>(timeoutStatuses)
 
   const assignment = await prisma.missionAssignment.findUnique({
     where: { id: assignmentId },
@@ -30,7 +32,7 @@ export async function processTimeoutJob({ assignmentId }: TimeoutCheckPayload) {
     return
   }
 
-  if (assignment.status !== AssignmentStatus.ASSIGNED) {
+  if (!timeoutStatusSet.has(assignment.status)) {
     return
   }
 
@@ -42,7 +44,9 @@ export async function processTimeoutJob({ assignmentId }: TimeoutCheckPayload) {
     const updatedAssignments = await tx.missionAssignment.updateMany({
       where: {
         id: assignment.id,
-        status: AssignmentStatus.ASSIGNED,
+        status: {
+          in: timeoutStatuses,
+        },
         timeoutAt: {
           lte: now,
         },

@@ -1,5 +1,21 @@
 import { ApiMissionFeedback } from '../../types/api'
 
+export class SynthesisError extends Error {
+  code: string
+  status: number
+
+  constructor(
+    message = 'Synthesis failed — please try again.',
+    code = 'SYNTHESIS_FAILED',
+    status = 502
+  ) {
+    super(message)
+    this.name = 'SynthesisError'
+    this.code = code
+    this.status = status
+  }
+}
+
 export async function synthesizeFeedback(feedback: ApiMissionFeedback): Promise<{
   recommendation: string
   frictionPoints: string[]
@@ -35,51 +51,63 @@ Based on this data, return JSON with:
 - summary: 2-3 sentence plain English summary of what the feedback means
 `.trim()
 
+  if (!process.env.GEMINI_API_KEY) {
+    throw new SynthesisError('Synthesis failed — please try again.', 'SYNTHESIS_NOT_CONFIGURED', 500)
+  }
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 20000)
+
   try {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: controller.signal,
       }
     )
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`)
+      throw new SynthesisError()
     }
 
     const data = await response.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
 
     if (!text) {
-      throw new Error('No response from Gemini')
+      throw new SynthesisError()
     }
 
-    // Extract JSON from response (Gemini might wrap it in markdown)
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
-      throw new Error('No JSON found in response')
+      throw new SynthesisError()
     }
 
     const result = JSON.parse(jsonMatch[0])
 
-    // Validate the result has required fields
-    if (typeof result.recommendation !== 'string' ||
-        !Array.isArray(result.frictionPoints) ||
-        !['HIGH', 'MEDIUM', 'LOW'].includes(result.signalStrength) ||
-        typeof result.summary !== 'string') {
-      throw new Error('Invalid response structure')
+    if (
+      typeof result.recommendation !== 'string' ||
+      !Array.isArray(result.frictionPoints) ||
+      !['HIGH', 'MEDIUM', 'LOW'].includes(result.signalStrength) ||
+      typeof result.summary !== 'string'
+    ) {
+      throw new SynthesisError()
     }
 
     return result
   } catch (error) {
-    console.error('Synthesis error:', error)
-    return {
-      recommendation: 'Not enough data to generate a recommendation.',
-      frictionPoints: [],
-      signalStrength: 'LOW',
-      summary: 'Synthesis unavailable.'
+    if (error instanceof SynthesisError) {
+      throw error
     }
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new SynthesisError('Synthesis failed — please try again.', 'SYNTHESIS_TIMEOUT', 504)
+    }
+
+    throw new SynthesisError()
+  } finally {
+    clearTimeout(timeoutId)
   }
 }

@@ -45,6 +45,7 @@ export async function processNotificationJob({
           goal: true,
           estimatedMinutes: true,
           reviewNote: true,
+          rejectionReason: true,
         },
       })
     : null
@@ -86,7 +87,7 @@ export async function processNotificationJob({
       subject = 'Your mission needs changes'
       html = missionRejectedTemplate(
         { title: mission.title || '' },
-        rejectionReason ?? mission.reviewNote ?? 'Please review the mission feedback.',
+        rejectionReason ?? mission.rejectionReason ?? mission.reviewNote ?? 'Please review the mission feedback.',
         buildUrl(appUrl, `/missions/${missionId}`)
       )
       break

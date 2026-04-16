@@ -8,10 +8,20 @@ import { logApiRouteError } from '@/lib/api/log'
 import { touchTesterPresence } from '@/lib/business/tester-availability'
 
 const AssignmentListQuerySchema = z.object({
-  status: z.nativeEnum(AssignmentStatus).optional(),
+  statuses: z.array(z.nativeEnum(AssignmentStatus)).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 })
+
+function parseAssignmentStatuses(searchParams: URLSearchParams) {
+  const statuses = searchParams
+    .getAll('status')
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean)
+
+  return statuses.length > 0 ? statuses : undefined
+}
 
 export async function GET(request: Request) {
   try {
@@ -25,7 +35,7 @@ export async function GET(request: Request) {
 
     const requestUrl = new URL(request.url)
     const queryResult = AssignmentListQuerySchema.safeParse({
-      status: requestUrl.searchParams.get('status') || undefined,
+      statuses: parseAssignmentStatuses(requestUrl.searchParams),
       page: requestUrl.searchParams.get('page') ?? undefined,
       limit: requestUrl.searchParams.get('limit') ?? undefined,
     })
@@ -38,7 +48,13 @@ export async function GET(request: Request) {
     const skip = (query.page - 1) * query.limit
     const where = {
       testerId: tester.testerProfile.id,
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.statuses?.length
+        ? {
+            status: {
+              in: query.statuses,
+            },
+          }
+        : {}),
     }
 
     const [total, assignments] = await Promise.all([

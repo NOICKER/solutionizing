@@ -3,7 +3,7 @@ import { AssetType, Difficulty, MissionStatus, QuestionType, RepTier } from '@pr
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
-import { ok, created, badRequest, notFound, serverError } from '@/lib/api/response'
+import { ok, created, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
 import { computeMissionCoinCost } from '@/lib/business/coins'
 import { checkUrl } from '@/lib/safety/urlCheck'
 import { checkMissionContent } from '@/lib/safety/contentCheck'
@@ -110,7 +110,12 @@ async function assertMissionIsSafe(
 ) {
   const contentResult = checkMissionContent(title, goal, questions)
   if (!contentResult.safe) {
-    throw badRequest(contentResult.reason ?? 'Mission content failed safety review')
+    throw apiError(
+      'Mission content failed safety review',
+      contentResult.code ?? 'CONTENT_POLICY_VIOLATION',
+      400,
+      { reason: contentResult.reason ?? null }
+    )
   }
 
   for (const asset of assets) {
@@ -118,7 +123,12 @@ async function assertMissionIsSafe(
 
     const urlResult = await checkUrl(asset.url)
     if (!urlResult.safe) {
-      throw badRequest(urlResult.reason ?? 'Mission asset URL failed safety review')
+      throw apiError(
+        'Mission asset URL failed safety review',
+        urlResult.code ?? 'URL_UNREACHABLE',
+        400,
+        { reason: urlResult.reason ?? null }
+      )
     }
   }
 }

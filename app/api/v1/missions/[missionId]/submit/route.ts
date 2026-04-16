@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import { QuestionType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
-import { ok, badRequest, notFound, serverError } from '@/lib/api/response'
+import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
 import { checkMissionContent } from '@/lib/safety/contentCheck'
 import { logApiRouteError } from '@/lib/api/log'
 
@@ -66,7 +66,12 @@ export async function POST(
     )
 
     if (!contentResult.safe) {
-      return badRequest(contentResult.reason ?? 'Mission content failed safety review')
+      return apiError(
+        'Mission content failed safety review',
+        contentResult.code ?? 'CONTENT_POLICY_VIOLATION',
+        400,
+        { reason: contentResult.reason ?? null }
+      )
     }
 
     const updatedMission = await prisma.mission.update({

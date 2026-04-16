@@ -30,6 +30,10 @@ function getDashboardMissionHref(mission: ApiMission) {
     return `/mission/wizard?edit=true&missionId=${mission.id}`
   }
 
+  if (mission.status === 'APPROVED') {
+    return null
+  }
+
   return `/mission/status/${mission.id}`
 }
 
@@ -81,16 +85,12 @@ function RecentMissionCard({
   href,
 }: {
   mission: ApiMission
-  href: string
+  href: string | null
 }) {
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
 
-  return (
-    <Link
-      href={href}
-      aria-label={`Open ${mission.title}`}
-      className="group block rounded-card border border-border-subtle bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
-    >
+  const content = (
+    <>
       <div className="mb-4 flex items-start justify-between gap-4">
         <h3 className="text-lg font-black text-white transition-colors group-hover:text-primary">
           {mission.title}
@@ -118,17 +118,35 @@ function RecentMissionCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 text-sm font-bold text-primary transition-colors group-hover:text-primary-hover">
-        View
-        <svg
-          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
+      {href ? (
+        <div className="flex items-center gap-1 text-sm font-bold text-primary transition-colors group-hover:text-primary-hover">
+          View
+          <svg
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      ) : (
+        <div className="text-sm font-bold text-primary">Ready to launch from Mission Control</div>
+      )}
+    </>
+  )
+
+  if (!href) {
+    return <div className="group rounded-card border border-border-subtle bg-surface p-5">{content}</div>
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-label={`Open ${mission.title}`}
+      className="group block rounded-card border border-border-subtle bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+    >
+      {content}
     </Link>
   )
 }
