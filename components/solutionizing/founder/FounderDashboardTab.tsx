@@ -65,7 +65,7 @@ function StatCard({
   isLoading: boolean
 }) {
   return (
-    <div className="rounded-card border border-border-subtle bg-surface p-5">
+    <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
         <DashboardGlyphChip className={className}>{glyph}</DashboardGlyphChip>
         <div className="rounded-full bg-surface-elevated px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
@@ -137,14 +137,14 @@ function RecentMissionCard({
   )
 
   if (!href) {
-    return <div className="group rounded-card border border-border-subtle bg-surface p-5">{content}</div>
+    return <div className="group rounded-card border border-border-subtle bg-surface p-4 sm:p-5">{content}</div>
   }
 
   return (
     <Link
       href={href}
       aria-label={`Open ${mission.title}`}
-      className="group block rounded-card border border-border-subtle bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+      className="group block rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
     >
       {content}
     </Link>
@@ -239,8 +239,8 @@ export function FounderDashboardTab({
 
   return (
     <>
-      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <div className="rounded-card border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-5">
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="rounded-card border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
               <Coins className="h-5 w-5" />

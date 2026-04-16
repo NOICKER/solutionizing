@@ -5,16 +5,16 @@ import { Star } from 'lucide-react'
 import { ReactNode, useEffect, useState } from 'react'
 
 export const primaryButtonClass =
-  'rounded-[2rem] bg-gradient-to-r from-[#F97C5A] to-[#E45D43] text-white font-black hover:shadow-[0_8px_24px_rgba(249,124,90,0.35)] hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
+  'inline-flex items-center justify-center min-h-[44px] rounded-[2rem] bg-gradient-to-r from-[#F97C5A] to-[#E45D43] px-6 py-2.5 text-white font-black hover:shadow-[0_8px_24px_rgba(249,124,90,0.35)] hover:scale-[1.02] transition-all disabled:pointer-events-none disabled:opacity-70'
 
 export const outlineButtonClass =
-  'rounded-[2rem] border-2 border-[#F97C5A] text-[#F97C5A] font-bold hover:bg-[#F97C5A] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-70'
+  'inline-flex items-center justify-center min-h-[44px] rounded-[2rem] border-2 border-[#F97C5A] px-6 py-2.5 text-[#F97C5A] font-bold hover:bg-[#F97C5A] hover:text-white transition-all disabled:pointer-events-none disabled:opacity-70'
 
 export const mutedButtonClass =
-  'rounded-[2rem] border border-border-subtle bg-surface-elevated text-text-muted font-semibold hover:bg-surface hover:text-text-main transition-all disabled:pointer-events-none disabled:opacity-70'
+  'inline-flex items-center justify-center min-h-[44px] rounded-[2rem] border border-border-subtle bg-surface-elevated px-6 py-2.5 text-text-muted font-semibold hover:bg-surface hover:text-text-main transition-all disabled:pointer-events-none disabled:opacity-70'
 
 export const textFieldClass =
-  'w-full rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-text-main placeholder:text-text-muted transition-all focus:outline-none focus:ring-2 focus:ring-primary/60'
+  'w-full rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-base text-text-main placeholder:text-text-muted transition-all focus:outline-none focus:ring-2 focus:ring-primary/60'
 
 export function SpinnerIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -251,7 +251,7 @@ export function ErrorStatePanel({
   backHref?: string
 }) {
   return (
-    <div className="min-h-[400px] rounded-panel bg-surface p-12 text-center flex flex-col items-center justify-center">
+    <div className="min-h-[400px] rounded-panel bg-surface p-6 sm:p-12 text-center flex flex-col items-center justify-center">
       <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-red-900/30">
         <svg className="w-16 h-16 text-red-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -287,7 +287,7 @@ export function EmptyStatePanel({
   icon?: ReactNode
 }) {
   return (
-    <div className="min-h-[400px] rounded-panel bg-surface p-12 text-center flex flex-col items-center justify-center">
+    <div className="min-h-[400px] rounded-panel bg-surface p-6 sm:p-12 text-center flex flex-col items-center justify-center">
       <div className="mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-surface-elevated">
         {icon ?? (
           <svg className="w-16 h-16 text-text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -316,7 +316,7 @@ export function NotFoundPanel({
   backHref: string
 }) {
   return (
-    <div className="min-h-[500px] rounded-panel bg-surface p-12 text-center flex flex-col items-center justify-center">
+    <div className="min-h-[500px] rounded-panel bg-surface p-6 sm:p-12 text-center flex flex-col items-center justify-center">
       <div className="mb-8">
         <div className="mb-4 text-9xl font-black text-primary">404</div>
         <h2 className="mb-3 text-3xl font-black text-white">{title}</h2>
@@ -374,7 +374,7 @@ export function ConfirmationDialog({
 
   return (
     <ModalShell onClose={onCancel}>
-      <div className="mx-auto max-w-lg rounded-card border border-border-subtle bg-surface-elevated p-8 shadow-2xl">
+      <div className="mx-auto w-full max-w-lg rounded-card border border-border-subtle bg-surface-elevated p-6 sm:p-8 shadow-2xl">
         <div className="mb-6 text-center">
           <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-amber-900/30">
             <svg className="w-8 h-8 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
@@ -489,7 +489,7 @@ export function StatCard({
         <GlyphChip className={glyphColorClass}>{glyph}</GlyphChip>
         <div className="text-sm font-bold text-text-muted">{label}</div>
       </div>
-      <div className="text-4xl font-black text-white">{value}</div>
+      <div className="text-3xl sm:text-4xl font-black text-white">{value}</div>
     </div>
   )
 }
@@ -552,12 +552,12 @@ export function PageHeader({
   children?: ReactNode
 }) {
   return (
-    <header className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+    <header className="mb-6 sm:mb-10 flex flex-col justify-between gap-4 sm:gap-6 md:flex-row md:items-center">
       <div>
-        <h1 className="mb-1 text-4xl font-black text-white">{title}</h1>
-        {subtitle ? <p className="text-lg text-text-muted">{subtitle}</p> : null}
+        <h1 className="mb-1 text-3xl sm:text-4xl font-black text-white">{title}</h1>
+        {subtitle ? <p className="text-base sm:text-lg text-text-muted">{subtitle}</p> : null}
       </div>
-      {children ? <div className="flex items-center gap-3">{children}</div> : null}
+      {children ? <div className="flex flex-wrap items-center gap-3">{children}</div> : null}
     </header>
   )
 }

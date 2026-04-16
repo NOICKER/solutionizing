@@ -178,14 +178,14 @@ function StepIndicator({ step }: { step: number }) {
   return (
     <div className="mb-8">
       <div className="mb-4 flex items-center justify-between">
-        <div className="inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1 text-sm font-bold text-[#d77a57]">
-          Step {step} of 4
+        <div className="inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1.5 text-xs sm:text-sm font-bold text-[#d77a57]">
+          Step {step} <span className="hidden sm:inline">of 4</span>
         </div>
       </div>
       <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
         <div className="h-full rounded-full bg-[#d77a57]" style={{ width: `${(step / 4) * 100}%` }} />
       </div>
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center justify-between text-xs sm:text-sm">
         <div className={step >= 1 ? 'font-bold text-[#d77a57]' : 'text-[#9b98a8] dark:text-gray-500'}>Brief</div>
         <div className={step >= 2 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Setup</div>
         <div className={step >= 3 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Questions</div>
@@ -916,8 +916,8 @@ function MissionWizardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
+    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60 transition-all duration-300">
         {showDraftBanner ? (
           <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/70 dark:bg-amber-950/40">
             <span className="text-sm font-semibold text-amber-800 dark:text-amber-100">You have an unsaved draft. Continue where you left off?</span>
@@ -1307,7 +1307,7 @@ function MissionWizardContent() {
             }
           }}
         >
-          <div className="mx-auto max-w-xl rounded-card border border-[#e5e4e0] bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+          <div className="mx-auto max-w-xl rounded-card border border-[#e5e4e0] bg-white p-6 sm:p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
             <div className="mb-6">
               <h3 className="text-2xl font-black text-[#1a1625] dark:text-white">Exit mission wizard?</h3>
               <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
@@ -1365,8 +1365,8 @@ export function MissionWizardPage() {
 
 function MissionWizardPageLoading() {
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
+    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60">
         <div className="mb-8">
           <div className="mb-4 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1 text-sm font-bold text-[#d77a57]">
             Step 1 of 4

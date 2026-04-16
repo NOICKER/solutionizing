@@ -136,8 +136,8 @@ function TesterWorkspaceSkeleton() {
   const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
+      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
         <div className="mb-8 flex flex-col items-center space-y-4 text-center">
           <div className={`h-9 w-40 ${skeletonBar}`} />
           <div className={`h-12 w-full max-w-2xl rounded-[1.75rem] ${skeletonBar}`} />
@@ -511,40 +511,40 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
   if (phase === 'briefing') {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
+      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
+        <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-700 dark:bg-green-900/40 dark:text-green-300">MISSION ASSIGNED</div>
-            <h1 className="mb-3 text-4xl font-black text-[#1a1625] dark:text-white">{assignment.mission.title}</h1>
-            <p className="mx-auto max-w-2xl text-lg text-[#6b687a] dark:text-gray-400">{assignment.mission.goal}</p>
+            <h1 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white sm:text-4xl">{assignment.mission.title}</h1>
+            <p className="mx-auto max-w-2xl text-base text-[#6b687a] dark:text-gray-400 sm:text-lg">{assignment.mission.goal}</p>
           </div>
 
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">REWARD</div>
-              <div className="mb-1 text-3xl font-black text-[#1a1625] dark:text-white">{formatCoins(assignment.mission.coinPerTester)}</div>
-              <div className="text-sm text-[#6b687a] dark:text-gray-400">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
+              <div className="mb-1 text-2xl font-black text-[#1a1625] dark:text-white sm:text-3xl">{formatCoins(assignment.mission.coinPerTester)}</div>
+              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
             </div>
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">ESTIMATED TIME</div>
-              <div className="mb-1 text-3xl font-black text-[#1a1625] dark:text-white">{assignment.mission.estimatedMinutes}</div>
-              <div className="text-sm text-[#6b687a] dark:text-gray-400">minutes</div>
+              <div className="mb-1 text-2xl font-black text-[#1a1625] dark:text-white sm:text-3xl">{assignment.mission.estimatedMinutes}</div>
+              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">minutes</div>
             </div>
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
               <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">EXPIRES IN</div>
-              <div className="mb-1 text-3xl font-black text-amber-600">{hoursLeft}</div>
-              <div className="text-sm text-[#6b687a] dark:text-gray-400">hours</div>
+              <div className="mb-1 text-2xl font-black text-amber-600 sm:text-3xl">{hoursLeft}</div>
+              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">hours</div>
             </div>
           </div>
 
-          <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-8 dark:border-gray-700 dark:bg-gray-800">
+          <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 sm:p-8">
             <h2 className="mb-6 text-xl font-black text-[#1a1625] dark:text-white">What you&apos;ll be testing</h2>
             <div className="space-y-4">
               {assignment.mission.assets.map((asset, index) => (
-                <div key={index} className="flex items-center gap-4 rounded-2xl bg-[#faf9f7] p-4 dark:bg-gray-700">
+                <div key={index} className="flex flex-col gap-4 rounded-2xl bg-[#faf9f7] p-4 dark:bg-gray-700 sm:flex-row sm:items-center">
                   <div className="flex-1">
                     <div className="mb-1 text-sm font-semibold text-[#1a1625] dark:text-white">{asset.label || asset.type.replaceAll('_', ' ')}</div>
-                    <div className="text-sm text-[#6b687a] dark:text-gray-400">
+                    <div className="truncate text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">
                       {asset.type === 'TEXT_DESCRIPTION' ? asset.url : asset.url}
                     </div>
                   </div>
@@ -552,7 +552,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                     <button
                       type="button"
                       onClick={() => setOutboundWarningUrl(asset.url)}
-                      className="rounded-[2rem] bg-blue-600 px-6 py-2.5 font-bold text-white transition-all hover:shadow-lg hover:scale-105"
+                      className="w-full rounded-[2rem] bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:shadow-lg hover:scale-105 sm:w-auto"
                     >
                       {asset.type === 'LINK' ? 'OPEN →' : 'VIEW →'}
                     </button>
@@ -566,9 +566,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           {startError ? <p className="mb-4 text-sm text-red-600">{startError}</p> : null}
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col-reverse items-center justify-between gap-6 sm:flex-row">
             <Link href="/dashboard/tester" className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white">← Back to dashboard</Link>
-            <button className={`flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
+            <button className={`w-full flex items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
               {startLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
               BEGIN MISSION →
             </button>
@@ -618,8 +618,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     const currentTextLength = typeof answer === 'string' ? answer.length : 0
 
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-3xl rounded-panel bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
+        <div className="mx-auto max-w-3xl rounded-panel bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm text-[#6b687a] dark:text-gray-400">Question {currentQuestion + 1} of {questions.length}</span>
@@ -643,8 +643,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <div className="inline-flex rounded-full bg-[#d77a57]/10 px-3 py-1 text-sm font-bold text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#f0a98c]">{assignment.mission.title}</div>
           </div>
 
-          <div className="mb-6 rounded-card border border-[#e5e4e0] bg-white p-8 dark:border-gray-700 dark:bg-gray-800">
-            <h2 className="mb-6 text-2xl font-black text-[#1a1625] dark:text-white">{current.text}</h2>
+          <div className="mb-6 rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 sm:p-8">
+            <h2 className="mb-6 text-xl font-black text-[#1a1625] dark:text-white sm:text-2xl">{current.text}</h2>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
               <div>
@@ -721,9 +721,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           {currentError && !currentTextRule ? <p className="mb-4 text-sm text-red-600">{currentError}</p> : null}
 
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
             <button className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white" onClick={() => setCurrentQuestion((value) => Math.max(0, value - 1))}>← Back</button>
-            <button className={`px-8 py-3.5 ${primaryButtonClass}`} onClick={handleNextQuestion}>
+            <button className={`w-full px-8 py-3.5 sm:w-auto ${primaryButtonClass}`} onClick={handleNextQuestion}>
               {currentQuestion === questions.length - 1 ? 'REVIEW ANSWERS →' : 'NEXT →'}
             </button>
           </div>
@@ -759,16 +759,16 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     const tooShortSet = new Set(tooShortIndexes)
 
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900">
+      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
+        <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
           <div className="mb-8 text-center">
             <div className="mb-4 inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">REVIEW</div>
-            <h1 className="mb-3 text-4xl font-black text-[#1a1625] dark:text-white">Review Your Answers</h1>
+            <h1 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white sm:text-4xl">Review Your Answers</h1>
           </div>
 
           <div className="mb-8 space-y-4">
             {questions.map((question, index) => (
-              <div key={question.id} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div key={question.id} className="rounded-card border border-[#e5e4e0] bg-white p-5 dark:border-gray-700 dark:bg-gray-800 sm:p-6">
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
                     <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>

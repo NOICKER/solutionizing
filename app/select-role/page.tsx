@@ -112,22 +112,22 @@ function SelectRoleContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 sm:p-8">
       <div className="w-full max-w-5xl">
         <div className="mb-12 text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover">
               <BrandMark />
             </div>
-            <h1 className="text-4xl font-black text-text-main">SOLUTIONIZING</h1>
+            <h1 className="text-2xl sm:text-4xl font-black text-text-main">SOLUTIONIZING</h1>
           </div>
-          <p className="text-xl text-text-muted">How will you use Solutionizing?</p>
+          <p className="text-lg sm:text-xl text-text-muted">How will you use Solutionizing?</p>
         </div>
 
         <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
           <div
             onClick={() => setActiveRole('FOUNDER')}
-            className={`cursor-pointer rounded-3xl border-2 p-8 transition-all duration-200 ${
+            className={`cursor-pointer rounded-3xl border-2 p-6 sm:p-8 transition-all duration-200 ${
               founderCardClass
             }`}
           >
@@ -192,7 +192,7 @@ function SelectRoleContent() {
 
           <div
             onClick={() => setActiveRole('TESTER')}
-            className={`cursor-pointer rounded-3xl border-2 p-8 transition-all duration-200 ${
+            className={`cursor-pointer rounded-3xl border-2 p-6 sm:p-8 transition-all duration-200 ${
               testerCardClass
             }`}
           >

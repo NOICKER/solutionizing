@@ -275,8 +275,8 @@ function AuthForm() {
   }
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-card bg-surface border border-border-subtle p-12">
+    <main className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6">
+      <div className="w-full max-w-md rounded-card bg-surface border border-border-subtle p-6 md:p-12">
         {signupSuccess ? (
           <div className="text-center">
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-900/50">

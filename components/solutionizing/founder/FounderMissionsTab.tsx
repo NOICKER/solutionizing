@@ -107,7 +107,7 @@ export function FounderMissionsTab({
           return (
             <div
               key={mission.id}
-              className={`rounded-card border border-border-subtle bg-surface p-6 ${isCardClickable ? 'cursor-pointer transition-all hover:border-primary/30 hover:bg-surface-elevated' : ''}`}
+              className={`rounded-card border border-border-subtle bg-surface p-4 sm:p-5 ${isCardClickable ? 'cursor-pointer transition-all hover:border-primary/30 hover:bg-surface-elevated' : ''}`}
               onClick={isCardClickable ? openMissionCard : undefined}
               onKeyDown={
                 isCardClickable
@@ -127,7 +127,7 @@ export function FounderMissionsTab({
                   <h3 className="mb-1 text-lg font-black text-white">{mission.title}</h3>
                   {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-text-muted">{mission.goal}</p> : null}
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center sm:justify-end gap-2">
                   <MissionStatusBadge status={mission.status} />
                   {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
                     <RetestCountChip count={mission.retests!.length} />
@@ -176,7 +176,7 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status === 'DRAFT' ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/mission/wizard?edit=true&missionId=${mission.id}`}
                     className={`px-4 py-2 text-sm ${outlineButtonClass}`}
@@ -199,7 +199,7 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status === 'ACTIVE' ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/mission/status/${mission.id}`}
                     className={`px-4 py-2 text-sm ${outlineButtonClass}`}
@@ -232,7 +232,7 @@ export function FounderMissionsTab({
 
               {mission.status === 'PAUSED' ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Link
                       href={`/mission/status/${mission.id}`}
                       className={`px-4 py-2 text-sm ${outlineButtonClass}`}
@@ -307,9 +307,9 @@ export function FounderMissionsTab({
   return (
     <section
       id="missions-section"
-      className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-6"
+      className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-5"
     >
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Control</div>
           <h2 className="mt-2 text-2xl font-black text-white">Your Missions</h2>

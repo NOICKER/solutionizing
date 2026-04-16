@@ -43,7 +43,7 @@ function CoinPackCard({
 
   return (
     <div
-      className={`relative rounded-card border bg-surface p-6 transition-all hover:border-primary/40 ${
+      className={`relative rounded-card border bg-surface p-4 sm:p-5 transition-all hover:border-primary/40 ${
         pack.popular ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border-subtle'
       }`}
     >
@@ -124,7 +124,7 @@ function PurchaseOutcomePanel({
   const isSuccess = purchaseResult.status === 'success'
 
   return (
-    <div className="rounded-panel border border-border-subtle bg-surface p-6 sm:p-8">
+    <div className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6">
       <div
         className={`inline-flex h-16 w-16 items-center justify-center rounded-3xl ${
           isSuccess ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'
@@ -252,7 +252,7 @@ export function FounderWalletsTab({
   }
 
   return (
-    <section className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6">
+    <section className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-5">
       <div className="mb-8">
         <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Architectural Capital</div>
         <h2 className="mt-2 text-2xl font-black text-white">Available Balance</h2>
@@ -270,7 +270,7 @@ export function FounderWalletsTab({
             <div>
               <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">Available balance</div>
               <div className="mt-1 flex flex-wrap items-end gap-3">
-                <span className="text-4xl font-black text-white">{formatCoins(coinBalance)} COINS</span>
+                <span className="text-3xl sm:text-4xl font-black text-white">{formatCoins(coinBalance)} COINS</span>
                 <span className="pb-1 text-sm font-medium text-text-muted">~ ₹{(coinBalance / 100).toFixed(0)} Value</span>
               </div>
             </div>

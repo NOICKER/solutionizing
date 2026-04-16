@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { AuthActionLink } from "@/components/AuthActionLink";
 
@@ -160,12 +162,12 @@ export default function LandingPage() {
   return (
     <div className="transition-colors duration-300">
       <header className="sticky top-0 z-50 w-full border-b border-secondary/20 bg-neutral-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary bg-primary text-white shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined font-bold">analytics</span>
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-primary bg-primary text-white shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-xl sm:text-2xl font-bold">analytics</span>
             </div>
-            <h2 className="text-xl font-extrabold tracking-tight text-text-main">
+            <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main">
               Solutionizing
             </h2>
           </div>
@@ -177,48 +179,48 @@ export default function LandingPage() {
             <a className="text-sm font-bold text-text-main transition-colors hover:text-primary" href="#pricing">Pricing</a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signin" className="hidden px-4 py-2 text-sm font-extrabold text-text-main transition-colors hover:text-primary lg:block">
               Sign In
             </AuthActionLink>
-            <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signin" className="rounded-xl border border-primary bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-cta-orange transition-all hover:bg-primary-hover">
-              Start your mission
+            <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signin" className="rounded-xl border border-primary bg-primary px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-cta-orange transition-all hover:bg-primary-hover">
+              Start
             </AuthActionLink>
           </div>
         </div>
       </header>
 
       <main>
-        <section className="overflow-hidden bg-neutral-bg py-24 lg:py-32">
-          <div className="mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-2 lg:gap-16">
-            <div className="flex flex-col gap-10 lg:gap-12">
-              <div className="flex flex-col gap-8 lg:gap-9">
-                <div className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.3em] text-primary">Most founders ship blind.</div>
-                <h1 className="text-5xl font-extrabold leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[5.7rem]">
+        <section className="overflow-hidden bg-neutral-bg py-16 sm:py-24 lg:py-32">
+          <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 sm:gap-14 lg:grid-cols-2 lg:gap-16">
+            <div className="flex flex-col gap-8 sm:gap-10 lg:gap-12">
+              <div className="flex flex-col gap-8 lg:gap-9 text-center lg:text-left">
+                <div className="inline-flex items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-primary">Most founders ship blind.</div>
+                <h1 className="text-4xl font-extrabold leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[5.7rem]">
                   You do not need more feedback.{" "}
                   <span className="text-primary">You need signal.</span>
                 </h1>
-                <p className="max-w-xl text-lg font-medium leading-relaxed text-text-main/60 lg:text-xl">
+                <p className="mx-auto lg:mx-0 max-w-xl text-base sm:text-lg font-medium leading-relaxed text-text-main/60 lg:text-xl">
                   Solutionizing helps founders validate one product decision at a time,
                   using matched testers and a synthesis layer that turns loose feedback
                   into a next move.
                 </p>
-                <div className="text-[11px] font-black uppercase tracking-[0.25em] text-text-main/40">
+                <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] text-text-main/40">
                   For founders shipping product and testers contributing expertise
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-end gap-6 lg:gap-8">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-center lg:justify-start gap-6 lg:gap-8">
                 <div className="flex flex-col gap-3">
                   <span className="pl-1 text-[11px] font-black uppercase tracking-widest text-text-main/60">For founders -&gt;</span>
-                  <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="rounded-2xl border-b-4 border-orange-800 bg-primary px-10 py-5 text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
+                  <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="w-full sm:w-auto text-center rounded-2xl border-b-4 border-orange-800 bg-primary px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
                     Launch your mission
                   </AuthActionLink>
                 </div>
 
                 <div className="flex flex-col gap-3">
                   <span className="pl-1 text-[11px] font-black uppercase tracking-widest text-text-main/60">For testers -&gt;</span>
-                  <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="rounded-2xl border-2 border-secondary/40 px-9 py-4 text-lg font-black text-secondary transition-all hover:bg-secondary/5 lg:px-10 lg:py-5 lg:text-xl">
+                  <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="w-full sm:w-auto text-center rounded-2xl border-2 border-secondary/40 px-8 sm:px-9 py-4 text-base sm:text-lg font-black text-secondary transition-all hover:bg-secondary/5 lg:px-10 lg:py-5 lg:text-xl">
                     Become a tester
                   </AuthActionLink>
                 </div>
@@ -262,13 +264,13 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="mockup-layer rounded-2xl border border-white/10 bg-text-main p-7 text-white shadow-2xl lg:translate-x-4">
-                    <div className="mb-3 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-2xl font-bold text-primary">chat_bubble</span>
-                      <h4 className="text-[11px] font-black uppercase tracking-widest text-primary">Key friction point</h4>
+                  <div className="mockup-layer rounded-2xl border border-white/10 bg-text-main p-5 sm:p-7 text-white shadow-2xl lg:translate-x-4">
+                    <div className="mb-2 sm:mb-3 flex items-center gap-2 sm:gap-3">
+                      <span className="material-symbols-outlined text-xl sm:text-2xl font-bold text-primary">chat_bubble</span>
+                      <h4 className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-primary">Key friction point</h4>
                     </div>
-                    <p className="mb-3 text-lg font-bold leading-relaxed text-white">&quot;I understood the action, but not what would happen next.&quot;</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Verified signal</p>
+                    <p className="mb-2 sm:mb-3 text-base sm:text-lg font-bold leading-relaxed text-white">&quot;I understood the action, but not what would happen next.&quot;</p>
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Verified signal</p>
                   </div>
                 </div>
               </div>
@@ -276,13 +278,13 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="border-y border-secondary/15 bg-white py-10">
-          <div className="mx-auto grid max-w-7xl gap-6 px-6 md:grid-cols-3">
+        <section className="border-y border-secondary/15 bg-white py-8 sm:py-10">
+          <div className="mx-auto grid max-w-7xl gap-4 sm:gap-6 md:grid-cols-3 px-6">
             {credibilityStats.map((item) => (
-              <div key={item.label} className="rounded-[2rem] border border-secondary/15 bg-neutral-bg px-6 py-6">
-                <div className="text-4xl font-black tracking-tight text-text-main">{item.value}</div>
-                <div className="mt-2 text-sm font-black uppercase tracking-[0.18em] text-secondary">{item.label}</div>
-                <p className="mt-3 text-base leading-relaxed text-text-main/65">{item.detail}</p>
+              <div key={item.label} className="rounded-[1.5rem] sm:rounded-[2rem] border border-secondary/15 bg-neutral-bg px-5 py-5 sm:px-6 sm:py-6">
+                <div className="text-3xl sm:text-4xl font-black tracking-tight text-text-main">{item.value}</div>
+                <div className="mt-1 sm:mt-2 text-[0.7rem] sm:text-sm font-black uppercase tracking-[0.18em] text-secondary">{item.label}</div>
+                <p className="mt-2 sm:mt-3 text-sm sm:text-base leading-relaxed text-text-main/65">{item.detail}</p>
               </div>
             ))}
           </div>
@@ -341,7 +343,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl">
-                <div className="heading-eyebrow">Examples from recent missions</div>
+                <div className="text-[0.7rem] font-black uppercase tracking-[0.3em] text-primary">Examples from recent missions</div>
                 <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Proof looks like clearer decisions, not more transcripts.</h2>
               </div>
               <p className="max-w-xl text-base leading-relaxed text-text-main/60 lg:text-lg">
@@ -438,7 +440,7 @@ export default function LandingPage() {
         <section id="pricing" className="bg-neutral-bg py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mx-auto mb-14 max-w-3xl text-center lg:mb-16">
-              <div className="heading-eyebrow">Pricing</div>
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.3em] text-primary">Pricing</div>
               <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Start with one mission. Scale when the process works.</h2>
               <p className="mt-5 text-lg leading-relaxed text-text-main/65 lg:text-xl">
                 The pricing mirrors the product: focused, lightweight, and designed to
@@ -464,7 +466,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <div className="mt-8">
-                    <AuthActionLink authedHref={plan.authedHref} role={plan.role} mode={plan.mode} publicHref={plan.publicHref} className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-black transition-all ${plan.featured ? "bg-primary text-white shadow-cta-orange hover:bg-primary-hover" : "border border-secondary/20 bg-neutral-bg text-text-main hover:bg-white"}`}>
+                    <AuthActionLink authedHref={plan.authedHref} role={plan.role} mode={plan.mode} className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-black transition-all ${plan.featured ? "bg-primary text-white shadow-cta-orange hover:bg-primary-hover" : "border border-secondary/20 bg-neutral-bg text-text-main hover:bg-white"}`}>
                       {plan.cta}
                     </AuthActionLink>
                   </div>
@@ -476,12 +478,12 @@ export default function LandingPage() {
 
         <section className="bg-[#f7f4ee] py-28 text-center lg:py-32">
           <div className="mx-auto max-w-7xl px-6">
-            <h2 className="mb-10 text-5xl font-black leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[6rem]">
+            <h2 className="mb-8 sm:mb-10 text-4xl font-black leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[6rem]">
               Ready to make the next product decision
-              <br />
+              <br className="hidden sm:block" />
               with less guessing?
             </h2>
-            <p className="mx-auto mb-12 max-w-3xl text-lg font-medium leading-relaxed text-text-main/50 lg:mb-14 lg:text-xl">
+            <p className="mx-auto mb-10 sm:mb-12 max-w-3xl text-base sm:text-lg font-medium leading-relaxed text-text-main/50 lg:mb-14 lg:text-xl">
               Join founders running focused missions and specialists contributing the kind of feedback teams can actually ship from.
             </p>
 
@@ -503,7 +505,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-secondary/20 bg-white py-14 lg:py-16">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-6 md:flex-row md:gap-10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-10 px-6 md:flex-row">
           <div className="flex items-center gap-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg">
               <span className="material-symbols-outlined font-bold">analytics</span>
@@ -511,20 +513,21 @@ export default function LandingPage() {
             <h2 className="text-2xl font-black tracking-tighter text-text-main">Solutionizing</h2>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8 text-sm font-black uppercase tracking-[0.2em] text-text-main/70 md:gap-10">
-            <Link className="transition-colors hover:text-primary" href="/terms">Terms</Link>
-            <Link className="transition-colors hover:text-primary" href="/privacy">Privacy</Link>
-            <Link className="transition-colors hover:text-primary" href="/refund">Refund Policy</Link>
-            <Link className="transition-colors hover:text-primary" href="/tester-payment-policy">Tester Payment Policy</Link>
-            <a className="transition-colors hover:text-primary" href="#methodology">Methodology</a>
-            <a className="transition-colors hover:text-primary" href="#testers">Testers</a>
-            <Link className="transition-colors hover:text-primary" href="/contact">Contact</Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-center text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-text-main/70 md:gap-10">
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+              <Link className="transition-colors hover:text-primary" href="/terms">Terms</Link>
+              <Link className="transition-colors hover:text-primary" href="/privacy">Privacy</Link>
+              <Link className="transition-colors hover:text-primary" href="/refund">Refund Policy</Link>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+              <Link className="transition-colors hover:text-primary" href="/tester-payment-policy">Tester Policy</Link>
+              <Link className="transition-colors hover:text-primary" href="/contact">Contact</Link>
+            </div>
           </div>
 
-          <p className="text-sm font-bold text-text-main/50">&copy; {new Date().getFullYear()} Solutionizing Research Lab. Built for signal.</p>
+          <p className="text-center text-xs sm:text-sm font-bold text-text-main/50">&copy; {new Date().getFullYear()} Solutionizing Research Lab. Built for signal.</p>
         </div>
       </footer>
     </div>
   );
 }
-

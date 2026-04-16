@@ -404,15 +404,15 @@ export default function AdminDashboardPage() {
               'User Management'
             }
             subtitle={
-              activeTab === 'overview' ? 'Monitor platform activity and manage system resources.' :
-              activeTab === 'missions' ? 'Review and moderate mission submissions.' :
-              activeTab === 'flags' ? 'Review structured mission signals and moderation concerns.' :
-              'Oversee platform users and their activity.'
+              activeTab === 'overview' ? 'Monitor platform activity.' :
+              activeTab === 'missions' ? 'Moderate mission submissions.' :
+              activeTab === 'flags' ? 'Review structured flags.' :
+              'Manage platform users.'
             }
           >
-            <button className={primaryButtonClass} onClick={() => toast.info('All systems operational.')}>System Status</button>
+            <button className={`${primaryButtonClass} whitespace-nowrap hidden sm:inline-flex`} onClick={() => toast.info('All systems operational.')}>System Status</button>
             <button
-              className={outlineButtonClass}
+              className={`${outlineButtonClass} whitespace-nowrap`}
               onClick={() => {
                 if (activeTab === 'overview') void fetchDashboardData()
                 if (activeTab === 'missions') void fetchPendingMissions()
@@ -471,10 +471,10 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800">
-                      <div className="flex items-center justify-between border-b border-[#e5e4e0] p-6 dark:border-gray-700">
-                        <h3 className="text-xl font-bold text-[#1a1625] dark:text-white">Newest User Registrations</h3>
+                    <div className="flex flex-col gap-2 border-b border-[#e5e4e0] p-4 sm:p-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
+                        <h3 className="text-lg font-bold text-[#1a1625] sm:text-xl dark:text-white">Newest User Registrations</h3>
                         <button
-                          className="text-sm font-bold text-[#d77a57] hover:underline"
+                          className="text-left text-sm font-bold text-[#d77a57] hover:underline sm:text-right"
                           onClick={() => setActiveTab('users')}
                         >
                           View all users
@@ -484,40 +484,40 @@ export default function AdminDashboardPage() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
                             <thead>
-                              <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
-                                <th className="px-6 py-4">User</th>
-                                <th className="px-6 py-4">Role</th>
-                                <th className="px-6 py-4">Joined On</th>
-                                <th className="px-6 py-4">Identity Status</th>
+                              <tr className="bg-[#faf9f7] text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
+                                <th className="px-4 py-3 sm:px-6 sm:py-4">User</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4">Role</th>
+                                <th className="hidden px-6 py-4 md:table-cell">Joined On</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4">Status</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                               {recentUsers.map((user) => (
                                 <tr key={user.id} className="text-sm">
-                                  <td className="px-6 py-4 text-[#1a1625] dark:text-white">
-                                    <div className="flex flex-col gap-1">
-                                      <span className="font-bold">{getUserDisplayName(user)}</span>
-                                      <span className="text-xs text-[#8b8797] dark:text-gray-400">{user.email}</span>
+                                  <td className="px-4 py-4 sm:px-6 text-[#1a1625] dark:text-white">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="font-bold line-clamp-1">{getUserDisplayName(user)}</span>
+                                      <span className="text-[0.7rem] text-[#8b8797] dark:text-gray-400 line-clamp-1">{user.email}</span>
                                     </div>
                                   </td>
-                                  <td className="px-6 py-4 uppercase">
-                                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${getRoleBadgeClass(user.role)}`}>
+                                  <td className="px-4 py-4 sm:px-6 uppercase">
+                                    <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold sm:px-3 sm:py-1 sm:text-xs ${getRoleBadgeClass(user.role)}`}>
                                       {user.role || 'PENDING'}
                                     </span>
                                   </td>
-                                  <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
+                                  <td className="hidden px-6 py-4 text-[#6b687a] md:table-cell dark:text-gray-400">
                                     {format(new Date(user.createdAt), 'MMM d, yyyy')}
                                   </td>
-                                  <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
+                                  <td className="px-4 py-4 sm:px-6 text-[#6b687a] dark:text-gray-400">
                                     {user.isSuspended ? (
-                                      <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-red-500" />
-                                        <span className="text-xs font-bold text-red-600 dark:text-red-300">Suspended</span>
+                                      <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-red-500 sm:h-2 sm:w-2" />
+                                        <span className="text-[0.65rem] font-bold text-red-600 sm:text-xs dark:text-red-300">Suspended</span>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300">Active</span>
+                                      <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 sm:h-2 sm:w-2" />
+                                        <span className="text-[0.65rem] font-bold text-emerald-600 sm:text-xs dark:text-emerald-300">Active</span>
                                       </div>
                                     )}
                                   </td>
@@ -555,42 +555,41 @@ export default function AdminDashboardPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>
-                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
-                            <th className="px-6 py-4">Mission Details</th>
-                            <th className="px-6 py-4">Founder</th>
-                            <th className="px-6 py-4">Requested Coins</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                          <tr className="bg-[#faf9f7] text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">Mission</th>
+                            <th className="hidden px-6 py-4 sm:table-cell">Founder</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">Reward</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                           {pendingMissions.map((mission) => (
                             <tr key={mission.id} className="text-sm">
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-4 sm:px-6">
                                 <div className="flex flex-col">
-                                  <span className="font-bold">{mission.title}</span>
-                                  <span className="line-clamp-1 text-xs text-[#8b8797] dark:text-gray-400">{mission.description}</span>
+                                  <span className="font-bold line-clamp-1">{mission.title}</span>
+                                  <span className="text-[0.7rem] text-[#8b8797] dark:text-gray-400">{mission.founder?.companyName || 'Unknown Corp'}</span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="hidden px-6 py-4 sm:table-cell text-[0.7rem]">
                                 <div className="flex flex-col">
-                                  <span className="font-bold">{mission.founder?.companyName || 'Unknown Corp'}</span>
-                                  <span className="text-xs text-[#8b8797] dark:text-gray-400">{mission.founder?.displayName}</span>
+                                  <span className="font-semibold text-[#1a1625] dark:text-white">{mission.founder?.displayName}</span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 font-bold text-[#d77a57]">
-                                {mission.totalRewardCoins} Coins
+                              <td className="px-4 py-4 sm:px-6 font-bold text-[#d77a57] text-[0.7rem] sm:text-sm">
+                                {mission.totalRewardCoins} <span className="hidden sm:inline">Coins</span>
                               </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center justify-end gap-2">
+                              <td className="px-4 py-4 sm:px-6">
+                                <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:justify-end sm:gap-2">
                                   <button
-                                    className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
+                                    className="rounded-full bg-emerald-100 px-3 py-1 text-[0.65rem] font-bold text-emerald-700 hover:bg-emerald-200 sm:px-4 sm:text-xs dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
                                     onClick={() => handleApproveMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
                                     Approve
                                   </button>
                                   <button
-                                    className="rounded-full bg-orange-100 px-4 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-900/60"
+                                    className="rounded-full bg-orange-100 px-3 py-1 text-[0.65rem] font-bold text-orange-700 hover:bg-orange-200 sm:px-4 sm:text-xs dark:bg-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-900/60"
                                     onClick={() => handleRejectMission(mission.id, mission.title)}
                                     disabled={isActionLoading}
                                   >
@@ -622,12 +621,12 @@ export default function AdminDashboardPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead>
-                          <tr className="bg-[#faf9f7] text-xs font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
-                            <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Role</th>
-                            <th className="px-6 py-4">Joined On</th>
-                            <th className="px-6 py-4">Profile Status</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                          <tr className="bg-[#faf9f7] text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">User</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">Role</th>
+                            <th className="hidden px-6 py-4 lg:table-cell">Joined</th>
+                            <th className="hidden px-6 py-4 sm:table-cell">Status</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
@@ -636,64 +635,54 @@ export default function AdminDashboardPage() {
 
                             return (
                               <tr key={userItem.id} className="text-sm">
-                                <td className="px-6 py-4">
-                                  <div className="flex flex-col gap-1">
-                                    <span className="font-bold">{getUserDisplayName(userItem)}</span>
-                                    <span className="text-xs text-[#8b8797] dark:text-gray-400">{userItem.email}</span>
+                                <td className="px-4 py-4 sm:px-6">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="font-bold line-clamp-1">{getUserDisplayName(userItem)}</span>
+                                    <span className="text-[0.7rem] text-[#8b8797] dark:text-gray-400 line-clamp-1">{userItem.email}</span>
                                     {userItem.isSuspended ? (
-                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-red-700 dark:bg-red-900/40 dark:text-red-300">
                                         Suspended
                                       </span>
                                     ) : null}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 uppercase">
-                                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${getRoleBadgeClass(userItem.role)}`}>
+                                <td className="px-4 py-4 sm:px-6 uppercase">
+                                  <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold sm:px-3 sm:py-1 sm:text-xs ${getRoleBadgeClass(userItem.role)}`}>
                                     {userItem.role || 'PENDING'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-[#6b687a] dark:text-gray-400">
+                                <td className="hidden px-6 py-4 text-[#6b687a] lg:table-cell dark:text-gray-400">
                                   {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="hidden px-6 py-4 sm:table-cell">
                                   <div className="flex flex-col gap-1">
                                     {userItem.founderProfile || userItem.testerProfile ? (
-                                      <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-300">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                      <span className="flex items-center gap-1 text-[0.65rem] font-bold text-emerald-600 sm:text-xs dark:text-emerald-300">
+                                        <div className="h-1 w-1 rounded-full bg-emerald-500 sm:h-1.5 sm:w-1.5" />
                                         Completed
                                       </span>
                                     ) : (
-                                      <span className="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-300">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                      <span className="flex items-center gap-1 text-[0.65rem] font-bold text-orange-600 sm:text-xs dark:text-orange-300">
+                                        <div className="h-1 w-1 rounded-full bg-orange-500 sm:h-1.5 sm:w-1.5" />
                                         Incomplete
                                       </span>
                                     )}
-                                    {userItem.isSuspended && userItem.suspendedAt ? (
-                                      <span className="text-xs text-[#8b8797] dark:text-gray-400">
-                                        Since {format(new Date(userItem.suspendedAt), 'MMM d, yyyy')}
-                                      </span>
-                                    ) : null}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-4 py-4 sm:px-6 text-right">
                                   {userItem.isSuspended ? (
-                                    <div className="flex flex-col items-end gap-2">
+                                    <div className="flex flex-col items-end gap-1 sm:gap-2">
                                       <button
-                                        className={`inline-flex items-center gap-2 px-4 py-2 text-xs ${outlineButtonClass}`}
+                                        className={`inline-flex items-center gap-2 px-3 py-1.5 text-[0.65rem] sm:px-4 sm:py-2 sm:text-xs ${outlineButtonClass}`}
                                         disabled={isUserActionLoading}
                                         onClick={() => void handleUnsuspendUser(userItem.id)}
                                       >
                                         {isUserActionLoading ? <SpinnerIcon /> : null}
                                         Unsuspend
                                       </button>
-                                      {userItem.suspendReason ? (
-                                        <p className="max-w-[220px] text-right text-xs text-[#8b8797] dark:text-gray-400">
-                                          Reason: {userItem.suspendReason}
-                                        </p>
-                                      ) : null}
                                     </div>
                                   ) : (
-                                    <span className="text-xs font-semibold text-[#9b98a8] dark:text-gray-400">No actions</span>
+                                    <span className="text-[0.65rem] font-semibold text-[#9b98a8] sm:text-xs dark:text-gray-400">No actions</span>
                                   )}
                                 </td>
                               </tr>

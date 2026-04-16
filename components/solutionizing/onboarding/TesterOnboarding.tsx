@@ -255,7 +255,7 @@ export function TesterOnboarding({
   }
 
   const footer = (
-    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-8 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
@@ -308,7 +308,7 @@ export function TesterOnboarding({
             Tester setup
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-text-main sm:text-5xl">
+            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-5xl">
               Welcome to Solutionizing{initialDisplayName.trim() ? `, ${initialDisplayName.trim()}` : ''}
             </h1>
             <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
@@ -333,7 +333,7 @@ export function TesterOnboarding({
       {step === 2 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">Here&apos;s how it works</h1>
+            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Here&apos;s how it works</h1>
             <p className="mt-3 text-lg leading-8 text-text-muted">
               The platform is built to get you into the right missions quickly and reward strong feedback.
             </p>
@@ -343,7 +343,7 @@ export function TesterOnboarding({
             {testerHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-5"
+                className="flex gap-4 rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-4 sm:p-5"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
@@ -370,7 +370,7 @@ export function TesterOnboarding({
       {step === 3 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">Set up your tester profile</h1>
+            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Set up your tester profile</h1>
             <p className="mt-3 text-lg leading-8 text-text-muted">
               Pick the spaces where your feedback is strongest and tell us the devices you use most.
             </p>
@@ -469,7 +469,7 @@ export function TesterOnboarding({
         ) : (
           <div>
             <div className="max-w-2xl">
-              <h1 className="text-4xl font-black tracking-tight text-text-main">Add your banking details</h1>
+              <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Add your banking details</h1>
               <p className="mt-3 text-lg leading-8 text-text-muted">
                 These details are used only for tester withdrawals so payouts can be processed without chasing you later.
               </p>
@@ -570,7 +570,7 @@ export function TesterOnboarding({
             <CheckCircle2 className="h-10 w-10" />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>
+            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">You&apos;re all set!</h1>
             <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               We&apos;ll match you with missions that fit your skills. Keep your availability on to get notified.
             </p>

@@ -140,7 +140,7 @@ export function FounderOnboarding({
   }
 
   const footer = (
-    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-8 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
@@ -186,7 +186,7 @@ export function FounderOnboarding({
             Founder setup
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-text-main sm:text-5xl">
+            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-5xl">
               Welcome to Solutionizing{displayName.trim() ? `, ${displayName.trim()}` : ''}
             </h1>
             <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
@@ -211,7 +211,7 @@ export function FounderOnboarding({
       {step === 2 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">Here&apos;s how it works</h1>
+            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Here&apos;s how it works</h1>
             <p className="mt-3 text-lg leading-8 text-text-muted">
               Launching your first mission only takes a few moves, and we keep the workflow structured from the start.
             </p>
@@ -221,7 +221,7 @@ export function FounderOnboarding({
             {founderHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-card border border-border-subtle bg-surface-elevated p-5"
+                className="flex gap-4 rounded-card border border-border-subtle bg-surface-elevated p-4 sm:p-5"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
@@ -248,7 +248,7 @@ export function FounderOnboarding({
       {step === 3 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">Tell us about yourself</h1>
+            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Tell us about yourself</h1>
             <p className="mt-3 text-lg leading-8 text-text-muted">
               These details show up across your founder workspace and mission setup flow.
             </p>
@@ -300,7 +300,7 @@ export function FounderOnboarding({
       {step === 4 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">Fund your first mission</h1>
+            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Fund your first mission</h1>
             <p className="mt-3 text-lg leading-8 text-text-muted">
               Pick a coin pack so you know how funding will work once payments go live.
             </p>
@@ -317,7 +317,7 @@ export function FounderOnboarding({
               return (
                 <div
                   key={pack.id}
-                  className={`rounded-card border p-6 transition-all ${
+                  className={`rounded-card border p-4 sm:p-6 transition-all ${
                     isSelected
                       ? 'border-primary bg-primary/10 shadow-[0_22px_42px_-34px_rgba(217,119,87,0.6)]'
                       : 'border-border-subtle bg-surface-elevated'
@@ -376,7 +376,7 @@ export function FounderOnboarding({
             <CheckCircle2 className="h-10 w-10" />
           </div>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black tracking-tight text-text-main">You&apos;re all set!</h1>
+            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">You&apos;re all set!</h1>
             <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
               Your profile is ready. Create your first mission and start collecting feedback.
             </p>

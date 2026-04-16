@@ -127,7 +127,7 @@ function NotificationToggleRow({
   ariaLabel?: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-4 dark:border-gray-700 dark:bg-gray-900/60">
+    <div className="flex items-center justify-between gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] p-3.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-4">
       <div>
         <div className="text-sm font-bold text-[#1a1625] dark:text-white">{title}</div>
         <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">{description}</div>
@@ -517,18 +517,18 @@ export function TesterSettingsTab({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Coin Balance</div>
-            <div className="mt-2 text-lg font-black text-[#1a1625] dark:text-white">{formatCoins(coinBalance)} coins</div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
+            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Coin Balance</div>
+            <div className="mt-1 text-base font-black text-[#1a1625] dark:text-white sm:mt-2 sm:text-lg">{formatCoins(coinBalance)} coins</div>
           </div>
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Reputation</div>
-            <div className="mt-2 text-lg font-black text-[#1a1625] dark:text-white">{reputationScore.toFixed(1)}</div>
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
+            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Reputation</div>
+            <div className="mt-1 text-base font-black text-[#1a1625] dark:text-white sm:mt-2 sm:text-lg">{reputationScore.toFixed(1)}</div>
           </div>
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-4 py-3 dark:border-gray-700 dark:bg-gray-900/60">
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">Tier</div>
-            <div className="mt-2">
+          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
+            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Tier</div>
+            <div className="mt-1 sm:mt-2">
               <ReputationTierBadge tier={reputationTier} />
             </div>
           </div>
@@ -565,7 +565,7 @@ export function TesterSettingsTab({
               type="button"
               onClick={() => void handleSaveProfile()}
               disabled={isLoadingProfile || isSavingProfile || !hasLoadedProfile}
-              className={`px-5 py-3 text-sm ${primaryButtonClass}`}
+              className={`w-full px-5 py-3 text-sm sm:w-auto ${primaryButtonClass}`}
             >
               {isSavingProfile ? 'Saving Changes...' : isLoadingProfile ? 'Loading Profile...' : 'Save Changes'}
             </button>
@@ -594,7 +594,7 @@ export function TesterSettingsTab({
                 type="button"
                 onClick={() => void handleChangePassword()}
                 disabled={!testerEmail || isSendingResetLink}
-                className={`px-5 py-3 text-sm ${outlineButtonClass}`}
+                className={`w-full px-5 py-3 text-sm sm:w-auto ${outlineButtonClass}`}
               >
                 {isSendingResetLink ? 'Sending Reset Link...' : 'Change Password'}
               </button>
@@ -651,7 +651,7 @@ export function TesterSettingsTab({
           description="Highlight the kinds of products and spaces where your feedback is strongest."
         >
           <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
               {expertiseTagOptions.map((tag) => {
                 const active = expertiseTags.includes(tag)
 
@@ -662,7 +662,7 @@ export function TesterSettingsTab({
                     onClick={() => void handleExpertiseTagToggle(tag)}
                     disabled={isLoadingProfile || isSavingExpertise || !hasLoadedProfile}
                     aria-pressed={active}
-                    className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all ${
+                    className={`rounded-2xl border px-3 py-2.5 text-left text-xs font-bold transition-all sm:px-4 sm:py-3 sm:text-sm ${
                       active
                         ? 'border-[#d77a57] bg-[#fff4ef] text-[#a85034] dark:bg-[#d77a57]/10'
                         : 'border-[#efe8e1] bg-[#fffdfa] text-[#6b687a] hover:border-[#dfcfc2] hover:text-[#1a1625] dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white'
@@ -807,7 +807,7 @@ export function TesterSettingsTab({
                 type="button"
                 onClick={() => void handleSavePayout()}
                 disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                className={`px-5 py-3 text-sm ${primaryButtonClass}`}
+                className={`w-full px-5 py-3 text-sm sm:w-auto ${primaryButtonClass}`}
               >
                 {isSavingPayout ? 'Saving Payout Details...' : 'Save Payout Details'}
               </button>
@@ -849,7 +849,7 @@ export function TesterSettingsTab({
         >
           <button
             onClick={onOpenDeleteModal}
-            className="rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-700"
+            className="w-full rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-700 sm:w-auto"
           >
             DELETE ACCOUNT
           </button>
