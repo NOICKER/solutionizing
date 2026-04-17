@@ -60,6 +60,22 @@ export async function middleware(request: NextRequest) {
   // Refresh session — required for Server Components to read auth state
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Guard: JWT cookie present but session invalid (e.g. missing `sub` claim).
+  // Clear the stale cookies and redirect to landing instead of a raw 403 loop.
+  if (!user) {
+    const hasAuthCookie = request.cookies.getAll().some(c => c.name.includes('-auth-token'))
+    if (hasAuthCookie) {
+      const cleanRedirect = NextResponse.redirect(new URL('/', request.url))
+      // Nuke every Supabase auth-token cookie fragment
+      request.cookies.getAll()
+        .filter(c => c.name.includes('-auth-token'))
+        .forEach(c => {
+          cleanRedirect.cookies.set(c.name, '', { maxAge: 0, path: '/' })
+        })
+      return cleanRedirect
+    }
+  }
+
   const role = user?.app_metadata?.role
   const isResetPasswordRoute = path === '/reset-password' || path === '/auth/reset-password'
 
