@@ -1,7 +1,16 @@
-"use client";
+import { LandingPageHeader } from "@/components/solutionizing/LandingPageHeader";
+import { 
+  HeroActionButtons, 
+  TesterHeroAction, 
+  PricingAction, 
+  BottomActionButtons 
+} from "@/components/solutionizing/LandingPageClientBlocks";
+import dynamic from "next/dynamic";
 
-import Link from "next/link";
-import { AuthActionLink } from "@/components/AuthActionLink";
+const MissionDashboardMockup = dynamic(
+  () => import("@/components/solutionizing/MissionDashboardMockup").then(m => m.MissionDashboardMockup),
+  { ssr: true }
+);
 
 const productPillars = [
   {
@@ -161,34 +170,7 @@ const pricingPlans = [
 export default function LandingPage() {
   return (
     <div className="transition-colors duration-300">
-      <header className="sticky top-0 z-50 w-full border-b border-secondary/20 bg-neutral-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-primary bg-primary text-white shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-xl sm:text-2xl font-bold">analytics</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main">
-              Solutionizing
-            </h2>
-          </div>
-
-          <nav className="hidden items-center gap-8 md:flex">
-            <a className="text-sm font-bold text-text-main transition-colors hover:text-primary" href="#product">Product</a>
-            <a className="text-sm font-bold text-text-main transition-colors hover:text-primary" href="#methodology">Methodology</a>
-            <a className="text-sm font-bold text-text-main transition-colors hover:text-primary" href="#testers">Testers</a>
-            <a className="text-sm font-bold text-text-main transition-colors hover:text-primary" href="#pricing">Pricing</a>
-          </nav>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signin" className="hidden px-4 py-2 text-sm font-extrabold text-text-main transition-colors hover:text-primary lg:block">
-              Sign In
-            </AuthActionLink>
-            <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signin" className="rounded-xl border border-primary bg-primary px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-cta-orange transition-all hover:bg-primary-hover">
-              Start
-            </AuthActionLink>
-          </div>
-        </div>
-      </header>
+      <LandingPageHeader />
 
       <main>
         <section className="overflow-hidden bg-neutral-bg py-16 sm:py-24 lg:py-32">
@@ -210,71 +192,10 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-end justify-center lg:justify-start gap-6 lg:gap-8">
-                <div className="flex flex-col gap-3">
-                  <span className="pl-1 text-[11px] font-black uppercase tracking-widest text-text-main/60">For founders -&gt;</span>
-                  <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="w-full sm:w-auto text-center rounded-2xl border-b-4 border-orange-800 bg-primary px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
-                    Launch your mission
-                  </AuthActionLink>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <span className="pl-1 text-[11px] font-black uppercase tracking-widest text-text-main/60">For testers -&gt;</span>
-                  <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="w-full sm:w-auto text-center rounded-2xl border-2 border-secondary/40 px-8 sm:px-9 py-4 text-base sm:text-lg font-black text-secondary transition-all hover:bg-secondary/5 lg:px-10 lg:py-5 lg:text-xl">
-                    Become a tester
-                  </AuthActionLink>
-                </div>
-              </div>
+              <HeroActionButtons />
             </div>
 
-            <div className="group relative">
-              <div className="absolute -inset-10 rounded-full bg-primary/10 opacity-40 blur-[100px]" />
-              <div className="relative z-10 aspect-[4/3] overflow-hidden rounded-[2.5rem] border border-secondary/20 bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)]">
-                <div className="flex items-center justify-between border-b border-secondary/20 bg-neutral-bg/80 px-6 py-4 lg:px-8 lg:py-5">
-                  <div className="flex gap-2.5">
-                    <div className="h-3.5 w-3.5 rounded-full bg-red-500/60" />
-                    <div className="h-3.5 w-3.5 rounded-full bg-orange-500/60" />
-                    <div className="h-3.5 w-3.5 rounded-full bg-secondary/40" />
-                  </div>
-                  <div className="text-[11px] font-black uppercase tracking-[0.25em] text-text-main/60">Mission Dashboard - v2.4</div>
-                </div>
-
-                <div className="flex flex-col gap-8 p-6 lg:p-8">
-                  <div className="rounded-2xl border border-secondary/20 bg-neutral-bg p-6 lg:p-7">
-                    <div className="mb-5 flex items-start justify-between gap-4">
-                      <h3 className="text-lg font-black text-text-main">Checkout clarity validation</h3>
-                      <span className="rounded-md bg-secondary px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white">Active</span>
-                    </div>
-
-                    <div className="mb-3 h-3 w-full rounded-full border border-secondary/5 bg-white shadow-inner">
-                      <div className="h-full w-3/4 rounded-full bg-primary shadow-[0_0_15px_rgba(217,119,6,0.3)]" />
-                    </div>
-                    <p className="text-[11px] font-black uppercase text-text-main/60">18 of 24 responses collected</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-5 lg:gap-6">
-                    <div className="rounded-2xl border border-secondary/20 bg-white p-5 shadow-xl shadow-black/5 lg:p-6">
-                      <p className="mb-2 text-[11px] font-black uppercase text-secondary">Signal strength</p>
-                      <p className="text-4xl font-black text-text-main">84%</p>
-                    </div>
-
-                    <div className="z-20 rounded-2xl border-[3px] border-primary bg-white p-6 shadow-[0_25px_50px_-12px_rgba(217,119,6,0.25)] lg:translate-y-2 lg:scale-[1.03]">
-                      <p className="mb-2 text-[11px] font-black uppercase text-primary">Critical insight</p>
-                      <p className="text-3xl font-black tracking-tight text-text-main">Copy is underspecified</p>
-                    </div>
-                  </div>
-
-                  <div className="mockup-layer rounded-2xl border border-white/10 bg-text-main p-5 sm:p-7 text-white shadow-2xl lg:translate-x-4">
-                    <div className="mb-2 sm:mb-3 flex items-center gap-2 sm:gap-3">
-                      <span className="material-symbols-outlined text-xl sm:text-2xl font-bold text-primary">chat_bubble</span>
-                      <h4 className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-primary">Key friction point</h4>
-                    </div>
-                    <p className="mb-2 sm:mb-3 text-base sm:text-lg font-bold leading-relaxed text-white">&quot;I understood the action, but not what would happen next.&quot;</p>
-                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Verified signal</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MissionDashboardMockup />
           </div>
         </section>
 
@@ -397,9 +318,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="mt-10 inline-flex rounded-2xl border border-secondary bg-secondary px-10 py-5 text-xl font-black text-white shadow-xl shadow-secondary/20 transition-all hover:bg-teal-900">
-                    Apply as a tester
-                  </AuthActionLink>
+                  <TesterHeroAction />
                 </div>
 
                 <div className="relative lg:w-1/2">
@@ -466,9 +385,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <div className="mt-8">
-                    <AuthActionLink authedHref={plan.authedHref} role={plan.role} mode={plan.mode} className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-black transition-all ${plan.featured ? "bg-primary text-white shadow-cta-orange hover:bg-primary-hover" : "border border-secondary/20 bg-neutral-bg text-text-main hover:bg-white"}`}>
-                      {plan.cta}
-                    </AuthActionLink>
+                    <PricingAction plan={plan} />
                   </div>
                 </article>
               ))}
@@ -487,14 +404,7 @@ export default function LandingPage() {
               Join founders running focused missions and specialists contributing the kind of feedback teams can actually ship from.
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
-              <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="w-full rounded-2xl border-b-4 border-orange-800 bg-primary px-12 py-6 text-xl font-black text-white shadow-[0_20px_50px_-10px_rgba(217,119,6,0.4)] transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 sm:w-auto">
-                Launch your mission
-              </AuthActionLink>
-              <Link href="/contact" className="w-full rounded-2xl border-[3px] border-text-main bg-transparent px-12 py-6 text-xl font-black text-text-main shadow-xl transition-all hover:bg-text-main hover:text-white sm:w-auto">
-                Talk to the team
-              </Link>
-            </div>
+            <BottomActionButtons />
 
             <div className="mt-12 flex flex-col items-center gap-4 lg:mt-14">
               <p className="text-[13px] font-black uppercase tracking-[0.3em] text-text-main">No credit card required to explore the flow.</p>
@@ -515,13 +425,13 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-center text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-text-main/70 md:gap-10">
             <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
-              <Link className="transition-colors hover:text-primary" href="/terms">Terms</Link>
-              <Link className="transition-colors hover:text-primary" href="/privacy">Privacy</Link>
-              <Link className="transition-colors hover:text-primary" href="/refund">Refund Policy</Link>
+              <a className="transition-colors hover:text-primary" href="/terms">Terms</a>
+              <a className="transition-colors hover:text-primary" href="/privacy">Privacy</a>
+              <a className="transition-colors hover:text-primary" href="/refund">Refund Policy</a>
             </div>
             <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
-              <Link className="transition-colors hover:text-primary" href="/tester-payment-policy">Tester Policy</Link>
-              <Link className="transition-colors hover:text-primary" href="/contact">Contact</Link>
+              <a className="transition-colors hover:text-primary" href="/tester-payment-policy">Tester Policy</a>
+              <a className="transition-colors hover:text-primary" href="/contact">Contact</a>
             </div>
           </div>
 

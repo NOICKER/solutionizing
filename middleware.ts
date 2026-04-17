@@ -7,6 +7,8 @@ const publicRoutes = new Set([
   '/privacy',
   '/terms',
   '/tester',
+  '/pricing',
+  '/methodology'
 ])
 
 function redirectWithCookies(request: NextRequest, response: NextResponse, pathname: string) {
@@ -21,6 +23,22 @@ function redirectWithCookies(request: NextRequest, response: NextResponse, pathn
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
+  const path = request.nextUrl.pathname
+  const isPublicRoute = publicRoutes.has(path)
+
+  // Fast hint for redirecting logged-in users away from the landing page
+  if (path === '/') {
+    const hasAuthCookieHint = request.cookies.getAll().some(c => c.name.includes('-auth-token'))
+    if (hasAuthCookieHint) {
+      return redirectWithCookies(request, response, '/dashboard')
+    }
+  }
+
+  // Skip expensive auth check for public routes
+  if (isPublicRoute) {
+    return response
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -38,11 +56,10 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
+
   // Refresh session — required for Server Components to read auth state
   const { data: { user } } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-  const isPublicRoute = publicRoutes.has(path)
   const role = user?.app_metadata?.role
   const isResetPasswordRoute = path === '/reset-password' || path === '/auth/reset-password'
 
@@ -64,10 +81,6 @@ export async function middleware(request: NextRequest) {
   // Not logged in: redirect to login unless on auth or public route
   if (!user && !isAuthRoute && !isPublicRoute) {
     return redirectWithCookies(request, response, '/auth')
-  }
-
-  if (user && path === '/') {
-    return redirectWithCookies(request, response, '/dashboard')
   }
 
   if (user) {
