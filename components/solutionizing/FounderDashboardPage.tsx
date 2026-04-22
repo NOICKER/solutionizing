@@ -605,7 +605,7 @@ function FounderDashboardContent() {
               >
                 <Icon className="h-5 w-5" />
               </div>
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">
+              <span className="w-full truncate text-center text-[10px] font-bold uppercase tracking-[0.18em]">
                 {item.mobileLabel}
               </span>
             </button>
