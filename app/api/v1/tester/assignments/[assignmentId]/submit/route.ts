@@ -10,6 +10,7 @@ import { updateReputation } from '@/lib/business/reputation'
 import { assignmentQueue, notificationQueue } from '@/lib/queue'
 import { logApiRouteError } from '@/lib/api/log'
 import { invalidateTesterAvailabilityCache } from '@/lib/business/tester-availability'
+import { shouldAllowTimeoutAutoSubmit } from '@/lib/tester-workspace-submission'
 
 const SubmissionResponseSchema = z.object({
   questionId: z.string().cuid(),
@@ -21,6 +22,7 @@ const SubmissionResponseSchema = z.object({
 
 const SubmitAssignmentSchema = z.object({
   responses: z.array(SubmissionResponseSchema),
+  submissionMode: z.enum(['MANUAL', 'TIMEOUT_AUTO']).default('MANUAL'),
 })
 
 type SubmitAssignmentResult =
@@ -73,7 +75,10 @@ function validateSubmissionResponses(
     responseRating?: number
     responseChoice?: string
     timeTakenSeconds?: number
-  }>
+  }>,
+  options?: {
+    allowPartialRequired?: boolean
+  }
 ) {
   const questionMap = new Map(questions.map((question) => [question.id, question]))
   const responseMap = new Map<
@@ -106,7 +111,7 @@ function validateSubmissionResponses(
   }
 
   for (const question of questions) {
-    if (question.isRequired && !responseMap.has(question.id)) {
+    if (!options?.allowPartialRequired && question.isRequired && !responseMap.has(question.id)) {
       throw badRequest('Missing response for required question', {
         questionId: question.id,
       })
@@ -199,6 +204,7 @@ export async function POST(
           missionId: true,
           testerId: true,
           status: true,
+          timedOutAt: true,
           timeoutAt: true,
           mission: {
             select: {
@@ -215,12 +221,24 @@ export async function POST(
       }
 
       const now = new Date()
+      const allowTimeoutAutoSubmission =
+        body.submissionMode === 'TIMEOUT_AUTO' &&
+        assignment.status === AssignmentStatus.IN_PROGRESS &&
+        body.responses.length > 0 &&
+        shouldAllowTimeoutAutoSubmit({
+          now,
+          status: 'IN_PROGRESS',
+          timeoutAt: assignment.timeoutAt,
+          timedOutAt: assignment.timedOutAt,
+        })
 
       if (
         assignment.status === AssignmentStatus.TIMED_OUT ||
         (assignment.status === AssignmentStatus.IN_PROGRESS && assignment.timeoutAt <= now)
       ) {
-        if (assignment.status === AssignmentStatus.IN_PROGRESS) {
+        if (allowTimeoutAutoSubmission) {
+          // Allow near-expiry auto-submissions to preserve completed work.
+        } else if (assignment.status === AssignmentStatus.IN_PROGRESS) {
           const updatedAssignments = await tx.missionAssignment.updateMany({
             where: {
               id: assignment.id,
@@ -303,8 +321,9 @@ export async function POST(
         },
       })
 
-      validateSubmissionResponses(questions, body.responses)
-
+      validateSubmissionResponses(questions, body.responses, {
+        allowPartialRequired: allowTimeoutAutoSubmission,
+      })
       const questionMap = new Map(questions.map((question) => [question.id, question]))
 
       await tx.missionResponse.createMany({

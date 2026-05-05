@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiTesterAssignmentDetail, ApiTesterStats } from '@/types/api'
 import {
+  BrandMark,
   ErrorStatePanel,
   NotFoundPanel,
   SpinnerIcon,
@@ -22,6 +23,7 @@ import {
 import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { useAuth } from '@/context/AuthContext'
 import { type FlagReasonValue } from '@/lib/flags'
+import { buildSubmissionResponses, type SubmissionMode } from '@/lib/tester-workspace-submission'
 
 function formatTimeLeft(totalSeconds: number) {
   if (totalSeconds <= 0) return '0:00'
@@ -32,7 +34,15 @@ function formatTimeLeft(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
-function TimesUpOverlay({ onReturn }: { onReturn: () => void }) {
+function TimesUpOverlay({
+  isSubmitting,
+  message,
+  onReturn,
+}: {
+  isSubmitting: boolean
+  message: string
+  onReturn: () => void
+}) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="mx-4 max-w-lg rounded-3xl border border-red-900/50 bg-gray-900 p-10 text-center shadow-2xl">
@@ -40,9 +50,9 @@ function TimesUpOverlay({ onReturn }: { onReturn: () => void }) {
           <Clock className="h-10 w-10 text-red-400" />
         </div>
         <h1 className="mb-3 text-3xl font-black text-white">Time&apos;s up!</h1>
-        <p className="mb-8 text-base text-gray-400">Your mission has expired. Any partial answers were not submitted.</p>
-        <button className={`px-10 py-4 text-lg ${primaryButtonClass}`} onClick={onReturn}>
-          RETURN TO DASHBOARD
+        <p className="mb-8 text-base text-gray-400">{message}</p>
+        <button className={`px-10 py-4 text-lg ${primaryButtonClass}`} disabled={isSubmitting} onClick={onReturn}>
+          {isSubmitting ? 'SUBMITTING...' : 'RETURN TO DASHBOARD'}
         </button>
       </div>
     </div>
@@ -131,50 +141,171 @@ function getTooShortAnswerIndexes(
   }, [])
 }
 
+const workspacePageClass = 'min-h-screen bg-background px-4 py-4 text-text-main sm:px-6 lg:px-8'
+const workspacePanelClass = 'relative overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-card'
+const workspaceSectionClass = 'rounded-card border border-border-subtle bg-surface-elevated'
+const workspaceEyebrowClass = 'inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted'
+const workspaceBackLinkClass = 'font-semibold text-text-muted transition-colors hover:text-text-main'
+const selectedChoiceClass = 'border-primary/60 bg-primary/12 text-text-main shadow-[0_18px_35px_-24px_rgba(249,124,90,0.55)]'
+const unselectedChoiceClass = 'border-border-subtle bg-surface-elevated text-text-main hover:border-primary/35 hover:bg-surface'
+
+function getAssetTypeLabel(type: ApiTesterAssignmentDetail['mission']['assets'][number]['type']) {
+  switch (type) {
+    case 'LINK':
+      return 'Live link'
+    case 'SCREENSHOT':
+      return 'Screenshot'
+    case 'SHORT_VIDEO':
+      return 'Video'
+    case 'TEXT_DESCRIPTION':
+      return 'Context'
+    default:
+      return type.replaceAll('_', ' ')
+  }
+}
+
+function getAssetActionLabel(type: ApiTesterAssignmentDetail['mission']['assets'][number]['type']) {
+  switch (type) {
+    case 'LINK':
+      return 'Open link'
+    case 'SCREENSHOT':
+      return 'Open screenshot'
+    case 'SHORT_VIDEO':
+      return 'Open video'
+    default:
+      return 'Open asset'
+  }
+}
+
+function getAssetDisplayLabel(asset: ApiTesterAssignmentDetail['mission']['assets'][number]) {
+  if (asset.label?.trim()) {
+    return asset.label.trim()
+  }
+
+  switch (asset.type) {
+    case 'LINK':
+      return 'Product experience'
+    case 'SCREENSHOT':
+      return 'Founder reference screenshot'
+    case 'SHORT_VIDEO':
+      return 'Founder reference video'
+    case 'TEXT_DESCRIPTION':
+      return 'Mission note'
+    default:
+      return getAssetTypeLabel(asset.type)
+  }
+}
+
+function getAssetSupportText(asset: ApiTesterAssignmentDetail['mission']['assets'][number]) {
+  if (asset.type === 'TEXT_DESCRIPTION') {
+    return asset.url
+  }
+
+  if (asset.type === 'SCREENSHOT') {
+    return 'Open the uploaded screenshot reference in a new tab while you test.'
+  }
+
+  if (asset.type === 'SHORT_VIDEO') {
+    return 'Open the founder walkthrough video in a new tab while you test.'
+  }
+
+  try {
+    const parsed = new URL(asset.url)
+    return parsed.host.replace(/^www\./, '')
+  } catch {
+    return asset.url
+  }
+}
+
+function getAnswerPreview(answer: string | number | undefined) {
+  if (answer === undefined || answer === '') {
+    return 'No answer provided'
+  }
+
+  return String(answer)
+}
+
+function WorkspaceStatusPanel({
+  title,
+  actionHref,
+  actionLabel,
+}: {
+  title: string
+  actionHref: string
+  actionLabel: string
+}) {
+  return (
+    <div className={workspacePageClass}>
+      <div className="mx-auto max-w-3xl">
+        <div className={`${workspacePanelClass} px-6 py-10 text-center sm:px-10`}>
+          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          <div className="relative z-10">
+            <div className={`${workspaceEyebrowClass} mb-4`}>
+              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              Tester workspace
+            </div>
+            <h1 className="mb-6 text-3xl font-black text-white sm:text-4xl">{title}</h1>
+            <Link href={actionHref} className={`px-8 py-3.5 ${primaryButtonClass}`}>
+              {actionLabel}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TesterWorkspaceSkeleton() {
-  const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
-  const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
+  const skeletonBar = 'animate-pulse rounded-full bg-surface-elevated'
+  const skeletonBlock = 'animate-pulse rounded-3xl bg-background'
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
-        <div className="mb-8 flex flex-col items-center space-y-4 text-center">
-          <div className={`h-9 w-40 ${skeletonBar}`} />
-          <div className={`h-12 w-full max-w-2xl rounded-[1.75rem] ${skeletonBar}`} />
-          <div className={`h-5 w-full max-w-xl ${skeletonBar}`} />
-        </div>
+    <div className={workspacePageClass}>
+      <div className="mx-auto max-w-5xl">
+        <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
+          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          <div className="relative z-10">
+          <div className="mb-8 flex flex-col items-center space-y-4 text-center">
+            <div className={`h-9 w-40 ${skeletonBar}`} />
+            <div className={`h-12 w-full max-w-2xl rounded-[1.75rem] ${skeletonBar}`} />
+            <div className={`h-5 w-full max-w-xl ${skeletonBar}`} />
+          </div>
 
-        <div className="mb-8 grid gap-6 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="rounded-card border border-[#e5e4e0] bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800"
-            >
-              <div className={`mx-auto h-3 w-20 ${skeletonBar}`} />
-              <div className={`mx-auto mt-4 h-9 w-24 ${skeletonBar}`} />
-              <div className={`mx-auto mt-3 h-4 w-28 ${skeletonBar}`} />
-            </div>
-          ))}
-        </div>
-
-        <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-8 dark:border-gray-700 dark:bg-gray-800">
-          <div className={`h-6 w-52 ${skeletonBar}`} />
-          <div className="mt-6 space-y-4">
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className="flex items-center gap-4 rounded-2xl bg-[#faf9f7] p-4 dark:bg-gray-700">
-                <div className="flex-1 space-y-3">
-                  <div className={`h-4 w-36 ${skeletonBar}`} />
-                  <div className={`h-4 w-full max-w-lg ${skeletonBar}`} />
-                </div>
-                <div className={`h-11 w-28 rounded-[2rem] ${skeletonBlock}`} />
+          <div className="mb-8 grid gap-6 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-card border border-border-subtle bg-surface-elevated p-6 text-center"
+              >
+                <div className={`mx-auto h-3 w-20 ${skeletonBar}`} />
+                <div className={`mx-auto mt-4 h-9 w-24 ${skeletonBar}`} />
+                <div className={`mx-auto mt-3 h-4 w-28 ${skeletonBar}`} />
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div className={`h-5 w-36 ${skeletonBar}`} />
-          <div className={`h-14 w-44 rounded-[2rem] ${skeletonBlock}`} />
+          <div className="mb-8 rounded-card border border-border-subtle bg-surface-elevated p-8">
+            <div className={`h-6 w-52 ${skeletonBar}`} />
+            <div className="mt-6 space-y-4">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className="flex items-center gap-4 rounded-2xl border border-border-subtle bg-background p-4">
+                  <div className="flex-1 space-y-3">
+                    <div className={`h-4 w-36 ${skeletonBar}`} />
+                    <div className={`h-4 w-full max-w-lg ${skeletonBar}`} />
+                  </div>
+                  <div className={`h-11 w-28 rounded-[2rem] ${skeletonBlock}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className={`h-5 w-36 ${skeletonBar}`} />
+            <div className={`h-14 w-44 rounded-[2rem] ${skeletonBlock}`} />
+          </div>
+          </div>
         </div>
       </div>
     </div>
@@ -204,10 +335,14 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError] = useState('')
   const [timedOut, setTimedOut] = useState(false)
+  const [timedOutMessage, setTimedOutMessage] = useState('Time ran out. Any answers we could not submit are still saved on this device.')
+  const [timeoutAutoSubmitLoading, setTimeoutAutoSubmitLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [outboundWarningUrl, setOutboundWarningUrl] = useState<string | null>(null)
   const autosaveKey = `tester-workspace-autosave:${assignmentId}`
   const autosaveLoadedRef = useRef(false)
+  const timeoutWarningShownRef = useRef(false)
+  const timeoutAutoSubmitAttemptedRef = useRef(false)
 
   const loadAssignment = useCallback(async () => {
     setIsLoading(true)
@@ -291,57 +426,15 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     [assignment?.mission.questions]
   )
 
-  if (isLoading) {
-    return <TesterWorkspaceSkeleton />
-  }
-
-  if (workspaceLoadError) {
-    return (
-      <ErrorStatePanel
-        title="Unable to load workspace"
-        body={workspaceLoadError}
-        onRetry={() => void loadAssignment()}
-        backHref="/dashboard/tester"
-      />
-    )
-  }
-
-  if (isNotFound || !assignment) {
-    return <NotFoundPanel title="Assignment not found" backHref="/dashboard/tester" />
-  }
-
-  if (assignment.status === 'COMPLETED') {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">You already completed this mission.</h1>
-          <Link href="/dashboard/tester" className={`px-8 py-3.5 ${primaryButtonClass}`}>BACK TO DASHBOARD</Link>
-        </div>
-      </div>
-    )
-  }
-
-  if (assignment.status === 'TIMED_OUT' || assignment.status === 'ABANDONED' || assignment.status === 'MISSION_FULL') {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">This mission is no longer available.</h1>
-          <Link href="/dashboard/tester" className={`px-8 py-3.5 ${primaryButtonClass}`}>BACK TO DASHBOARD</Link>
-        </div>
-      </div>
-    )
-  }
-
   const activeAssignment = assignment
   const hoursLeft = Math.max(0, Math.floor((secondsLeft ?? 0) / 3600))
   const current = questions[currentQuestion]
 
-  // --- Time's Up Overlay (blocks everything) ---
-  if (timedOut && phase !== 'success') {
-    return <TimesUpOverlay onReturn={() => router.push('/dashboard/tester')} />
-  }
-
   async function handleStart() {
+    if (!activeAssignment) {
+      return
+    }
+
     setStartError('')
     setStartLoading(true)
 
@@ -401,10 +494,14 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     setCurrentQuestion((value) => value + 1)
   }
 
-  async function handleSubmitFeedback() {
+  const handleSubmitFeedback = useCallback(async (submissionMode: SubmissionMode = 'MANUAL') => {
+    if (!activeAssignment) {
+      return
+    }
+
     const tooShortIndexes = getTooShortAnswerIndexes(questions, answers)
 
-    if (tooShortIndexes.length > 0) {
+    if (submissionMode === 'MANUAL' && tooShortIndexes.length > 0) {
       setTouchedTextQuestions((currentTouched) => ({
         ...currentTouched,
         ...Object.fromEntries(tooShortIndexes.map((index) => [index, true])),
@@ -412,42 +509,35 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       return
     }
 
+    const responses = buildSubmissionResponses({
+      questions,
+      answers,
+      submissionMode,
+    })
+
+    if (submissionMode === 'TIMEOUT_AUTO' && responses.length === 0) {
+      setTimedOutMessage('Time ran out before there were any completed answers to submit.')
+      setTimedOut(true)
+      return
+    }
+
     setSubmitError('')
     setSubmitLoading(true)
 
+    if (submissionMode === 'TIMEOUT_AUTO') {
+      setTimeoutAutoSubmitLoading(true)
+      setTimedOutMessage('Submitting your completed answers now. Please do not close this page.')
+    }
+
     try {
-      const responses = questions.map((question, index) => {
-        const answer = answers[index]
-        const trimmedTextAnswer = typeof answer === 'string' ? answer.trim() : ''
-        const shouldSkipOptionalAnswer =
-          !question.isRequired &&
-          ((question.type === 'TEXT_SHORT' || question.type === 'TEXT_LONG')
-            ? trimmedTextAnswer.length === 0
-            : answer === undefined || answer === '')
-
-        if (shouldSkipOptionalAnswer) {
-          return null
-        }
-
-        return {
-          questionId: question.id,
-          responseText:
-            question.type === 'TEXT_SHORT' || question.type === 'TEXT_LONG'
-              ? trimmedTextAnswer
-              : undefined,
-          responseRating: question.type === 'RATING_1_5' ? Number(answer) : undefined,
-          responseChoice:
-            question.type === 'MULTIPLE_CHOICE' || question.type === 'YES_NO'
-              ? String(answer ?? '')
-              : undefined,
-        }
-      }).filter((response): response is NonNullable<typeof response> => response !== null)
-
       const response = await apiFetch<{ coinsEarned: number; newTier?: string }>(
         `/api/v1/tester/assignments/${activeAssignment.id}/submit`,
         {
           method: 'POST',
-          body: { responses },
+          body: {
+            responses,
+            submissionMode,
+          },
         }
       )
 
@@ -457,14 +547,24 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       })
       setSuccessState({ coinsEarned: response.coinsEarned, newTier: response.newTier, stats })
       setPhase('success')
-      // Clear autosave on successful submit
       try { localStorage.removeItem(autosaveKey) } catch { /* ignore */ }
       void refetch().catch(() => undefined)
     } catch (error) {
+      if (submissionMode === 'TIMEOUT_AUTO') {
+        if (isApiClientError(error) && error.code === 'ASSIGNMENT_EXPIRED') {
+          setTimedOutMessage('Time ran out before we could finish the auto-submit. Your latest answers are still saved on this device.')
+        } else {
+          setTimedOutMessage('We could not auto-submit before the session closed. Your latest answers are still saved on this device.')
+        }
+        setTimedOut(true)
+        return
+      }
+
       if (isApiClientError(error)) {
         if (error.code === 'MISSION_FULL' && error.status === 409) {
           setSubmitError("This mission just filled up. If your submission was accepted you'll still receive your coins.")
         } else if (error.code === 'ASSIGNMENT_EXPIRED') {
+          setTimedOutMessage('Time ran out. Your latest answers are still saved on this device.')
           setTimedOut(true)
         } else if (error.status === 400) {
           setSubmitError(error.message)
@@ -478,10 +578,64 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       }
     } finally {
       setSubmitLoading(false)
+      if (submissionMode === 'TIMEOUT_AUTO') {
+        setTimeoutAutoSubmitLoading(false)
+      }
     }
+  }, [activeAssignment, answers, autosaveKey, questions, refetch])
+
+  useEffect(() => {
+    if (phase === 'briefing' || phase === 'success' || secondsLeft === null || timeoutWarningShownRef.current) {
+      return
+    }
+
+    if (secondsLeft <= 120) {
+      timeoutWarningShownRef.current = true
+      toast.info("2 minutes left. We'll auto-submit any completed answers if time runs out.")
+    }
+  }, [phase, secondsLeft])
+
+  useEffect(() => {
+    if (
+      phase === 'briefing' ||
+      phase === 'success' ||
+      secondsLeft === null ||
+      secondsLeft > 1 ||
+      submitLoading ||
+      timeoutAutoSubmitAttemptedRef.current
+    ) {
+      return
+    }
+
+    const responses = buildSubmissionResponses({
+      questions,
+      answers,
+      submissionMode: 'TIMEOUT_AUTO',
+    })
+
+    if (responses.length === 0) {
+      return
+    }
+
+    timeoutAutoSubmitAttemptedRef.current = true
+    void handleSubmitFeedback('TIMEOUT_AUTO')
+  }, [answers, handleSubmitFeedback, phase, questions, secondsLeft, submitLoading])
+
+  if (timedOut && phase !== 'success') {
+    return (
+      <TimesUpOverlay
+        isSubmitting={timeoutAutoSubmitLoading}
+        message={timedOutMessage}
+        onReturn={() => router.push('/dashboard/tester')}
+      />
+    )
   }
 
   async function handleReportIssue() {
+    if (!activeAssignment) {
+      return
+    }
+
     if (!reportReason) {
       setReportError('Select a quick signal before submitting.')
       return
@@ -509,52 +663,102 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     }
   }
 
+  if (isLoading) {
+    return <TesterWorkspaceSkeleton />
+  }
+
+  if (workspaceLoadError) {
+    return (
+      <ErrorStatePanel
+        title="Unable to load workspace"
+        body={workspaceLoadError}
+        onRetry={() => void loadAssignment()}
+        backHref="/dashboard/tester"
+      />
+    )
+  }
+
+  if (isNotFound || !assignment) {
+    return <NotFoundPanel title="Assignment not found" backHref="/dashboard/tester" />
+  }
+
+  if (assignment.status === 'COMPLETED') {
+    return <WorkspaceStatusPanel title="You already completed this mission." actionHref="/dashboard/tester" actionLabel="BACK TO DASHBOARD" />
+  }
+
+  if (assignment.status === 'TIMED_OUT' || assignment.status === 'ABANDONED' || assignment.status === 'MISSION_FULL') {
+    return <WorkspaceStatusPanel title="This mission is no longer available." actionHref="/dashboard/tester" actionLabel="BACK TO DASHBOARD" />
+  }
+
   if (phase === 'briefing') {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
-        <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
+      <div className={workspacePageClass}>
+        <div className="mx-auto max-w-5xl">
+          <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
+            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            <div className="relative z-10">
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-bold text-green-700 dark:bg-green-900/40 dark:text-green-300">MISSION ASSIGNED</div>
-            <h1 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white sm:text-4xl">{assignment.mission.title}</h1>
-            <p className="mx-auto max-w-2xl text-base text-[#6b687a] dark:text-gray-400 sm:text-lg">{assignment.mission.goal}</p>
+            <div className={`${workspaceEyebrowClass} mb-4`}>
+              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              Mission assigned
+            </div>
+            <h1 className="mb-3 text-3xl font-black tracking-tight text-white sm:text-5xl">{assignment.mission.title}</h1>
+            <p className="mx-auto max-w-3xl text-sm leading-7 text-text-muted sm:text-base">{assignment.mission.goal}</p>
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-              <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">REWARD</div>
-              <div className="mb-1 text-2xl font-black text-[#1a1625] dark:text-white sm:text-3xl">{formatCoins(assignment.mission.coinPerTester)}</div>
-              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
+            <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
+              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Reward</div>
+              <div className="mb-1 text-3xl font-black text-white">{formatCoins(assignment.mission.coinPerTester)}</div>
+              <div className="text-sm text-text-muted">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
             </div>
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-              <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">ESTIMATED TIME</div>
-              <div className="mb-1 text-2xl font-black text-[#1a1625] dark:text-white sm:text-3xl">{assignment.mission.estimatedMinutes}</div>
-              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">minutes</div>
+            <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
+              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Estimated time</div>
+              <div className="mb-1 text-3xl font-black text-white">{assignment.mission.estimatedMinutes}</div>
+              <div className="text-sm text-text-muted">minutes</div>
             </div>
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-5 text-center dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-              <div className="mb-2 text-sm text-[#9b98a8] dark:text-gray-400">EXPIRES IN</div>
-              <div className="mb-1 text-2xl font-black text-amber-600 sm:text-3xl">{hoursLeft}</div>
-              <div className="text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">hours</div>
+            <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
+              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Expires in</div>
+              <div className="mb-1 text-3xl font-black text-primary">{hoursLeft}</div>
+              <div className="text-sm text-text-muted">hours</div>
             </div>
           </div>
 
-          <div className="mb-8 rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 sm:p-8">
-            <h2 className="mb-6 text-xl font-black text-[#1a1625] dark:text-white">What you&apos;ll be testing</h2>
+          <div className={`${workspaceSectionClass} mb-8 p-6 sm:p-8`}>
+            <div className="mb-6">
+              <div className={`${workspaceEyebrowClass} mb-3`}>
+                <BrandMark className="h-3.5 w-3.5 text-primary" />
+                Mission inputs
+              </div>
+              <h2 className="text-2xl font-black text-white">What you&apos;ll be testing</h2>
+              <p className="mt-2 text-sm text-text-muted">Everything below came directly from the founder. Keep these references nearby while you test.</p>
+            </div>
+
             <div className="space-y-4">
               {assignment.mission.assets.map((asset, index) => (
-                <div key={index} className="flex flex-col gap-4 rounded-2xl bg-[#faf9f7] p-4 dark:bg-gray-700 sm:flex-row sm:items-center">
+                <div key={index} className="flex flex-col gap-4 rounded-[1.75rem] border border-border-subtle bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1">
-                    <div className="mb-1 text-sm font-semibold text-[#1a1625] dark:text-white">{asset.label || asset.type.replaceAll('_', ' ')}</div>
-                    <div className="truncate text-xs text-[#6b687a] dark:text-gray-400 sm:text-sm">
-                      {asset.type === 'TEXT_DESCRIPTION' ? asset.url : asset.url}
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
+                        {getAssetTypeLabel(asset.type)}
+                      </span>
                     </div>
+                    <div className="text-base font-black text-white">{getAssetDisplayLabel(asset)}</div>
+                    <div className={`mt-2 text-sm leading-6 text-text-muted ${asset.type === 'TEXT_DESCRIPTION' ? 'whitespace-pre-wrap break-words' : 'break-all sm:break-normal'}`}>
+                      {getAssetSupportText(asset)}
+                    </div>
+                    {asset.type === 'LINK' ? (
+                      <div className="mt-2 text-xs text-text-muted/70">{asset.url}</div>
+                    ) : null}
                   </div>
                   {asset.type === 'TEXT_DESCRIPTION' ? null : (
                     <button
                       type="button"
                       onClick={() => setOutboundWarningUrl(asset.url)}
-                      className="w-full rounded-[2rem] bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:shadow-lg hover:scale-105 sm:w-auto"
+                      className="inline-flex w-full items-center justify-center rounded-[2rem] border border-primary/25 bg-primary/10 px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary/15 sm:w-auto"
                     >
-                      {asset.type === 'LINK' ? 'OPEN →' : 'VIEW →'}
+                      {getAssetActionLabel(asset.type)} →
                     </button>
                   )}
                 </div>
@@ -562,20 +766,20 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             </div>
           </div>
 
-          {hoursLeft < 2 ? <div className="mb-8 rounded-2xl border border-amber-100 bg-amber-50 p-6 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">This mission will expire soon. Make sure to complete it before the deadline to receive your coins.</div> : null}
+          {hoursLeft < 2 ? <div className="mb-8 rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 p-5 text-sm leading-6 text-amber-100">This mission will expire soon. Finish before the timer runs out to keep the reward.</div> : null}
 
-          {startError ? <p className="mb-4 text-sm text-red-600">{startError}</p> : null}
+          {startError ? <p className="mb-4 text-sm text-red-400">{startError}</p> : null}
 
           <div className="flex flex-col-reverse items-center justify-between gap-6 sm:flex-row">
-            <Link href="/dashboard/tester" className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white">← Back to dashboard</Link>
-            <button className={`w-full flex items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
+            <Link href="/dashboard/tester" className={workspaceBackLinkClass}>← Back to dashboard</Link>
+            <button className={`flex w-full items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
               {startLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
               BEGIN MISSION →
             </button>
           </div>
 
           <div className="mt-8 text-center">
-            <button className="text-sm text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white" onClick={() => setReportOpen(true)}>
+            <button className="text-sm text-text-muted underline transition-colors hover:text-text-main" onClick={() => setReportOpen(true)}>
               Flag something that feels off
             </button>
           </div>
@@ -602,6 +806,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               onCancel={() => setOutboundWarningUrl(null)}
             />
           ) : null}
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -618,33 +824,40 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     const currentTextLength = typeof answer === 'string' ? answer.length : 0
 
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
-        <div className="mx-auto max-w-3xl rounded-panel bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
+      <div className={workspacePageClass}>
+        <div className="mx-auto max-w-4xl">
+          <div className={`${workspacePanelClass} p-5 sm:p-6 lg:p-8`}>
+            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            <div className="relative z-10">
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-[#6b687a] dark:text-gray-400">Question {currentQuestion + 1} of {questions.length}</span>
+              <span className="text-sm text-text-muted">Question {currentQuestion + 1} of {questions.length}</span>
               {secondsLeft !== null ? (
                 <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${
                   secondsLeft < 300
-                    ? 'animate-pulse bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300'
-                    : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'
+                    ? 'animate-pulse bg-red-500/15 text-red-300'
+                    : 'bg-surface-elevated text-text-muted'
                 }`}>
                   <Clock className="h-3.5 w-3.5" />
                   {formatTimeLeft(secondsLeft)}
                 </div>
               ) : null}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#f3f3f5] dark:bg-gray-700">
-              <div className="h-full rounded-full bg-[#d77a57]" style={{ width: `${progress}%` }} />
+            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
             </div>
           </div>
 
           <div className="mb-6">
-            <div className="inline-flex rounded-full bg-[#d77a57]/10 px-3 py-1 text-sm font-bold text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#f0a98c]">{assignment.mission.title}</div>
+            <div className={workspaceEyebrowClass}>
+              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              {assignment.mission.title}
+            </div>
           </div>
 
-          <div className="mb-6 rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 sm:p-8">
-            <h2 className="mb-6 text-xl font-black text-[#1a1625] dark:text-white sm:text-2xl">{current.text}</h2>
+          <div className={`${workspaceSectionClass} mb-6 p-6 sm:p-8`}>
+            <h2 className="mb-6 text-xl font-black text-white sm:text-3xl">{current.text}</h2>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
               <div>
@@ -666,13 +879,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                   placeholder={current.type === 'TEXT_LONG' ? 'Share your detailed thoughts...' : 'Your answer...'}
                   className={`${textFieldClass} resize-none`}
                 />
-                <div className="mt-2 flex items-center justify-between text-xs text-[#9b98a8] dark:text-gray-400">
+                <div className="mt-2 flex items-center justify-between text-xs text-text-muted">
                   <span>{currentTextRule ? `Minimum ${currentTextRule.min} characters` : ''}</span>
                   <span>
                     {currentTextLength} / {currentTextRule?.max} characters
                   </span>
                 </div>
-                {currentTextError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{currentTextError}</p> : null}
+                {currentTextError ? <p className="mt-2 text-sm text-red-400">{currentTextError}</p> : null}
               </div>
             ) : null}
 
@@ -694,10 +907,20 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
-                    className={`w-full rounded-2xl border-2 p-4 text-left ${answer === option ? 'border-[#d77a57] bg-[#fdf8f6] dark:bg-[#d77a57]/10 dark:text-white' : 'border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                    onClick={() => {
+                      setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))
+                      setCurrentError('')
+                    }}
+                    className={`flex w-full items-start gap-4 rounded-[1.75rem] border-2 p-4 text-left transition-colors ${
+                      answer === option ? selectedChoiceClass : unselectedChoiceClass
+                    }`}
                   >
-                    {option}
+                    <span className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                      answer === option ? 'border-primary bg-primary' : 'border-border-subtle bg-surface'
+                    }`}>
+                      {answer === option ? <span className="h-2.5 w-2.5 rounded-full bg-surface" /> : null}
+                    </span>
+                    <span className="flex-1 break-words text-base font-semibold leading-6">{option}</span>
                   </button>
                 ))}
               </div>
@@ -709,8 +932,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
-                    className={`rounded-2xl border-2 p-4 text-lg ${answer === option ? 'border-[#d77a57] bg-[#fdf8f6] font-black text-[#d77a57] dark:bg-[#d77a57]/10' : 'border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                    onClick={() => {
+                      setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))
+                      setCurrentError('')
+                    }}
+                    className={`rounded-[1.75rem] border-2 p-4 text-lg transition-colors ${
+                      answer === option ? `${selectedChoiceClass} font-black` : `${unselectedChoiceClass} font-semibold`
+                    }`}
                   >
                     {option.toUpperCase()}
                   </button>
@@ -719,17 +947,17 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ) : null}
           </div>
 
-          {currentError && !currentTextRule ? <p className="mb-4 text-sm text-red-600">{currentError}</p> : null}
+          {currentError && !currentTextRule ? <p className="mb-4 text-sm text-red-400">{currentError}</p> : null}
 
           <div className="mb-4 flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
-            <button className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white" onClick={() => setCurrentQuestion((value) => Math.max(0, value - 1))}>← Back</button>
+            <button className={workspaceBackLinkClass} onClick={() => setCurrentQuestion((value) => Math.max(0, value - 1))}>← Back</button>
             <button className={`w-full px-8 py-3.5 sm:w-auto ${primaryButtonClass}`} onClick={handleNextQuestion}>
               {currentQuestion === questions.length - 1 ? 'REVIEW ANSWERS →' : 'NEXT →'}
             </button>
           </div>
 
           <div className="text-center">
-            <button className="text-sm text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white" onClick={() => setReportOpen(true)}>
+            <button className="text-sm text-text-muted underline transition-colors hover:text-text-main" onClick={() => setReportOpen(true)}>
               Flag something that feels off
             </button>
           </div>
@@ -749,6 +977,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               onSubmit={() => void handleReportIssue()}
             />
           ) : null}
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -759,28 +989,37 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     const tooShortSet = new Set(tooShortIndexes)
 
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-4 dark:bg-gray-900 sm:p-8">
-        <div className="mx-auto max-w-5xl rounded-panel bg-[#faf9f7] p-6 dark:bg-gray-900 sm:p-12">
+      <div className={workspacePageClass}>
+        <div className="mx-auto max-w-5xl">
+          <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
+            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            <div className="relative z-10">
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">REVIEW</div>
-            <h1 className="mb-3 text-2xl font-black text-[#1a1625] dark:text-white sm:text-4xl">Review Your Answers</h1>
+            <div className={`${workspaceEyebrowClass} mb-4`}>
+              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              Review
+            </div>
+            <h1 className="mb-3 text-3xl font-black tracking-tight text-white sm:text-5xl">Review your answers</h1>
           </div>
 
           <div className="mb-8 space-y-4">
             {questions.map((question, index) => (
-              <div key={question.id} className="rounded-card border border-[#e5e4e0] bg-white p-5 dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+              <div key={question.id} className={`${workspaceSectionClass} p-5 sm:p-6`}>
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="mb-2 text-sm font-bold text-[#d77a57]">QUESTION {index + 1}</div>
-                    <h3 className="mb-3 text-lg font-black text-[#1a1625] dark:text-white">{question.text}</h3>
-                    <p className="rounded-2xl bg-[#faf9f7] p-4 text-[#1a1625] dark:bg-gray-700 dark:text-white">{String(answers[index] ?? '')}</p>
+                    <div className="mb-2 text-sm font-bold text-primary">QUESTION {index + 1}</div>
+                    <h3 className="mb-3 text-lg font-black text-white">{question.text}</h3>
+                    <p className={`rounded-[1.5rem] border border-border-subtle bg-background/70 p-4 text-sm leading-6 ${answers[index] === undefined || answers[index] === '' ? 'italic text-text-muted' : 'whitespace-pre-wrap break-words text-text-main'}`}>
+                      {getAnswerPreview(answers[index])}
+                    </p>
                     {tooShortSet.has(index) ? (
-                      <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                      <p className="mt-3 text-sm text-red-400">
                         {getTextResponseError(question, answers[index])}
                       </p>
                     ) : null}
                   </div>
-                  <button className="text-sm font-semibold text-[#d77a57] hover:underline" onClick={() => { setCurrentQuestion(index); setPhase('questions') }}>
+                  <button className="text-sm font-semibold text-primary hover:underline" onClick={() => { setCurrentQuestion(index); setPhase('questions') }}>
                     Edit
                   </button>
                 </div>
@@ -788,18 +1027,18 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ))}
           </div>
 
-          <div className="mb-8 rounded-card border border-green-100 bg-gradient-to-br from-green-50 to-blue-50 p-8 dark:border-green-900/70 dark:bg-gray-800">
-            <h3 className="mb-1 text-xl font-black text-[#1a1625] dark:text-white">You&apos;re about to earn</h3>
-            <p className="text-3xl font-black text-green-600">
-              {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[#6b687a] dark:text-gray-400">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
+          <div className="mb-8 rounded-card border border-primary/25 bg-gradient-to-br from-primary/15 to-surface-elevated p-8">
+            <h3 className="mb-1 text-xl font-black text-white">You&apos;re about to earn</h3>
+            <p className="text-3xl font-black text-primary">
+              {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-text-muted">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
             </p>
           </div>
 
-          {submitError ? <p className="mb-4 text-sm text-red-600">{submitError}</p> : null}
+          {submitError ? <p className="mb-4 text-sm text-red-400">{submitError}</p> : null}
 
           <div className="flex items-center justify-between">
-            <button className="font-semibold text-[#6b687a] hover:text-[#1a1625] dark:text-gray-400 dark:hover:text-white" onClick={() => setPhase('questions')}>
-              ← Previous Question
+            <button className={workspaceBackLinkClass} onClick={() => setPhase('questions')}>
+              ← Previous question
             </button>
             <button
               className={`flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`}
@@ -811,14 +1050,14 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             </button>
           </div>
           {tooShortIndexes.length > 0 ? (
-            <p className="mt-3 text-right text-sm text-red-600 dark:text-red-400">
+            <p className="mt-3 text-right text-sm text-red-400">
               {tooShortIndexes.length === 1 ? '1 answer is too short' : `${tooShortIndexes.length} answers are too short`}
             </p>
           ) : null}
           <div className="mt-4 text-right">
             <button
               type="button"
-              className="text-sm font-semibold text-[#9b98a8] underline hover:text-[#6b687a] dark:text-gray-400 dark:hover:text-white"
+              className="text-sm font-semibold text-text-muted underline transition-colors hover:text-text-main"
               onClick={() => setReportOpen(true)}
             >
               Flag something that feels off
@@ -839,48 +1078,51 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               onSubmit={() => void handleReportIssue()}
             />
           ) : null}
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-gradient-to-br from-green-50 to-emerald-50 p-12 text-center dark:bg-gray-900">
-        <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600">
+    <div className={workspacePageClass}>
+      <div className="mx-auto max-w-4xl">
+        <div className={`${workspacePanelClass} p-8 text-center sm:p-10 lg:p-12`}>
+          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          <div className="relative z-10">
+        <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover shadow-[0_20px_45px_-22px_rgba(249,124,90,0.55)]">
           <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="mb-3 text-4xl font-black text-[#1a1625] dark:text-white">Mission Complete!</h1>
-        <p className="mb-8 text-lg text-[#6b687a] dark:text-gray-400">Thank you for your valuable feedback</p>
+        <div className={`${workspaceEyebrowClass} mb-4`}>
+          <BrandMark className="h-3.5 w-3.5 text-primary" />
+          Mission complete
+        </div>
+        <h1 className="mb-3 text-4xl font-black tracking-tight text-white">Mission complete!</h1>
+        <p className="mb-8 text-lg text-text-muted">Thank you for your feedback. Your reward is ready.</p>
 
-        <div className="mx-auto mb-8 max-w-md rounded-card border border-green-100 bg-white p-8 shadow-xl dark:border-gray-700 dark:bg-gray-800">
-          <div className="mb-4 flex items-center justify-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500">
-              <svg className="w-9 h-9 text-amber-900" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07-.34-.433.582a2.305 2.305 0 01-.567.267z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="mb-1 text-sm text-[#9b98a8] dark:text-gray-400">YOU EARNED</div>
-              <div className="text-4xl font-black text-[#1a1625] dark:text-white">{formatCoins(successState?.coinsEarned ?? 0)} coins earned</div>
-              <div className="text-sm text-[#6b687a] dark:text-gray-400">≈ {formatRupeesFromCoins(successState?.coinsEarned ?? 0)}</div>
-            </div>
-          </div>
+        <div className="mx-auto mb-8 max-w-md rounded-card border border-primary/25 bg-gradient-to-br from-primary/15 to-surface-elevated p-8">
+          <div className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-text-muted">You earned</div>
+          <div className="text-4xl font-black text-white">{formatCoins(successState?.coinsEarned ?? 0)} coins</div>
+          <div className="mt-2 text-sm text-text-muted">≈ {formatRupeesFromCoins(successState?.coinsEarned ?? 0)}</div>
         </div>
 
-        {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-100 to-pink-100 p-6 text-sm font-bold text-purple-900 dark:border-purple-900/50 dark:bg-gray-800 dark:text-purple-200">You&apos;re now a {successState.newTier} tester!</div> : null}
+        {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-[1.75rem] border border-primary/25 bg-primary/10 p-6 text-sm font-bold text-primary">You&apos;re now a {successState.newTier} tester!</div> : null}
 
-        <div className="mx-auto mb-8 grid max-w-md gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white bg-white/50 p-4 dark:border-gray-700 dark:bg-gray-800/70"><div className="text-2xl font-black text-[#1a1625] dark:text-white">{successState?.stats?.totalCompleted ?? 0}</div><div className="text-xs text-[#6b687a] dark:text-gray-400">Total missions</div></div>
-          <div className="rounded-2xl border border-white bg-white/50 p-4 dark:border-gray-700 dark:bg-gray-800/70"><div className="text-2xl font-black text-[#1a1625] dark:text-white">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="text-xs text-[#6b687a] dark:text-gray-400">Total coins</div></div>
-          <div className="rounded-2xl border border-white bg-white/50 p-4 dark:border-gray-700 dark:bg-gray-800/70"><div className="text-2xl font-black text-green-600">{successState?.stats?.completionRate ?? 0}%</div><div className="text-xs text-[#6b687a] dark:text-gray-400">Success rate</div></div>
+        <div className="mx-auto mb-8 grid max-w-2xl gap-4 md:grid-cols-3">
+          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-white">{successState?.stats?.totalCompleted ?? 0}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Total missions</div></div>
+          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-white">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Total coins</div></div>
+          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-primary">{successState?.stats?.completionRate ?? 0}%</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Success rate</div></div>
         </div>
 
         <button className={`mb-4 px-10 py-3.5 ${primaryButtonClass}`} onClick={() => router.push('/dashboard/tester')}>
           BACK TO DASHBOARD
         </button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -903,25 +1145,11 @@ export function TesterWorkspaceRoutePage({ assignmentId }: { assignmentId: strin
   }
 
   if (user.role === 'FOUNDER' || user.role === 'ADMIN') {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">This page is for testers only.</h1>
-          <Link href="/dashboard/founder" className={`px-8 py-3.5 ${primaryButtonClass}`}>GO TO DASHBOARD</Link>
-        </div>
-      </div>
-    )
+    return <WorkspaceStatusPanel title="This page is for testers only." actionHref="/dashboard/founder" actionLabel="GO TO DASHBOARD" />
   }
 
   if (user.role !== 'TESTER') {
-    return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-3 text-3xl font-black text-[#1a1625] dark:text-white">This page is for testers only.</h1>
-          <Link href="/select-role" className={`px-8 py-3.5 ${primaryButtonClass}`}>CHOOSE ROLE</Link>
-        </div>
-      </div>
-    )
+    return <WorkspaceStatusPanel title="This page is for testers only." actionHref="/select-role" actionLabel="CHOOSE ROLE" />
   }
 
   return <TesterWorkspacePage assignmentId={assignmentId} />

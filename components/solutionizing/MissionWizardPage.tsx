@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 import { CheckCircle, XCircle } from 'lucide-react'
+import Image from 'next/image'
 import posthog from 'posthog-js'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -131,10 +132,10 @@ function isUploadAssetType(type: WizardAsset['type']): type is 'SCREENSHOT' | 'V
 
 function getUploadAssetAccept(type: 'SCREENSHOT' | 'VIDEO') {
   if (type === 'SCREENSHOT') {
-    return '.png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp'
+    return 'image/*'
   }
 
-  return '.mp4,.mov,video/mp4,video/quicktime'
+  return '.mp4,.mov,.webm,video/mp4,video/quicktime,video/webm'
 }
 
 function getUploadAssetButtonLabel(type: 'SCREENSHOT' | 'VIDEO', hasUpload: boolean) {
@@ -144,10 +145,10 @@ function getUploadAssetButtonLabel(type: 'SCREENSHOT' | 'VIDEO', hasUpload: bool
 
 function getUploadAssetHelperText(type: 'SCREENSHOT' | 'VIDEO') {
   if (type === 'SCREENSHOT') {
-    return 'Accepted: PNG, JPG, GIF, or WEBP'
+    return 'Paste from clipboard or choose an image file'
   }
 
-  return 'Accepted: MP4 or MOV'
+  return 'Accepted: MP4, MOV, or WEBM'
 }
 
 function getUploadAssetContentType(file: File) {
@@ -161,10 +162,44 @@ function getUploadAssetContentType(file: File) {
   if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg'
   if (extension === 'gif') return 'image/gif'
   if (extension === 'webp') return 'image/webp'
+  if (extension === 'bmp') return 'image/bmp'
+  if (extension === 'avif') return 'image/avif'
+  if (extension === 'heic') return 'image/heic'
+  if (extension === 'heif') return 'image/heif'
+  if (extension === 'svg') return 'image/svg+xml'
   if (extension === 'mp4') return 'video/mp4'
   if (extension === 'mov') return 'video/quicktime'
+  if (extension === 'webm') return 'video/webm'
 
   return ''
+}
+
+function getUploadAssetExtension(contentType: string) {
+  if (contentType === 'image/png') return '.png'
+  if (contentType === 'image/jpeg') return '.jpg'
+  if (contentType === 'image/gif') return '.gif'
+  if (contentType === 'image/webp') return '.webp'
+  if (contentType === 'image/bmp') return '.bmp'
+  if (contentType === 'image/avif') return '.avif'
+  if (contentType === 'image/heic') return '.heic'
+  if (contentType === 'image/heif') return '.heif'
+  if (contentType === 'image/svg+xml') return '.svg'
+  if (contentType === 'video/mp4') return '.mp4'
+  if (contentType === 'video/quicktime') return '.mov'
+  if (contentType === 'video/webm') return '.webm'
+
+  return ''
+}
+
+function createUploadFilename(file: File, type: 'SCREENSHOT' | 'VIDEO', contentType: string) {
+  const trimmedName = file.name.trim()
+  if (trimmedName.includes('.')) {
+    return trimmedName
+  }
+
+  const extension = getUploadAssetExtension(contentType)
+  const baseName = type === 'SCREENSHOT' ? 'pasted-image' : 'pasted-video'
+  return `${baseName}${extension}`
 }
 
 function getUploadedAssetName(url?: string) {
@@ -178,6 +213,43 @@ function getUploadedAssetName(url?: string) {
   } catch {
     return decodeURIComponent(url.split('/').pop() ?? url)
   }
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+
+      reject(new Error('Could not read image preview'))
+    }
+
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('Could not read image preview'))
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
+function removeIndexedEntry<T>(record: Record<number, T>, indexToRemove: number) {
+  const nextRecord: Record<number, T> = {}
+
+  for (const [key, value] of Object.entries(record)) {
+    const index = Number(key)
+
+    if (index < indexToRemove) {
+      nextRecord[index] = value
+    } else if (index > indexToRemove) {
+      nextRecord[index - 1] = value
+    }
+  }
+
+  return nextRecord
 }
 
 function isAssetDraftBlank(asset: WizardAsset) {
@@ -419,6 +491,7 @@ function MissionWizardContent() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [goalWarning, setGoalWarning] = useState('')
   const [assetChecks, setAssetChecks] = useState<Record<number, 'checking' | 'reachable' | 'unreachable'>>({})
+  const [assetPreviewUrls, setAssetPreviewUrls] = useState<Record<number, string>>({})
   const [uploadingAssetIndex, setUploadingAssetIndex] = useState<number | null>(null)
   const [coinBalance, setCoinBalance] = useState(0)
   const [costEstimate, setCostEstimate] = useState<MissionCostEstimate | null>(null)
@@ -671,15 +744,33 @@ function MissionWizardContent() {
     }
 
     const contentType = getUploadAssetContentType(file)
+    const uploadFilename = createUploadFilename(file, asset.type, contentType)
+
     if (!contentType) {
       setErrors((current) => ({
         ...current,
-        [`asset-${index}`]: 'This file type is not supported. Please choose a PNG, JPG, GIF, WEBP, MP4, or MOV file.',
+        [`asset-${index}`]: 'This file type is not supported. Please choose an image file or an MP4, MOV, or WEBM video.',
       }))
       if (input) {
         input.value = ''
       }
       return
+    }
+
+    if (asset.type === 'SCREENSHOT') {
+      try {
+        const previewUrl = await readFileAsDataUrl(file)
+        setAssetPreviewUrls((current) => ({
+          ...current,
+          [index]: previewUrl,
+        }))
+      } catch {
+        setAssetPreviewUrls((current) => {
+          const next = { ...current }
+          delete next[index]
+          return next
+        })
+      }
     }
 
     setUploadingAssetIndex(index)
@@ -697,7 +788,7 @@ function MissionWizardContent() {
 
     try {
       const signedUpload = await apiFetch<SignedUploadResponse>(
-        `/api/v1/uploads/sign?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(contentType)}`
+        `/api/v1/uploads/sign?filename=${encodeURIComponent(uploadFilename)}&contentType=${encodeURIComponent(contentType)}`
       )
 
       const { error } = await supabase.storage
@@ -737,6 +828,30 @@ function MissionWizardContent() {
         input.value = ''
       }
     }
+  }
+
+  async function handleAssetPaste(index: number, event: React.ClipboardEvent<HTMLDivElement>) {
+    const asset = state.assets[index]
+    if (!asset || asset.type !== 'SCREENSHOT') {
+      return
+    }
+
+    const imageItem = Array.from(event.clipboardData.items).find((item) =>
+      item.type.startsWith('image/')
+    )
+
+    if (!imageItem) {
+      return
+    }
+
+    const pastedImage = imageItem.getAsFile()
+    if (!pastedImage) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    await handleAssetFileSelected(index, pastedImage)
   }
 
   async function handleSave(action: 'draft' | 'submit') {
@@ -1263,15 +1378,60 @@ function MissionWizardContent() {
                 <div key={index} className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800" data-field-key={`asset-${index}`}>
                   <div className="mb-4 flex flex-wrap items-center gap-3">
                     {(['LINK', 'SCREENSHOT', 'VIDEO', 'TEXT'] as const).map((type) => (
-                      <button key={type} type="button" onClick={() => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { type, url: '', text: '', label: currentAsset.label ?? '' } : currentAsset) }))} className={`rounded-full px-3 py-1 text-xs font-bold ${asset.type === type ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'}`}>{type}</button>
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          setAssetChecks((current) => {
+                            const next = { ...current }
+                            delete next[index]
+                            return next
+                          })
+                          setAssetPreviewUrls((current) => {
+                            const next = { ...current }
+                            delete next[index]
+                            return next
+                          })
+                          updateState((current) => ({
+                            ...current,
+                            assets: current.assets.map((currentAsset, assetIndex) =>
+                              assetIndex === index
+                                ? { type, url: '', text: '', label: currentAsset.label ?? '' }
+                                : currentAsset
+                            ),
+                          }))
+                        }}
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${asset.type === type ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-[#f3f3f5] text-[#6b687a] dark:bg-gray-700 dark:text-gray-300'}`}
+                      >
+                        {type}
+                      </button>
                     ))}
-                    {state.assets.length > 1 ? <button type="button" className="ml-auto text-[#9b98a8] dark:text-gray-400" onClick={() => updateState((current) => ({ ...current, assets: current.assets.filter((_, assetIndex) => assetIndex !== index) }))}>×</button> : null}
+                    {state.assets.length > 1 ? (
+                      <button
+                        type="button"
+                        className="ml-auto text-[#9b98a8] dark:text-gray-400"
+                        onClick={() => {
+                          setAssetChecks((current) => removeIndexedEntry(current, index))
+                          setAssetPreviewUrls((current) => removeIndexedEntry(current, index))
+                          updateState((current) => ({
+                            ...current,
+                            assets: current.assets.filter((_, assetIndex) => assetIndex !== index),
+                          }))
+                        }}
+                      >
+                        ×
+                      </button>
+                    ) : null}
                   </div>
 
                   {asset.type === 'TEXT' ? (
                     <textarea value={asset.text ?? ''} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, text: event.target.value } : currentAsset) }))} rows={3} className={`${textFieldClass} resize-none`} />
                   ) : isUploadAssetType(asset.type) ? (
-                    <div className="rounded-2xl border border-dashed border-[#d8d6de] bg-[#faf9f7] p-4 dark:border-gray-600 dark:bg-gray-900/50">
+                    <div
+                      className="rounded-2xl border border-dashed border-[#d8d6de] bg-[#faf9f7] p-4 outline-none transition-colors focus:border-[#d77a57] focus:bg-[#fff7f2] dark:border-gray-600 dark:bg-gray-900/50 dark:focus:bg-gray-900/70"
+                      tabIndex={0}
+                      onPaste={(event) => void handleAssetPaste(index, event)}
+                    >
                       <input
                         ref={(element) => {
                           assetFileInputRefs.current[index] = element
@@ -1281,10 +1441,27 @@ function MissionWizardContent() {
                         className="hidden"
                         onChange={(event) => void handleAssetFileSelected(index, event.target.files?.[0] ?? null)}
                       />
+                      {asset.type === 'SCREENSHOT' && (assetPreviewUrls[index] || asset.url) ? (
+                        <div className="mb-4 overflow-hidden rounded-2xl border border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800">
+                          <div className="relative h-56 w-full sm:h-64">
+                            <Image
+                              src={assetPreviewUrls[index] ?? asset.url ?? ''}
+                              alt={asset.label?.trim() || 'Screenshot preview'}
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-semibold text-[#1a1625] dark:text-white">
-                            {asset.url ? getUploadedAssetName(asset.url) : `No ${asset.type === 'SCREENSHOT' ? 'screenshot' : 'video'} uploaded yet`}
+                            {asset.url
+                              ? getUploadedAssetName(asset.url)
+                              : asset.type === 'SCREENSHOT' && assetPreviewUrls[index]
+                                ? 'Screenshot ready to upload'
+                                : `No ${asset.type === 'SCREENSHOT' ? 'screenshot' : 'video'} uploaded yet`}
                           </p>
                           <p className="mt-1 text-xs text-[#6b687a] dark:text-gray-400">
                             {getUploadAssetHelperText(asset.type)}
@@ -1297,7 +1474,7 @@ function MissionWizardContent() {
                           className="inline-flex items-center justify-center gap-2 rounded-[1.25rem] border border-[#d77a57]/30 px-4 py-2 text-sm font-bold text-[#d77a57] transition-colors hover:bg-[#d77a57]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#f0a98c]/30 dark:text-[#f0a98c]"
                         >
                           {uploadingAssetIndex === index ? <SpinnerIcon className="h-4 w-4" /> : null}
-                          {getUploadAssetButtonLabel(asset.type, Boolean(asset.url))}
+                          {getUploadAssetButtonLabel(asset.type, Boolean(asset.url || assetPreviewUrls[index]))}
                         </button>
                       </div>
 

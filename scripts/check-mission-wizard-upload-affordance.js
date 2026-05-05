@@ -17,6 +17,14 @@ const requiredPatterns = [
     label: 'upload-specific asset type detection',
     pattern: /SCREENSHOT'\s*\|\|\s*type\s*===\s*'VIDEO'|type\s*===\s*'SCREENSHOT'\s*\|\|\s*asset\.type\s*===\s*'VIDEO'|isUploadAssetType/,
   },
+  {
+    label: 'clipboard paste handler for image uploads',
+    pattern: /handleAssetPaste|onPaste=/,
+  },
+  {
+    label: 'image preview for uploaded or pasted screenshots',
+    pattern: /<img|previewUrl|object-cover/,
+  },
 ]
 
 const missingPatterns = requiredPatterns.filter(({ pattern }) => !pattern.test(source))

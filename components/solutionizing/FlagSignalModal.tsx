@@ -39,28 +39,28 @@ export function FlagSignalModal({
   onSubmit,
 }: FlagSignalModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,22,37,0.55)] p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(6,8,16,0.72)] p-4 backdrop-blur-sm">
       <button
         type="button"
         aria-label="Close flag modal"
         className="absolute inset-0"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-xl rounded-panel border border-[#ece6df] bg-white p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+      <div className="relative z-10 w-full max-w-xl rounded-panel border border-border-subtle bg-surface p-8 shadow-2xl">
         <div className="mb-6">
-          <div className="mb-2 inline-flex rounded-full bg-[#d77a57]/10 px-3 py-1 text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#d77a57] dark:bg-[#d77a57]/20 dark:text-[#f0a98c]">
+          <div className="mb-2 inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.72rem] font-black uppercase tracking-[0.18em] text-primary">
             Quick flag
           </div>
-          <h2 className="text-2xl font-black text-[#1a1625] dark:text-white">{title}</h2>
-          <p className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{subtitle}</p>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-500">
+          <h2 className="text-2xl font-black text-white">{title}</h2>
+          <p className="mt-2 text-sm leading-6 text-text-muted">{subtitle}</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
             Target: {targetLabel}
           </p>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
               Flag reason
             </label>
             <select
@@ -76,14 +76,14 @@ export function FlagSignalModal({
               ))}
             </select>
             {reason ? (
-              <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
+              <p className="mt-2 text-sm text-text-muted">
                 {FLAG_REASON_OPTIONS.find((option) => option.value === reason)?.description}
               </p>
             ) : null}
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-[#9b98a8] dark:text-gray-400">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
               Extra context
             </label>
             <textarea
@@ -94,13 +94,13 @@ export function FlagSignalModal({
               placeholder="Optional note. Keep it short and specific."
               className={`${textFieldClass} resize-none`}
             />
-            <div className="mt-2 text-right text-xs text-[#9b98a8] dark:text-gray-500">
+            <div className="mt-2 text-right text-xs text-text-muted">
               {details.length} / 300
             </div>
           </div>
         </div>
 
-        {errorMessage ? <p className="mt-4 text-sm text-red-600 dark:text-red-400">{errorMessage}</p> : null}
+        {errorMessage ? <p className="mt-4 text-sm text-red-400">{errorMessage}</p> : null}
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <button
