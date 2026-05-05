@@ -65,6 +65,8 @@ export async function GET(request: Request) {
 
     return ok({
       signedUrl: data.signedUrl,
+      path: data.path,
+      token: data.token,
       publicUrl,
     })
   } catch (err) {

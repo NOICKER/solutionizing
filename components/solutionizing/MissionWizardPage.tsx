@@ -1,5 +1,6 @@
 "use client"
 
+import { createBrowserClient } from '@supabase/ssr'
 import { CheckCircle, XCircle } from 'lucide-react'
 import posthog from 'posthog-js'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -31,6 +32,13 @@ interface MissionCostEstimate {
   coinPerTester: number
   coinPlatformFee: number
   coinCostTotal: number
+}
+
+interface SignedUploadResponse {
+  signedUrl: string
+  path: string
+  token: string
+  publicUrl: string
 }
 
 const initialState: WizardState = {
@@ -115,6 +123,61 @@ function isValidUrl(value: string) {
 function trimOptionalString(value?: string) {
   const trimmed = value?.trim()
   return trimmed ? trimmed : undefined
+}
+
+function isUploadAssetType(type: WizardAsset['type']): type is 'SCREENSHOT' | 'VIDEO' {
+  return type === 'SCREENSHOT' || type === 'VIDEO'
+}
+
+function getUploadAssetAccept(type: 'SCREENSHOT' | 'VIDEO') {
+  if (type === 'SCREENSHOT') {
+    return '.png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp'
+  }
+
+  return '.mp4,.mov,video/mp4,video/quicktime'
+}
+
+function getUploadAssetButtonLabel(type: 'SCREENSHOT' | 'VIDEO', hasUpload: boolean) {
+  const assetName = type === 'SCREENSHOT' ? 'screenshot' : 'video'
+  return hasUpload ? `Replace ${assetName}` : `Upload ${assetName}`
+}
+
+function getUploadAssetHelperText(type: 'SCREENSHOT' | 'VIDEO') {
+  if (type === 'SCREENSHOT') {
+    return 'Accepted: PNG, JPG, GIF, or WEBP'
+  }
+
+  return 'Accepted: MP4 or MOV'
+}
+
+function getUploadAssetContentType(file: File) {
+  if (file.type) {
+    return file.type
+  }
+
+  const extension = file.name.split('.').pop()?.toLowerCase()
+
+  if (extension === 'png') return 'image/png'
+  if (extension === 'jpg' || extension === 'jpeg') return 'image/jpeg'
+  if (extension === 'gif') return 'image/gif'
+  if (extension === 'webp') return 'image/webp'
+  if (extension === 'mp4') return 'video/mp4'
+  if (extension === 'mov') return 'video/quicktime'
+
+  return ''
+}
+
+function getUploadedAssetName(url?: string) {
+  if (!url) {
+    return ''
+  }
+
+  try {
+    const path = new URL(url).pathname
+    return decodeURIComponent(path.split('/').pop() ?? '')
+  } catch {
+    return decodeURIComponent(url.split('/').pop() ?? url)
+  }
 }
 
 function isAssetDraftBlank(asset: WizardAsset) {
@@ -247,7 +310,9 @@ function validateStep(step: number, state: WizardState) {
       } else {
         const url = asset.url?.trim() ?? ''
         if (!url) {
-          errors[`asset-${index}`] = 'Add a valid URL'
+          errors[`asset-${index}`] = isUploadAssetType(asset.type)
+            ? `Upload a ${asset.type === 'SCREENSHOT' ? 'screenshot' : 'video'}`
+            : 'Add a valid URL'
         } else if (!isValidUrl(url)) {
           errors[`asset-${index}`] = 'Enter a full URL, including https://'
         }
@@ -335,6 +400,12 @@ function scrollToField(fieldKey: string) {
 function MissionWizardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  )
   const editParam = searchParams.get('edit')
   const missionIdParam = searchParams.get('missionId')
   const legacyEditMissionId = editParam && editParam !== 'true' ? editParam : null
@@ -348,6 +419,7 @@ function MissionWizardContent() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [goalWarning, setGoalWarning] = useState('')
   const [assetChecks, setAssetChecks] = useState<Record<number, 'checking' | 'reachable' | 'unreachable'>>({})
+  const [uploadingAssetIndex, setUploadingAssetIndex] = useState<number | null>(null)
   const [coinBalance, setCoinBalance] = useState(0)
   const [costEstimate, setCostEstimate] = useState<MissionCostEstimate | null>(null)
   const [isCostEstimateLoading, setIsCostEstimateLoading] = useState(true)
@@ -358,6 +430,7 @@ function MissionWizardContent() {
   const [submitError, setSubmitError] = useState('')
   const [exitAction, setExitAction] = useState<'draft' | 'delete' | null>(null)
   const dirtyRef = useRef(false)
+  const assetFileInputRefs = useRef<Array<HTMLInputElement | null>>([])
   const [exitDialogOpen, setExitDialogOpen] = useState(false)
   const [exitError, setExitError] = useState('')
   const hydratedStateRef = useRef<WizardState>(initialState)
@@ -572,7 +645,7 @@ function MissionWizardContent() {
 
   async function handleAssetReachability(index: number) {
     const asset = state.assets[index]
-    if (!asset || asset.type === 'TEXT' || !asset.url?.trim()) {
+    if (!asset || asset.type !== 'LINK' || !asset.url?.trim()) {
       return
     }
 
@@ -583,6 +656,86 @@ function MissionWizardContent() {
       setAssetChecks((current) => ({ ...current, [index]: 'reachable' }))
     } catch {
       setAssetChecks((current) => ({ ...current, [index]: 'unreachable' }))
+    }
+  }
+
+  async function handleAssetFileSelected(index: number, file: File | null) {
+    const asset = state.assets[index]
+    const input = assetFileInputRefs.current[index]
+
+    if (!file || !asset || !isUploadAssetType(asset.type)) {
+      if (input) {
+        input.value = ''
+      }
+      return
+    }
+
+    const contentType = getUploadAssetContentType(file)
+    if (!contentType) {
+      setErrors((current) => ({
+        ...current,
+        [`asset-${index}`]: 'This file type is not supported. Please choose a PNG, JPG, GIF, WEBP, MP4, or MOV file.',
+      }))
+      if (input) {
+        input.value = ''
+      }
+      return
+    }
+
+    setUploadingAssetIndex(index)
+    setErrors((current) => {
+      const next = { ...current }
+      delete next.assets
+      delete next[`asset-${index}`]
+      return next
+    })
+    setAssetChecks((current) => {
+      const next = { ...current }
+      delete next[index]
+      return next
+    })
+
+    try {
+      const signedUpload = await apiFetch<SignedUploadResponse>(
+        `/api/v1/uploads/sign?filename=${encodeURIComponent(file.name)}&contentType=${encodeURIComponent(contentType)}`
+      )
+
+      const { error } = await supabase.storage
+        .from('mission-assets')
+        .uploadToSignedUrl(signedUpload.path, signedUpload.token, file, {
+          contentType,
+        })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      updateState((current) => ({
+        ...current,
+        assets: current.assets.map((currentAsset, assetIndex) =>
+          assetIndex === index && isUploadAssetType(currentAsset.type)
+            ? { ...currentAsset, url: signedUpload.publicUrl, text: '' }
+            : currentAsset
+        ),
+      }))
+      setAssetChecks((current) => ({ ...current, [index]: 'reachable' }))
+    } catch (error) {
+      const message = isApiClientError(error)
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : `Failed to upload this ${asset.type === 'SCREENSHOT' ? 'screenshot' : 'video'}.`
+
+      setErrors((current) => ({
+        ...current,
+        [`asset-${index}`]: message,
+      }))
+      toast.error(message)
+    } finally {
+      setUploadingAssetIndex((current) => (current === index ? null : current))
+      if (input) {
+        input.value = ''
+      }
     }
   }
 
@@ -1117,6 +1270,51 @@ function MissionWizardContent() {
 
                   {asset.type === 'TEXT' ? (
                     <textarea value={asset.text ?? ''} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, text: event.target.value } : currentAsset) }))} rows={3} className={`${textFieldClass} resize-none`} />
+                  ) : isUploadAssetType(asset.type) ? (
+                    <div className="rounded-2xl border border-dashed border-[#d8d6de] bg-[#faf9f7] p-4 dark:border-gray-600 dark:bg-gray-900/50">
+                      <input
+                        ref={(element) => {
+                          assetFileInputRefs.current[index] = element
+                        }}
+                        type="file"
+                        accept={getUploadAssetAccept(asset.type)}
+                        className="hidden"
+                        onChange={(event) => void handleAssetFileSelected(index, event.target.files?.[0] ?? null)}
+                      />
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-[#1a1625] dark:text-white">
+                            {asset.url ? getUploadedAssetName(asset.url) : `No ${asset.type === 'SCREENSHOT' ? 'screenshot' : 'video'} uploaded yet`}
+                          </p>
+                          <p className="mt-1 text-xs text-[#6b687a] dark:text-gray-400">
+                            {getUploadAssetHelperText(asset.type)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => assetFileInputRefs.current[index]?.click()}
+                          disabled={uploadingAssetIndex === index}
+                          className="inline-flex items-center justify-center gap-2 rounded-[1.25rem] border border-[#d77a57]/30 px-4 py-2 text-sm font-bold text-[#d77a57] transition-colors hover:bg-[#d77a57]/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#f0a98c]/30 dark:text-[#f0a98c]"
+                        >
+                          {uploadingAssetIndex === index ? <SpinnerIcon className="h-4 w-4" /> : null}
+                          {getUploadAssetButtonLabel(asset.type, Boolean(asset.url))}
+                        </button>
+                      </div>
+
+                      {asset.url ? (
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-sm dark:bg-gray-800">
+                          <span className="truncate text-[#1a1625] dark:text-white">{asset.url}</span>
+                          <a
+                            href={asset.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="shrink-0 font-semibold text-[#d77a57] hover:underline"
+                          >
+                            Preview
+                          </a>
+                        </div>
+                      ) : null}
+                    </div>
                   ) : (
                     <div className="relative">
                       <input value={asset.url ?? ''} onBlur={() => void handleAssetReachability(index)} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, url: event.target.value } : currentAsset) }))} placeholder="https://example.com" className={textFieldClass} />
