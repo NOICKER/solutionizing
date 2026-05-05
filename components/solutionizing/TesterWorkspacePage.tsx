@@ -160,7 +160,7 @@ function getAssetTypeLabel(type: ApiTesterAssignmentDetail['mission']['assets'][
     case 'TEXT_DESCRIPTION':
       return 'Context'
     default:
-      return type.replaceAll('_', ' ')
+      return 'Asset'
   }
 }
 
