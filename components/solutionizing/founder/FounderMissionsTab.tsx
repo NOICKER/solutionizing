@@ -9,6 +9,7 @@ import {
   DashboardCardSkeleton,
   EmptyStatePanel,
   ErrorStatePanel,
+  MissionHealthScoreBadge,
   MissionStatusBadge,
   RetestCountChip,
   SpinnerIcon,
@@ -129,6 +130,7 @@ export function FounderMissionsTab({
                 </div>
                 <div className="flex flex-wrap items-center sm:justify-end gap-2">
                   <MissionStatusBadge status={mission.status} />
+                  <MissionHealthScoreBadge score={mission.healthScore} />
                   {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
                     <RetestCountChip count={mission.retests!.length} />
                   ) : null}

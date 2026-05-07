@@ -78,6 +78,7 @@ export interface ApiMission {
   completedAt: string | null
   pausedAt: string | null
   reportCount: number
+  healthScore: number | null
   createdAt: string
   updatedAt: string
   assets: ApiMissionAsset[]

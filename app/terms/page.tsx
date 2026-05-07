@@ -4,150 +4,99 @@ export default function TermsPage() {
   return (
     <LegalPageLayout
       title="Terms of Service"
-      intro="These Terms of Service govern your access to and use of Solutionizing, a two-sided marketplace that connects founders seeking product feedback with testers who complete missions in exchange for in-platform coins."
-      lastUpdated="March 18, 2026"
+      intro="These Terms of Service explain the rules for using Solutionizing as a founder, tester, or visitor."
+      lastUpdated="May 7, 2026"
     >
       <LegalSection title="1. Acceptance of Terms">
         <p>
-          By creating an account, accessing the platform, purchasing coins, launching a mission, or completing a mission,
-          you agree to be bound by these Terms of Service, our Privacy Policy, and any platform rules or policies we publish
-          from time to time.
-        </p>
-        <p>
-          If you do not agree to these terms, you must not use Solutionizing. We may update these terms from time to time,
-          and your continued use of the platform after an update takes effect means you accept the revised terms.
+          By creating an account, launching a mission, purchasing coins, completing a mission, or otherwise using
+          Solutionizing, you agree to these Terms of Service and our Privacy Policy. If you do not agree, you must not use
+          the platform.
         </p>
       </LegalSection>
 
-      <LegalSection title="2. Description of the Platform">
-        <p>
-          Solutionizing operates a software platform and two-sided marketplace where founders create paid testing missions
-          and testers complete those missions by providing structured product feedback. Solutionizing facilitates matching,
-          coin-based payments, reputation scoring, communication, moderation, and payout workflows, but is not a party to
-          any independent contract you may try to create outside the platform.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="3. Eligibility">
-        <p>
-          You must be at least 18 years old to use Solutionizing. Residents of India may use the platform, and persons
-          outside India may use the platform only if such use is lawful in their jurisdiction and they are able to comply
-          with these terms, Indian law, and applicable payment, tax, and sanctions rules.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="4. Account Registration and Responsibilities">
+      <LegalSection title="2. Founder responsibilities">
         <LegalList
           items={[
-            "You must provide accurate, current, and complete information when registering and when maintaining your account.",
-            "You are responsible for safeguarding your login credentials and for all activity that occurs under your account.",
-            "You must promptly update your email address, profile details, and payout details when they change.",
-            "You may not sell, transfer, lend, or share your account with another person.",
-            "You must notify Solutionizing immediately if you suspect unauthorized use of your account.",
+            "Founders must provide accurate product information, clear mission instructions, truthful product URLs, and enough context for testers to complete the mission safely.",
+            "Founders must not submit illegal content, deceptive claims, malware, phishing links, infringing material, hate or harassment, or content that asks testers to break the law.",
+            "Founders must not ask testers for passwords, payment details, government IDs, private contact information, or other sensitive data unless Solutionizing has approved that workflow in writing.",
+            "Founders are responsible for reviewing mission results and making their own product decisions based on the feedback they receive.",
           ]}
         />
       </LegalSection>
 
-      <LegalSection title="5. Founder Obligations">
+      <LegalSection title="3. Tester responsibilities">
         <LegalList
           items={[
-            "Provide accurate product, mission, and testing instructions, including truthful descriptions of what testers will review.",
-            "Maintain sufficient coins in your account to fund mission costs, tester rewards, and applicable platform charges.",
-            "Submit only lawful, non-misleading, and non-deceptive missions.",
-            "Do not ask testers for passwords, payment credentials, government ID numbers, or other sensitive personal information unless expressly approved by Solutionizing in writing.",
-            "Do not use the platform to manipulate reviews, misrepresent products, run fake research, or harvest tester information.",
+            "Testers must provide honest feedback based on their actual experience with the mission.",
+            "Testers must not submit plagiarism, copied responses, fabricated feedback, or another person's work as their own.",
+            "Testers must follow mission instructions, respect product confidentiality, avoid abusive conduct, and complete accepted missions with reasonable care.",
+            "Testers must not manipulate rewards, create duplicate accounts, collude with founders, or misrepresent their identity, device, location, or expertise.",
           ]}
         />
       </LegalSection>
 
-      <LegalSection title="6. Tester Obligations">
+      <LegalSection title="4. Coin economy and refunds">
+        <p>
+          Coins are the in-platform unit used to fund missions, purchase tester capacity, and reward completed work. Coins
+          are not legal tender, bank deposits, securities, or a guaranteed cash-value instrument.
+        </p>
+        <p>
+          Coin purchases are non-refundable except for unfilled missions. If a mission is not filled or cannot be run, we
+          may return the unused mission allocation to the founder&apos;s wallet or issue another remedy required by applicable
+          law. Coins already used for filled, active, completed, or rewarded mission activity are not refundable unless
+          Solutionizing decides otherwise or applicable law requires it.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="5. Aggregated anonymised data">
+        <p>
+          Solutionizing may use aggregated anonymised data from missions, tester responses, product usage, and outcomes to
+          improve benchmarks, scoring models, fraud detection, product quality, and platform operations. We do not share
+          individual mission data with other founders, and raw responses are not sold.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="6. No guarantee of specific outcomes">
+        <p>
+          Testing feedback is informational. Solutionizing does not guarantee specific outcomes, including product-market
+          fit, conversion increases, revenue, investment, user growth, approval, tester sentiment, or any particular
+          business result from running missions.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="7. Platform ownership and user content">
+        <p>
+          Solutionizing owns the platform, software, branding, workflows, and system-generated product experience. Founders
+          keep ownership of their submitted product materials. Tester feedback submitted for a paid mission may be used by
+          the founder who commissioned that mission, subject to these terms and applicable law.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="8. Prohibited conduct">
         <LegalList
           items={[
-            "Provide honest, original, and experience-based feedback.",
-            "Do not plagiarize, copy another tester's work, or submit AI-generated or scripted responses as your own lived testing feedback.",
-            "Complete missions diligently and on time, and avoid repeated abandonment or low-effort submissions.",
-            "Do not misrepresent your identity, device setup, expertise, or testing environment.",
-            "Use only the mission access and information provided for the authorized testing purpose.",
+            "Do not abuse, scrape, overload, reverse engineer, or attempt to bypass the platform.",
+            "Do not create fake accounts, impersonate others, manipulate reputation or reward systems, or interfere with another user's missions.",
+            "Do not upload malware, infringing content, illegal content, or material that violates another person's rights.",
+            "Do not use Solutionizing to harvest personal data, send spam, or run deceptive research.",
           ]}
         />
       </LegalSection>
 
-      <LegalSection title="7. Coin System">
+      <LegalSection title="9. Account suspension">
         <p>
-          Coins are the in-platform unit used to purchase mission capacity, reward tester participation, and manage
-          internal wallet balances. Coins are not legal tender, are not bank deposits, and do not represent stored value
-          regulated as currency, securities, or prepaid instruments unless applicable law expressly requires otherwise.
-        </p>
-        <p>
-          Coins do not have guaranteed cash value, and no right to cash redemption arises unless and until a withdrawal is
-          approved and processed by Solutionizing under the applicable payment policy.
+          We may warn, restrict, suspend, or terminate accounts, missions, coin access, tester rewards, payouts, or platform
+          access if we believe a user has violated these terms, created safety or legal risk, submitted fraudulent activity,
+          abused another user, attempted to manipulate the platform, or harmed the integrity of Solutionizing.
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Payment Terms and Refunds">
-        <LegalList
-          items={[
-            "Coin purchases are final once completed.",
-            "Refunds are available only as expressly described in our Refund and Cancellation Policy.",
-            "If an account is deleted, unspent coins may be refunded to the original payment method, subject to verification, platform review, chargeback history, and applicable law.",
-            "Coins already used to fund launched or completed mission activity are non-refundable unless Solutionizing determines otherwise in its sole discretion or applicable law requires a refund.",
-          ]}
-        />
-      </LegalSection>
-
-      <LegalSection title="9. Intellectual Property">
+      <LegalSection title="10. Changes and contact">
         <p>
-          Solutionizing and its licensors own all rights, title, and interest in the platform, software, brand assets,
-          workflows, and platform content other than user-submitted mission materials and tester feedback.
-        </p>
-        <p>
-          As between a founder and a tester, any feedback, notes, responses, recordings, annotations, or other deliverables
-          submitted by a tester in response to a commissioned mission become the property of the founder who commissioned the
-          mission, and the tester assigns all right, title, and interest in that mission-specific deliverable to the founder
-          to the extent permitted by law.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="10. Prohibited Conduct">
-        <LegalList
-          items={[
-            "Creating fake accounts or impersonating another person or company.",
-            "Spam, scraping, automated abuse, or any attempt to reverse engineer or disrupt the platform.",
-            "Gaming the reputation system, colluding to inflate metrics, or submitting fabricated mission activity.",
-            "Harassment, hate speech, intimidation, or abusive conduct toward founders, testers, or Solutionizing staff.",
-            "Using the platform to distribute malware, phishing links, infringing content, or unlawful material.",
-          ]}
-        />
-      </LegalSection>
-
-      <LegalSection title="11. Suspension and Termination">
-        <p>
-          Solutionizing may review, suspend, restrict, or terminate your account, missions, payouts, or access to coins at
-          any time if we believe you have violated these terms, created legal or safety risk, engaged in fraud, abused the
-          platform, or harmed other users or the platform ecosystem.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="12. Limitation of Liability">
-        <p>
-          To the maximum extent permitted by law, Solutionizing provides the platform on an &quot;as is&quot; and &quot;as available&quot;
-          basis without warranties of any kind. We do not guarantee uninterrupted service, uninterrupted payouts, any
-          minimum level of missions, any specific commercial outcome, or any particular quality of tester or founder conduct.
-        </p>
-        <p>
-          To the extent permitted under applicable law, Solutionizing, its affiliates, and its personnel will not be liable
-          for indirect, incidental, special, consequential, exemplary, or punitive damages, or for loss of profits, data,
-          goodwill, or business opportunity arising out of or relating to the use of the platform.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="13. Governing Law, Jurisdiction, and Contact">
-        <p>
-          These terms are governed by the laws of India. Subject to applicable consumer law, courts located in Delhi, India
-          shall have exclusive jurisdiction over disputes arising out of or relating to these terms or the platform.
-        </p>
-        <p>
-          For questions, complaints, or legal notices, contact Solutionizing at{" "}
+          We may update these terms from time to time. Continued use of Solutionizing after an update means you accept the
+          updated terms. For questions or legal notices, contact{" "}
           <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
             hello@solutionizing.com
           </a>

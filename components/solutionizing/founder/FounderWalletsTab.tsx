@@ -4,9 +4,9 @@ import { AlertTriangle, CheckCircle2, LifeBuoy, RotateCcw, Wallet } from 'lucide
 import { SpinnerIcon, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
 
 const coinPacks = [
-  { packId: 'starter', name: 'Starter', coins: 14900, priceLabel: 'Rs 149', discount: '10% OFF', popular: false },
-  { packId: 'growth', name: 'Growth', coins: 34900, priceLabel: 'Rs 349', discount: '20% OFF', popular: true },
-  { packId: 'scale', name: 'Scale', coins: 79900, priceLabel: 'Rs 799', discount: '30% OFF', popular: false },
+  { packId: 'starter', name: 'Starter', coins: 14900, priceLabel: '₹149', discount: '10% OFF', popular: false },
+  { packId: 'growth', name: 'Growth', coins: 34900, priceLabel: '₹349', discount: '20% OFF', popular: true },
+  { packId: 'scale', name: 'Scale', coins: 79900, priceLabel: '₹799', discount: '30% OFF', popular: false },
 ] as const
 
 type CoinPack = (typeof coinPacks)[number]

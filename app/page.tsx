@@ -127,7 +127,7 @@ const credibilityStats = [
 const pricingPlans = [
   {
     name: "Starter",
-    price: "$149",
+    price: "₹149",
     cadence: "per mission",
     description: "For one fast product question that needs a grounded answer.",
     bullets: [
@@ -143,7 +143,7 @@ const pricingPlans = [
   },
   {
     name: "Growth",
-    price: "$399",
+    price: "₹349",
     cadence: "per mission bundle",
     description: "For teams validating multiple product moments in the same sprint.",
     bullets: [
@@ -160,7 +160,7 @@ const pricingPlans = [
   },
   {
     name: "Tester Community",
-    price: "$0",
+    price: "₹0",
     cadence: "to join",
     description: "For specialists who want to contribute high-signal feedback and build reputation.",
     bullets: [

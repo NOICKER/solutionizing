@@ -166,6 +166,7 @@ model Mission {
   completedAt       DateTime?
   pausedAt          DateTime?
   reportCount       Int @default(0)
+  healthScore       Int?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   parentMissionId   String?
@@ -176,6 +177,7 @@ model Mission {
   assignments MissionAssignment[]
   flags       MissionFlag[]
   @@index([founderId])
+  @@index([parentMissionId])
   @@index([status])
   @@index([status, difficulty])
   @@map("missions")

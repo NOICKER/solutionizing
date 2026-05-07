@@ -6,6 +6,11 @@ import { requireRole } from '@/lib/api/middleware'
 import { validateBody } from '@/lib/api/validate'
 import { ok, badRequest, notFound, serverError, apiError } from '@/lib/api/response'
 import { COIN_PACKS } from '@/lib/business/coins'
+import {
+  COIN_PURCHASES_UNAVAILABLE_MESSAGE,
+  isCoinPurchaseConfigured,
+  isCoinPurchaseEnabled,
+} from '@/lib/business/coin-purchase-config'
 import { logApiRouteError } from '@/lib/api/log'
 
 const PurchaseCoinsSchema = z.object({
@@ -27,18 +32,22 @@ export async function POST(request: Request) {
       return notFound('Founder profile')
     }
 
-    const allowBetaInstantCoinCredit = process.env.ALLOW_BETA_INSTANT_COIN_CREDIT === 'true'
+    const coinPurchaseConfigured = isCoinPurchaseConfigured()
 
-    if (!allowBetaInstantCoinCredit) {
+    if (!coinPurchaseConfigured || !isCoinPurchaseEnabled()) {
       return apiError(
-        'Coin purchases are temporarily unavailable until checkout is enabled.',
+        COIN_PURCHASES_UNAVAILABLE_MESSAGE,
         'PAYMENTS_UNAVAILABLE',
-        503
+        503,
+        {
+          reason: coinPurchaseConfigured
+            ? 'BETA_INSTANT_CREDIT_DISABLED'
+            : 'MISSING_BETA_INSTANT_CREDIT_CONFIGURATION',
+        }
       )
     }
 
-    // Temporary beta flow: direct credits are only allowed behind
-    // ALLOW_BETA_INSTANT_COIN_CREDIT=true.
+    // Deployment requirement: direct beta credits are only allowed when ALLOW_BETA_INSTANT_COIN_CREDIT=true is set explicitly.
     const result = await prisma.$transaction(async (tx) => {
       const profile = await tx.founderProfile.update({
         where: { id: founder.founderProfile!.id },

@@ -102,6 +102,25 @@ export function MissionStatusBadge({ status }: { status: string }) {
   )
 }
 
+export function MissionHealthScoreBadge({ score }: { score: number | null | undefined }) {
+  if (score == null) {
+    return null
+  }
+
+  const tone =
+    score >= 80
+      ? { label: 'Strong Signal', className: 'bg-emerald-900/50 text-emerald-300' }
+      : score >= 50
+        ? { label: 'Mixed Signal', className: 'bg-amber-900/50 text-amber-300' }
+        : { label: 'Weak Signal', className: 'bg-red-900/50 text-red-300' }
+
+  return (
+    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${tone.className}`}>
+      {tone.label}
+    </div>
+  )
+}
+
 export function RetestCountChip({ count }: { count: number }) {
   const label = `${count} retest${count === 1 ? '' : 's'}`
 

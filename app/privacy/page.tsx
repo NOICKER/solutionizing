@@ -4,131 +4,95 @@ export default function PrivacyPage() {
   return (
     <LegalPageLayout
       title="Privacy Policy"
-      intro="This Privacy Policy explains how Solutionizing collects, uses, stores, shares, and protects personal data for founders, testers, and visitors. We operate as a Data Fiduciary under the Digital Personal Data Protection Act, 2023 (DPDP Act), and we process digital personal data to operate our software platform and marketplace lawfully."
-      lastUpdated="March 18, 2026"
+      intro="This Privacy Policy explains what Solutionizing collects, how we use it to run founder missions and tester feedback workflows, and how we protect mission data."
+      lastUpdated="May 7, 2026"
     >
-      <LegalSection title="1. Data Fiduciary and Scope">
-        <p>
-          Solutionizing is the Data Fiduciary for personal data processed through the platform. This Privacy Policy applies
-          to our website, dashboards, mission workflows, onboarding flows, communications, coin purchases, tester payouts,
-          and support interactions.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="2. What Data We Collect">
+      <LegalSection title="1. What Data We Collect">
         <LegalList
           items={[
-            "Account data such as name, email address, login details, role, company name, display name, and profile details.",
-            "Platform activity data such as missions created, questions answered, mission responses, reputation events, support activity, and transaction history.",
-            "Technical and device data such as IP address, browser type, operating system, device information, preferred device, session logs, and error diagnostics.",
-            "Usage and analytics data such as page visits, clicks, session replay data, referral information, and feature interaction events.",
-            "Payment and payout data such as coin purchases, withdrawal requests, UPI IDs, bank transfer details, and related payment verification metadata.",
+            "Account details such as name, email address, role, company name, profile details, login activity, and support requests.",
+            "Mission content submitted by founders, including product descriptions, research goals, task instructions, screening criteria, uploaded assets, and product URLs.",
+            "Tester responses, including ratings, survey answers, written feedback, completion status, device context, timestamps, and moderation signals.",
+            "Wallet and transaction records needed to manage coin purchases, mission funding, tester rewards, refunds, and operational support.",
+            "Usage analytics via PostHog, including page views, clicks, feature events, device and browser data, referral data, and session-level product usage signals.",
           ]}
         />
       </LegalSection>
 
-      <LegalSection title="3. How We Use Personal Data">
+      <LegalSection title="2. How We Use Data">
         <LegalList
           items={[
-            "To create and manage accounts, authenticate users, and maintain platform security.",
-            "To match founders with suitable testers and testers with relevant missions.",
-            "To process coin purchases, mission funding, tester rewards, withdrawals, and account refunds where applicable.",
-            "To communicate mission updates, account notices, support messages, policy updates, and transactional emails.",
-            "To improve product quality, measure usage, investigate abuse, prevent fraud, and comply with legal obligations.",
+            "To create accounts, authenticate users, secure sessions, and provide founder and tester dashboards.",
+            "To run missions, match testers to mission requirements, collect tester responses, process rewards, and show founders the results of their missions.",
+            "To generate AI synthesis via Gemini API, including summaries, friction themes, signal strength, recommendations, and related mission insights.",
+            "To detect abuse, moderate unsafe content, investigate errors, prevent fraud, reconcile payments, and provide customer support.",
+            "To build aggregated anonymous benchmarks across the platform so founders can understand product signal quality without exposing another founder's private mission data.",
           ]}
         />
-      </LegalSection>
-
-      <LegalSection title="4. Legal Basis and Consent">
-        <p>
-          We process digital personal data for lawful purposes, including with your consent, for performance of our contract
-          with you, for legitimate platform operations consistent with applicable law, and where processing is required to
-          comply with legal, regulatory, tax, accounting, anti-fraud, or dispute-resolution obligations.
+        <p className="font-semibold text-text-main">
+          We use anonymised and aggregated mission outcomes to improve our benchmark scoring models. No individual mission data is shared with other founders. Raw responses are never sold.
         </p>
       </LegalSection>
 
-      <LegalSection title="5. Data Storage and Cross-Border Processing">
+      <LegalSection title="3. AI Processing">
         <p>
-          Solutionizing stores and processes data using third-party infrastructure providers, including Supabase servers and
-          other vendors that may be located outside India. As a result, your personal data may be processed outside India,
-          subject to applicable Indian law and any restrictions notified by the Government of India under the DPDP Act.
+          When a mission is synthesized, relevant mission content and tester responses may be sent to the Gemini API to
+          produce structured insights for the founder who ran that mission. We use this processing to make the mission
+          results easier to understand and act on, not to sell raw responses or expose one founder&apos;s research project to
+          another founder.
         </p>
       </LegalSection>
 
-      <LegalSection title="6. Data Retention">
+      <LegalSection title="4. Aggregated Benchmarks">
         <p>
-          We retain active account data while your account remains active and for as long as reasonably necessary to provide
-          the platform, maintain transaction records, resolve disputes, and comply with legal obligations. If you delete your
-          account, we aim to delete or anonymize personal data within 30 days of deletion, unless longer retention is
-          required by law, tax, fraud prevention, or payment reconciliation obligations.
+          We may use anonymised, aggregated mission outcomes to improve benchmark scoring, platform quality, fraud
+          detection, and product analytics. Benchmark datasets are designed to remove direct identifiers and combine
+          outcomes across missions so they do not reveal individual mission content, tester identities, raw tester
+          responses, or private founder research.
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Your Rights Under the DPDP Act">
-        <LegalList
-          items={[
-            "Right to access information about the personal data we process about you.",
-            "Right to correction, completion, and updating of inaccurate or incomplete personal data.",
-            "Right to erasure of personal data, subject to retention required for the stated purpose or for compliance with law.",
-            "Right to withdraw consent where processing is based on consent.",
-            "Right to grievance redressal by contacting us directly before escalating to the relevant authority.",
-          ]}
-        />
+      <LegalSection title="5. Data Retention and Account Deletion">
+        <p>
+          We retain account, mission, response, wallet, and support data while your account is active and for as long as
+          needed to operate the platform, resolve disputes, prevent fraud, maintain payment records, and comply with legal
+          obligations. When you delete your account, we delete or anonymise personal data associated with the account unless
+          we must retain limited records for legal, tax, payment, security, or fraud-prevention reasons.
+        </p>
       </LegalSection>
 
-      <LegalSection title="8. How to Exercise Your Rights">
+      <LegalSection title="6. Cookies and PostHog Analytics">
         <p>
-          To access, correct, update, erase, or otherwise raise a privacy request regarding your personal data, email{" "}
+          We use cookies and similar technologies to keep you signed in, protect sessions, remember preferences, understand
+          product usage, and improve the platform. PostHog helps us measure feature usage, diagnose product friction, and
+          understand aggregate behavior. You can control cookies through your browser settings, although some platform
+          features may not work correctly without essential cookies.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="7. Sharing and Service Providers">
+        <p>
+          We share data only with service providers needed to run Solutionizing, such as hosting, database, analytics,
+          email, payment, support, security, and AI-processing providers. These providers process data for platform
+          operations and are not allowed to use raw mission responses for their own sales or advertising purposes.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="8. Security">
+        <p>
+          We use reasonable technical and organizational safeguards to protect account data, mission data, tester responses,
+          and transaction records. No online service can guarantee perfect security, so users should protect their login
+          credentials and contact us quickly if they suspect unauthorized access.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="9. Contact">
+        <p>
+          For privacy questions, deletion requests, or data requests, contact us at{" "}
           <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
             hello@solutionizing.com
           </a>
-          . We may request reasonable verification information before acting on a request.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="9. Cookies, Analytics, and Monitoring">
-        <p>
-          We use cookies and similar technologies to remember preferences, secure sessions, and understand product usage.
-          We use PostHog for analytics and usage measurement, and Sentry for error monitoring, diagnostics, and service
-          stability. You can manage analytics consent through our cookie banner where available.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="10. Third-Party Service Providers">
-        <p>We use third-party service providers to support platform operations, including:</p>
-        <LegalList
-          items={[
-            "Supabase for authentication, database, and application infrastructure.",
-            "Resend for transactional email delivery.",
-            "Stripe and/or Razorpay for payment collection, processing, and related financial workflows.",
-            "Other service providers that help us with analytics, security monitoring, infrastructure, support, and fraud prevention.",
-          ]}
-        />
-      </LegalSection>
-
-      <LegalSection title="11. Children">
-        <p>
-          Solutionizing is not intended for children and is not available to persons under 18 years of age. If we learn that
-          we have collected personal data from a person under 18 in violation of our policies, we may suspend the relevant
-          account and delete the associated data, subject to legal obligations.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="12. Changes to This Policy">
-        <p>
-          We may update this Privacy Policy from time to time. If we make material changes, we may notify users by email,
-          in-product notice, or both. The revised version will become effective on the date stated at the top of this page.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="13. Contact and Data Fiduciary Details">
-        <p>
-          Data Fiduciary: Solutionizing
-          <br />
-          Contact email:{" "}
-          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
-            hello@solutionizing.com
-          </a>
+          .
         </p>
       </LegalSection>
     </LegalPageLayout>

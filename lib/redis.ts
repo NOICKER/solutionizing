@@ -45,6 +45,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export const isRedisConfigured = redisUrl !== null
+export const isRedisCacheConfigured =
+  Boolean(upstashRedisRestUrl && upstashRedisRestToken) || redisUrl !== null
 
 function getUpstashRedisConnection() {
   if (!upstashRedisRestUrl || !upstashRedisRestToken) {

@@ -1,6 +1,7 @@
 "use client"
 
 import { ClipboardList, Coins } from 'lucide-react'
+import { format } from 'date-fns'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
@@ -9,6 +10,7 @@ import {
   DashboardCardSkeleton,
   EmptyStatePanel,
   ErrorStatePanel,
+  MissionHealthScoreBadge,
   MissionStatusBadge,
   RetestCountChip,
   clampPercent,
@@ -19,6 +21,24 @@ import {
 function getMissionRecencyTimestamp(mission: ApiMission) {
   const timestamp = Date.parse(mission.completedAt ?? mission.updatedAt ?? mission.createdAt)
   return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function getMissionStartTimestamp(mission: ApiMission) {
+  const timestamp = Date.parse(mission.createdAt)
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function formatMissionDate(value: string | null | undefined) {
+  if (!value) {
+    return 'Not completed yet'
+  }
+
+  const timestamp = Date.parse(value)
+  if (Number.isNaN(timestamp)) {
+    return 'Date unavailable'
+  }
+
+  return format(new Date(timestamp), 'MMM d, yyyy')
 }
 
 function getDashboardMissionHref(mission: ApiMission) {
@@ -97,6 +117,7 @@ function RecentMissionCard({
         </h3>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <MissionStatusBadge status={mission.status} />
+          <MissionHealthScoreBadge score={mission.healthScore} />
           {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
             <RetestCountChip count={mission.retests!.length} />
           ) : null}
@@ -148,6 +169,73 @@ function RecentMissionCard({
     >
       {content}
     </Link>
+  )
+}
+
+function ProductJourneySection({ missions }: { missions: ApiMission[] }) {
+  const journeyMissions = useMemo(
+    () =>
+      [...missions].sort(
+        (leftMission, rightMission) =>
+          getMissionStartTimestamp(leftMission) - getMissionStartTimestamp(rightMission)
+      ),
+    [missions]
+  )
+
+  if (journeyMissions.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="mt-6 rounded-panel border border-border-subtle bg-surface p-4 sm:p-6">
+      <div className="mb-6">
+        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Journey Map</div>
+        <h2 className="mt-2 text-2xl font-black text-white">Product Journey</h2>
+        <p className="mt-2 text-sm font-bold text-text-muted">
+          {`${journeyMissions.length} missions run · Started ${formatMissionDate(journeyMissions[0].createdAt)}`}
+        </p>
+      </div>
+
+      <div className="space-y-0">
+        {journeyMissions.map((mission, index) => {
+          const isRetest = Boolean(mission.parentMissionId)
+
+          return (
+            <div key={mission.id} className="relative grid grid-cols-[1.5rem_minmax(0,1fr)] gap-4 pb-6 last:pb-0">
+              {index < journeyMissions.length - 1 ? (
+                <div className="absolute bottom-0 left-[0.7rem] top-6 w-px bg-border-subtle" />
+              ) : null}
+              <div className="relative z-10 mt-1 h-4 w-4 rounded-full border border-primary/50 bg-surface shadow-[0_0_0_4px_rgba(249,124,90,0.08)]" />
+              <div
+                className={`rounded-card border border-border-subtle bg-surface-elevated p-4 ${
+                  isRetest ? 'border-l-4 border-l-primary/70' : ''
+                }`}
+              >
+                {isRetest ? (
+                  <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">
+                    <span className="h-px w-8 bg-primary/60" />
+                    Retest
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-black text-white sm:text-lg">{mission.title}</h3>
+                    <p className="mt-1 text-sm text-text-muted">
+                      {mission.completedAt ? `Completed ${formatMissionDate(mission.completedAt)}` : 'Not completed yet'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <MissionHealthScoreBadge score={mission.healthScore} />
+                    <MissionStatusBadge status={mission.status} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
@@ -299,6 +387,8 @@ export function FounderDashboardTab({
           </div>
         ) : null}
       </section>
+
+      {!isLoading && !loadError && missions.length > 0 ? <ProductJourneySection missions={missions} /> : null}
     </>
   )
 }

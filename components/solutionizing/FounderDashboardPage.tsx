@@ -385,7 +385,7 @@ function FounderDashboardContent() {
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
           ? 'We could not reach checkout. Check your internet connection and try again.'
           : isApiClientError(error) && error.code === 'PAYMENTS_UNAVAILABLE'
-            ? `${error.message} This branch is still using the beta purchase gateway.`
+            ? error.message
             : 'The purchase request failed before coins were credited. Retry the same pack or contact support if it keeps happening.'
 
       setPurchaseResult({

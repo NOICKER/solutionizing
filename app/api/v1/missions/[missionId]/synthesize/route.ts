@@ -5,8 +5,67 @@ import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/respo
 import { computeFeedback } from '@/lib/business/feedback'
 import { SynthesisError, synthesizeFeedback } from '@/lib/ai/synthesize'
 import { logApiRouteError } from '@/lib/api/log'
+import { getCachedJson, isRedisCacheConfigured, setCachedJson } from '@/lib/redis'
 
-const synthesisCache = new Map<string, { result: any; expires: number }>()
+const SYNTHESIS_CACHE_TTL_SECONDS = 60 * 60
+
+type SynthesisResult = Awaited<ReturnType<typeof synthesizeFeedback>>
+
+function getSynthesisCacheKey(missionId: string) {
+  return `synthesis:${missionId}`
+}
+
+function computeHealthScore(synthesis: SynthesisResult) {
+  const BASE = { HIGH: 85, MEDIUM: 60, LOW: 35 }
+  const score = Math.max(0, Math.min(100,
+    BASE[synthesis.signalStrength] - (synthesis.frictionPoints.length * 7)
+  ))
+
+  return score
+}
+
+function logSynthesisCacheStatus(status: 'HIT' | 'MISS', cacheKey: string) {
+  if (process.env.NODE_ENV !== 'production') {
+    const message =
+      status === 'HIT'
+        ? `[Synthesis] cache HIT: ${cacheKey}`
+        : `[Synthesis] cache MISS: ${cacheKey}`
+    console.log(message)
+  }
+}
+
+async function readCachedSynthesis(cacheKey: string): Promise<SynthesisResult | null> {
+  if (!isRedisCacheConfigured) {
+    logSynthesisCacheStatus('MISS', cacheKey)
+    return null
+  }
+
+  try {
+    const cached = await getCachedJson<SynthesisResult>(cacheKey)
+    logSynthesisCacheStatus(cached ? 'HIT' : 'MISS', cacheKey)
+    return cached
+  } catch (error) {
+    logSynthesisCacheStatus('MISS', cacheKey)
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Synthesis] cache read failed; generating fresh synthesis.', error)
+    }
+    return null
+  }
+}
+
+async function writeCachedSynthesis(cacheKey: string, synthesis: SynthesisResult) {
+  if (!isRedisCacheConfigured) {
+    return
+  }
+
+  try {
+    await setCachedJson(cacheKey, synthesis, SYNTHESIS_CACHE_TTL_SECONDS)
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Synthesis] cache write failed; response will still be returned.', error)
+    }
+  }
+}
 
 async function findOwnedMission(missionId: string, founderId: string) {
   return prisma.mission.findFirst({
@@ -42,20 +101,23 @@ export async function GET(
       return badRequest('No completed responses yet')
     }
 
-    // Check cache
-    const cached = synthesisCache.get(mission.id)
-    if (cached && cached.expires > Date.now()) {
-      return ok(cached.result)
+    // Serverless functions lose module memory on cold starts, so Redis keeps synthesis cache shared across invocations.
+    const cacheKey = getSynthesisCacheKey(mission.id)
+    const cached = await readCachedSynthesis(cacheKey)
+    if (cached) {
+      return ok(cached)
     }
 
     const feedback = await computeFeedback(mission.id)
     const synthesis = await synthesizeFeedback(feedback)
+    const score = computeHealthScore(synthesis)
 
-    // Cache for 1 hour
-    synthesisCache.set(mission.id, {
-      result: synthesis,
-      expires: Date.now() + 60 * 60 * 1000
+    await prisma.mission.update({
+      where: { id: mission.id },
+      data: { healthScore: score }
     })
+
+    await writeCachedSynthesis(cacheKey, synthesis)
 
     return ok(synthesis)
   } catch (err) {
