@@ -23,6 +23,13 @@ interface BalanceResponse {
   coinBalance?: number
 }
 
+interface FounderDashboardPageProps {
+  initialData?: {
+    missions: ApiMission[]
+    coinBalance: number
+  }
+}
+
 function GlyphChip({
   children,
   className = '',
@@ -190,13 +197,14 @@ const dashboardLoadingMessages = [
   'Almost there... (this message has been approved by the loading committee)',
 ] as const
 
-function FounderDashboardContent() {
+function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
   const router = useRouter()
   const { user, signOut } = useAuth()
-  const [missions, setMissions] = useState<ApiMission[]>([])
-  const [coinBalance, setCoinBalance] = useState(user?.founderProfile?.coinBalance ?? 0)
-  const [isBalanceLoading, setIsBalanceLoading] = useState(true)
-  const [isLoading, setIsLoading] = useState(true)
+  const hasInitialDashboardData = Boolean(initialData)
+  const [missions, setMissions] = useState<ApiMission[]>(initialData?.missions ?? [])
+  const [coinBalance, setCoinBalance] = useState(initialData?.coinBalance ?? user?.founderProfile?.coinBalance ?? 0)
+  const [isBalanceLoading, setIsBalanceLoading] = useState(!hasInitialDashboardData)
+  const [isLoading, setIsLoading] = useState(!hasInitialDashboardData)
   const [loadError, setLoadError] = useState('')
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({})
   const [actionLoading, setActionLoading] = useState<{ missionId: string; action: string } | null>(null)
@@ -245,8 +253,12 @@ function FounderDashboardContent() {
   }, [loadBalance, loadMissions])
 
   useEffect(() => {
+    if (hasInitialDashboardData) {
+      return
+    }
+
     void loadDashboard()
-  }, [loadDashboard])
+  }, [hasInitialDashboardData, loadDashboard])
 
   useEffect(() => {
     if (isLoading) {
@@ -651,6 +663,6 @@ function FounderDashboardContent() {
   )
 }
 
-export function FounderDashboardPage() {
-  return <FounderDashboardContent />
+export function FounderDashboardPage({ initialData }: FounderDashboardPageProps) {
+  return <FounderDashboardContent initialData={initialData} />
 }

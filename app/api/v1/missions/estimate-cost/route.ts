@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic'
 import { Difficulty } from '@prisma/client'
 import { z } from 'zod'
 import { requireRole } from '@/lib/api/middleware'

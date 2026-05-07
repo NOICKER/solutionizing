@@ -22,6 +22,13 @@ import { minimumWithdrawalCoins } from '@/components/solutionizing/tester/consta
 import { TesterMissionsTab } from '@/components/solutionizing/tester/TesterMissionsTab'
 import { TesterSettingsTab } from '@/components/solutionizing/tester/TesterSettingsTab'
 
+interface TesterDashboardPageProps {
+  initialData?: {
+    stats: ApiTesterStats | null
+    assignments: ApiTesterAssignmentSummary[]
+  }
+}
+
 function WithdrawalModal({
   balance,
   amount,
@@ -173,11 +180,12 @@ function TabButton({
   )
 }
 
-function TesterDashboardContent() {
+function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   const { user, refetch, signOut } = useAuth()
-  const [stats, setStats] = useState<ApiTesterStats | null>(null)
-  const [assignments, setAssignments] = useState<ApiTesterAssignmentSummary[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const hasInitialDashboardData = Boolean(initialData)
+  const [stats, setStats] = useState<ApiTesterStats | null>(initialData?.stats ?? null)
+  const [assignments, setAssignments] = useState<ApiTesterAssignmentSummary[]>(initialData?.assignments ?? [])
+  const [isLoading, setIsLoading] = useState(!hasInitialDashboardData)
   const [loadError, setLoadError] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [withdrawalOpen, setWithdrawalOpen] = useState(false)
@@ -192,7 +200,7 @@ function TesterDashboardContent() {
   const [deleteError, setDeleteError] = useState('')
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const balance = user?.testerProfile?.coinBalance ?? 0
+  const balance = stats?.coinBalance ?? user?.testerProfile?.coinBalance ?? 0
 
   const loadDashboard = useCallback(async () => {
     setLoadError('')
@@ -220,8 +228,12 @@ function TesterDashboardContent() {
   }, [])
 
   useEffect(() => {
+    if (hasInitialDashboardData) {
+      return
+    }
+
     void loadDashboard()
-  }, [loadDashboard])
+  }, [hasInitialDashboardData, loadDashboard])
 
   useEffect(() => {
     const interval = window.setInterval(() => setNow(new Date()), 60000)
@@ -249,7 +261,12 @@ function TesterDashboardContent() {
         amount: withdrawAmount,
       })
       toast.success(`Withdrawal requested! ₹${(withdrawAmount / 100).toFixed(0)} will be processed in 3-5 days.`)
-      await refetch()
+      const refreshedUser = await refetch()
+      const refreshedBalance = refreshedUser?.testerProfile?.coinBalance
+
+      if (typeof refreshedBalance === 'number') {
+        setStats((currentStats) => currentStats ? { ...currentStats, coinBalance: refreshedBalance } : currentStats)
+      }
     } catch (error) {
       if (isApiClientError(error)) {
         if (error.code === 'BELOW_MIN_WITHDRAWAL') {
@@ -518,6 +535,6 @@ function TesterDashboardContent() {
   )
 }
 
-export function TesterDashboardPage() {
-  return <TesterDashboardContent />
+export function TesterDashboardPage({ initialData }: TesterDashboardPageProps) {
+  return <TesterDashboardContent initialData={initialData} />
 }

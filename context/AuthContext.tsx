@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'next/navigation'
 import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
-import { apiFetch } from '@/lib/api/client'
+import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { identifyUser } from '@/lib/analytics/identify'
 import { registerSessionExpiredHandler } from '@/lib/auth/session'
 
@@ -49,6 +49,8 @@ export interface AuthContextValue {
 type MeResponse = User | { user: User }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+const authRoleStorageKey = 'auth:role'
+const authUserStorageKey = 'auth:user'
 
 function normalizeUser(payload: MeResponse | null | undefined) {
   if (!payload) {
@@ -58,6 +60,66 @@ function normalizeUser(payload: MeResponse | null | undefined) {
   return 'user' in payload ? payload.user : payload
 }
 
+function isUserRole(value: unknown): value is UserRole {
+  return value === 'FOUNDER' || value === 'TESTER' || value === 'ADMIN' || value === null
+}
+
+function readCachedAuthUser() {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    const cachedUser = window.sessionStorage.getItem(authUserStorageKey)
+
+    if (!cachedUser) {
+      return null
+    }
+
+    const parsed = JSON.parse(cachedUser) as Partial<User>
+
+    if (
+      typeof parsed.id !== 'string' ||
+      typeof parsed.email !== 'string' ||
+      !isUserRole(parsed.role)
+    ) {
+      return null
+    }
+
+    return {
+      id: parsed.id,
+      email: parsed.email,
+      role: parsed.role,
+      emailVerified: Boolean(parsed.emailVerified),
+      founderProfile: parsed.founderProfile ?? null,
+      testerProfile: parsed.testerProfile ?? null,
+    } satisfies User
+  } catch {
+    window.sessionStorage.removeItem(authRoleStorageKey)
+    window.sessionStorage.removeItem(authUserStorageKey)
+    return null
+  }
+}
+
+function writeCachedAuthUser(nextUser: User | null) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    if (!nextUser) {
+      window.sessionStorage.removeItem(authRoleStorageKey)
+      window.sessionStorage.removeItem(authUserStorageKey)
+      return
+    }
+
+    window.sessionStorage.setItem(authRoleStorageKey, nextUser.role ?? 'UNASSIGNED')
+    window.sessionStorage.setItem(authUserStorageKey, JSON.stringify(nextUser))
+  } catch {
+    // Storage can be unavailable in private contexts. Auth still works without the hint.
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
@@ -65,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const applyUser = useCallback((nextUser: User | null) => {
+    writeCachedAuthUser(nextUser)
     setUser(nextUser)
     setIsAuthenticated(Boolean(nextUser))
   }, [])
@@ -77,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (role === 'FOUNDER') {
-          return {
+          const nextUser = {
             ...currentUser,
             role,
             founderProfile: {
@@ -87,9 +150,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             },
             testerProfile: null,
           }
+          writeCachedAuthUser(nextUser)
+          return nextUser
         }
 
-        return {
+        const nextUser = {
           ...currentUser,
           role,
           founderProfile: null,
@@ -102,6 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isVerified: currentUser.testerProfile?.isVerified,
           },
         }
+        writeCachedAuthUser(nextUser)
+        return nextUser
       })
       setIsAuthenticated(true)
     },
@@ -125,7 +192,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const normalizedUser = normalizeUser(response)
         applyUser(normalizedUser)
         return normalizedUser
-      } catch {
+      } catch (error) {
+        if (
+          skipSessionHandling &&
+          isApiClientError(error) &&
+          error.code === 'NETWORK_ERROR' &&
+          readCachedAuthUser()
+        ) {
+          return null
+        }
+
         applyUser(null)
         return null
       }
@@ -139,6 +215,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timeoutId = window.setTimeout(() => controller.abort(), 8000)
 
     async function bootstrap() {
+      const cachedUser = readCachedAuthUser()
+
+      if (cachedUser && isMounted) {
+        applyUser(cachedUser)
+        setIsLoading(false)
+      }
+
       try {
         if (!isMounted) {
           return
@@ -154,7 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } finally {
         window.clearTimeout(timeoutId)
-        if (isMounted) {
+        if (isMounted && !cachedUser) {
           setIsLoading(false)
         }
       }

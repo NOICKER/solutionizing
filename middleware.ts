@@ -21,25 +21,40 @@ function redirectWithCookies(request: NextRequest, response: NextResponse, pathn
   return redirectResponse
 }
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request })
-  const path = request.nextUrl.pathname
-  const isPublicRoute = publicRoutes.has(path)
+function hasAuthCookieHint(request: NextRequest) {
+  return request.cookies.getAll().some((cookie) => cookie.name.includes('-auth-token'))
+}
 
-  // Fast hint for redirecting logged-in users away from the landing page
-  if (path === '/') {
-    const hasAuthCookieHint = request.cookies.getAll().some(c => c.name.includes('-auth-token'))
-    if (hasAuthCookieHint) {
-      return redirectWithCookies(request, response, '/dashboard')
-    }
+function clearAuthCookiesAndRedirect(request: NextRequest, pathname: string) {
+  const cleanRedirect = NextResponse.redirect(new URL(pathname, request.url))
+
+  request.cookies.getAll()
+    .filter((cookie) => cookie.name.includes('-auth-token'))
+    .forEach((cookie) => {
+      cleanRedirect.cookies.set(cookie.name, '', { maxAge: 0, path: '/' })
+    })
+
+  return cleanRedirect
+}
+
+function getDashboardPathForRole(role: unknown) {
+  if (role === 'FOUNDER') {
+    return '/dashboard/founder'
   }
 
-  // Skip expensive auth check for public routes
-  if (isPublicRoute) {
-    return response
+  if (role === 'TESTER') {
+    return '/dashboard/tester'
   }
 
-  const supabase = createServerClient(
+  if (role === 'ADMIN') {
+    return '/dashboard/admin'
+  }
+
+  return null
+}
+
+function createMiddlewareSupabaseClient(request: NextRequest, response: NextResponse) {
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -56,6 +71,38 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
+}
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request })
+  const path = request.nextUrl.pathname
+  const isPublicRoute = publicRoutes.has(path)
+
+  // Redirect logged-in users away from the landing page in one hop.
+  if (path === '/') {
+    if (hasAuthCookieHint(request)) {
+      const supabase = createMiddlewareSupabaseClient(request, response)
+      const { data: { user } } = await supabase.auth.getUser()
+      const dashboardPath = getDashboardPathForRole(user?.app_metadata?.role)
+
+      if (dashboardPath) {
+        return redirectWithCookies(request, response, dashboardPath)
+      }
+
+      if (user) {
+        return redirectWithCookies(request, response, '/select-role')
+      }
+
+      return clearAuthCookiesAndRedirect(request, '/')
+    }
+  }
+
+  // Skip expensive auth check for public routes
+  if (isPublicRoute) {
+    return response
+  }
+
+  const supabase = createMiddlewareSupabaseClient(request, response)
 
   // Refresh session — required for Server Components to read auth state
   const { data: { user } } = await supabase.auth.getUser()
@@ -63,16 +110,8 @@ export async function middleware(request: NextRequest) {
   // Guard: JWT cookie present but session invalid (e.g. missing `sub` claim).
   // Clear the stale cookies and redirect to landing instead of a raw 403 loop.
   if (!user) {
-    const hasAuthCookie = request.cookies.getAll().some(c => c.name.includes('-auth-token'))
-    if (hasAuthCookie) {
-      const cleanRedirect = NextResponse.redirect(new URL('/', request.url))
-      // Nuke every Supabase auth-token cookie fragment
-      request.cookies.getAll()
-        .filter(c => c.name.includes('-auth-token'))
-        .forEach(c => {
-          cleanRedirect.cookies.set(c.name, '', { maxAge: 0, path: '/' })
-        })
-      return cleanRedirect
+    if (hasAuthCookieHint(request)) {
+      return clearAuthCookiesAndRedirect(request, '/')
     }
   }
 

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'
 import { COIN_PACKS } from '@/lib/business/coins'

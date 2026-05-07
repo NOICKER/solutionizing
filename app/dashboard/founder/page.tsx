@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FounderDashboardPage as FounderDashboardAppPage } from '@/components/solutionizing/FounderDashboardPage'
 import { getCurrentAppUser, hasCompletedOnboarding } from '@/lib/auth/current-user'
+import { getFounderDashboardInitialData } from '@/lib/dashboard-initial-data'
 
 export default async function FounderDashboardPage() {
   const user = await getCurrentAppUser()
@@ -25,6 +26,11 @@ export default async function FounderDashboardPage() {
     redirect('/onboarding')
   }
 
-  return <FounderDashboardAppPage />
-}
+  if (!user.founderProfile) {
+    redirect('/select-role')
+  }
 
+  const initialData = await getFounderDashboardInitialData(user.founderProfile.id)
+
+  return <FounderDashboardAppPage initialData={initialData} />
+}
