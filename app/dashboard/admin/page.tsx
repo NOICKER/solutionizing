@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ClipboardList, Flag, LayoutDashboard, Rocket, Settings, Users } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -74,6 +74,18 @@ type ReportResolutionDraft = {
   note: string
 }
 
+type CoinAwardDraft = {
+  userId: string
+  amount: string
+  note: string
+}
+
+type CoinAwardMessage = {
+  userId: string
+  type: 'success' | 'error'
+  text: string
+}
+
 const overviewSidebarProps = { glyph: <LayoutDashboard className="h-4 w-4" /> }
 const missionsSidebarProps = { glyph: <Rocket className="h-4 w-4" /> }
 const usersSidebarProps = { glyph: <Users className="h-4 w-4" /> }
@@ -134,6 +146,9 @@ export default function AdminDashboardPage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [reportResolutionDraft, setReportResolutionDraft] = useState<ReportResolutionDraft | null>(null)
   const [reportResolutionError, setReportResolutionError] = useState('')
+  const [coinAwardDraft, setCoinAwardDraft] = useState<CoinAwardDraft | null>(null)
+  const [coinAwardLoadingId, setCoinAwardLoadingId] = useState<string | null>(null)
+  const [coinAwardMessage, setCoinAwardMessage] = useState<CoinAwardMessage | null>(null)
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -279,6 +294,68 @@ export default function AdminDashboardPage() {
       setUserActionLoadingId(null)
     }
   }, [updateUserInLists])
+
+  const handleOpenCoinAward = useCallback((userId: string) => {
+    setCoinAwardDraft({ userId, amount: '', note: '' })
+    setCoinAwardMessage(null)
+  }, [])
+
+  const handleConfirmCoinAward = useCallback(async () => {
+    if (!coinAwardDraft) {
+      return
+    }
+
+    const amount = Number(coinAwardDraft.amount)
+    const note = coinAwardDraft.note.trim()
+
+    if (!Number.isInteger(amount) || amount <= 0) {
+      setCoinAwardMessage({
+        userId: coinAwardDraft.userId,
+        type: 'error',
+        text: 'Enter a positive whole number of coins.',
+      })
+      return
+    }
+
+    if (note.length < 10) {
+      setCoinAwardMessage({
+        userId: coinAwardDraft.userId,
+        type: 'error',
+        text: 'Note must be at least 10 characters.',
+      })
+      return
+    }
+
+    try {
+      setCoinAwardLoadingId(coinAwardDraft.userId)
+      setCoinAwardMessage(null)
+      await apiFetch('/api/v1/admin/coins/adjust', {
+        method: 'POST',
+        body: {
+          userId: coinAwardDraft.userId,
+          amount,
+          note,
+        },
+      })
+      setCoinAwardMessage({
+        userId: coinAwardDraft.userId,
+        type: 'success',
+        text: `${amount.toLocaleString()} coins awarded.`,
+      })
+      setCoinAwardDraft(null)
+      toast.success('Coins awarded.')
+    } catch (err) {
+      const message = isApiClientError(err) ? err.message : 'Failed to award coins.'
+      setCoinAwardMessage({
+        userId: coinAwardDraft.userId,
+        type: 'error',
+        text: message,
+      })
+      toast.error(message)
+    } finally {
+      setCoinAwardLoadingId(null)
+    }
+  }, [coinAwardDraft])
 
   const handleOpenReportResolution = useCallback(
     (reportId: string, status: Exclude<ReportResolutionStatus, 'PENDING'>) => {
@@ -632,60 +709,146 @@ export default function AdminDashboardPage() {
                         <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
                           {userList.map((userItem) => {
                             const isUserActionLoading = userActionLoadingId === userItem.id
+                            const userDisplayName = getUserDisplayName(userItem)
+                            const isCoinAwardOpen = coinAwardDraft?.userId === userItem.id
+                            const isCoinAwardLoading = coinAwardLoadingId === userItem.id
+                            const coinAwardStatus =
+                              coinAwardMessage?.userId === userItem.id ? coinAwardMessage : null
 
                             return (
-                              <tr key={userItem.id} className="text-sm">
-                                <td className="px-4 py-4 sm:px-6">
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="font-bold line-clamp-1">{getUserDisplayName(userItem)}</span>
-                                    <span className="text-[0.7rem] text-[#8b8797] dark:text-gray-400 line-clamp-1">{userItem.email}</span>
-                                    {userItem.isSuspended ? (
-                                      <span className="inline-flex w-fit rounded-full bg-red-100 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                                        Suspended
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 sm:px-6 uppercase">
-                                  <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold sm:px-3 sm:py-1 sm:text-xs ${getRoleBadgeClass(userItem.role)}`}>
-                                    {userItem.role || 'PENDING'}
-                                  </span>
-                                </td>
-                                <td className="hidden px-6 py-4 text-[#6b687a] lg:table-cell dark:text-gray-400">
-                                  {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
-                                </td>
-                                <td className="hidden px-6 py-4 sm:table-cell">
-                                  <div className="flex flex-col gap-1">
-                                    {userItem.founderProfile || userItem.testerProfile ? (
-                                      <span className="flex items-center gap-1 text-[0.65rem] font-bold text-emerald-600 sm:text-xs dark:text-emerald-300">
-                                        <div className="h-1 w-1 rounded-full bg-emerald-500 sm:h-1.5 sm:w-1.5" />
-                                        Completed
-                                      </span>
-                                    ) : (
-                                      <span className="flex items-center gap-1 text-[0.65rem] font-bold text-orange-600 sm:text-xs dark:text-orange-300">
-                                        <div className="h-1 w-1 rounded-full bg-orange-500 sm:h-1.5 sm:w-1.5" />
-                                        Incomplete
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 sm:px-6 text-right">
-                                  {userItem.isSuspended ? (
-                                    <div className="flex flex-col items-end gap-1 sm:gap-2">
-                                      <button
-                                        className={`inline-flex items-center gap-2 px-3 py-1.5 text-[0.65rem] sm:px-4 sm:py-2 sm:text-xs ${outlineButtonClass}`}
-                                        disabled={isUserActionLoading}
-                                        onClick={() => void handleUnsuspendUser(userItem.id)}
-                                      >
-                                        {isUserActionLoading ? <SpinnerIcon /> : null}
-                                        Unsuspend
-                                      </button>
+                              <Fragment key={userItem.id}>
+                                <tr className="text-sm">
+                                  <td className="px-4 py-4 sm:px-6">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="font-bold line-clamp-1">{userDisplayName}</span>
+                                      <span className="text-[0.7rem] text-[#8b8797] dark:text-gray-400 line-clamp-1">{userItem.email}</span>
+                                      {userItem.isSuspended ? (
+                                        <span className="inline-flex w-fit rounded-full bg-red-100 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                          Suspended
+                                        </span>
+                                      ) : null}
                                     </div>
-                                  ) : (
-                                    <span className="text-[0.65rem] font-semibold text-[#9b98a8] sm:text-xs dark:text-gray-400">No actions</span>
-                                  )}
-                                </td>
-                              </tr>
+                                  </td>
+                                  <td className="px-4 py-4 sm:px-6 uppercase">
+                                    <span className={`rounded-full px-2 py-0.5 text-[0.65rem] font-bold sm:px-3 sm:py-1 sm:text-xs ${getRoleBadgeClass(userItem.role)}`}>
+                                      {userItem.role || 'PENDING'}
+                                    </span>
+                                  </td>
+                                  <td className="hidden px-6 py-4 text-[#6b687a] lg:table-cell dark:text-gray-400">
+                                    {format(new Date(userItem.createdAt), 'MMM d, yyyy')}
+                                  </td>
+                                  <td className="hidden px-6 py-4 sm:table-cell">
+                                    <div className="flex flex-col gap-1">
+                                      {userItem.founderProfile || userItem.testerProfile ? (
+                                        <span className="flex items-center gap-1 text-[0.65rem] font-bold text-emerald-600 sm:text-xs dark:text-emerald-300">
+                                          <div className="h-1 w-1 rounded-full bg-emerald-500 sm:h-1.5 sm:w-1.5" />
+                                          Completed
+                                        </span>
+                                      ) : (
+                                        <span className="flex items-center gap-1 text-[0.65rem] font-bold text-orange-600 sm:text-xs dark:text-orange-300">
+                                          <div className="h-1 w-1 rounded-full bg-orange-500 sm:h-1.5 sm:w-1.5" />
+                                          Incomplete
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-4 sm:px-6 text-right">
+                                    <div className="flex flex-col items-end gap-2">
+                                      <button
+                                        className={`inline-flex items-center gap-2 px-3 py-1.5 text-[0.65rem] sm:px-4 sm:py-2 sm:text-xs ${primaryButtonClass}`}
+                                        onClick={() => handleOpenCoinAward(userItem.id)}
+                                      >
+                                        Award Coins
+                                      </button>
+                                      {userItem.isSuspended ? (
+                                        <button
+                                          className={`inline-flex items-center gap-2 px-3 py-1.5 text-[0.65rem] sm:px-4 sm:py-2 sm:text-xs ${outlineButtonClass}`}
+                                          disabled={isUserActionLoading}
+                                          onClick={() => void handleUnsuspendUser(userItem.id)}
+                                        >
+                                          {isUserActionLoading ? <SpinnerIcon /> : null}
+                                          Unsuspend
+                                        </button>
+                                      ) : null}
+                                      {coinAwardStatus ? (
+                                        <p className={`max-w-56 text-[0.7rem] font-semibold ${coinAwardStatus.type === 'success' ? 'text-emerald-600 dark:text-emerald-300' : 'text-red-600 dark:text-red-300'}`}>
+                                          {coinAwardStatus.text}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </td>
+                                </tr>
+                                {isCoinAwardOpen && coinAwardDraft ? (
+                                  <tr className="bg-[#faf9f7] text-sm dark:bg-gray-900/60">
+                                    <td colSpan={5} className="px-4 pb-5 sm:px-6">
+                                      <div className="rounded-[1.5rem] border border-[#ece6df] bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                                        <div className="mb-4">
+                                          <h4 className="font-bold text-[#1a1625] dark:text-white">Award coins to {userDisplayName}</h4>
+                                          <p className="mt-1 text-xs text-[#8b8797] dark:text-gray-400">
+                                            Add a positive coin amount and a clear admin note.
+                                          </p>
+                                        </div>
+                                        <div className="grid gap-4 md:grid-cols-[minmax(0,180px),1fr]">
+                                          <label className="block">
+                                            <span className="mb-2 block text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:text-gray-400">
+                                              Coin amount
+                                            </span>
+                                            <input
+                                              type="number"
+                                              min={1}
+                                              step={1}
+                                              value={coinAwardDraft.amount}
+                                              onChange={(event) =>
+                                                setCoinAwardDraft((current) =>
+                                                  current ? { ...current, amount: event.target.value } : current
+                                                )
+                                              }
+                                              className={textFieldClass}
+                                              placeholder="100"
+                                            />
+                                          </label>
+                                          <label className="block">
+                                            <span className="mb-2 block text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:text-gray-400">
+                                              Note
+                                            </span>
+                                            <input
+                                              value={coinAwardDraft.note}
+                                              onChange={(event) =>
+                                                setCoinAwardDraft((current) =>
+                                                  current ? { ...current, note: event.target.value } : current
+                                                )
+                                              }
+                                              className={textFieldClass}
+                                              placeholder="Reason for awarding coins"
+                                            />
+                                            <p className="mt-1 text-xs text-[#8b8797] dark:text-gray-400">Minimum 10 characters</p>
+                                          </label>
+                                        </div>
+                                        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+                                          <button
+                                            className={`px-4 py-2 text-xs ${mutedButtonClass}`}
+                                            disabled={isCoinAwardLoading}
+                                            onClick={() => {
+                                              setCoinAwardDraft(null)
+                                              setCoinAwardMessage(null)
+                                            }}
+                                          >
+                                            Cancel
+                                          </button>
+                                          <button
+                                            className={`inline-flex items-center gap-2 px-4 py-2 text-xs ${primaryButtonClass}`}
+                                            disabled={isCoinAwardLoading}
+                                            onClick={() => void handleConfirmCoinAward()}
+                                          >
+                                            {isCoinAwardLoading ? <SpinnerIcon /> : null}
+                                            Confirm Award
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ) : null}
+                              </Fragment>
                             )
                           })}
                         </tbody>

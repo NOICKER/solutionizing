@@ -4,7 +4,8 @@ import { ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { ApiMission } from '@/types/api'
+import { useState } from 'react'
+import { ApiMission, MissionStatus } from '@/types/api'
 import {
   DashboardCardSkeleton,
   EmptyStatePanel,
@@ -18,6 +19,18 @@ import {
   outlineButtonClass,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
+
+type MissionFilterId = 'ALL' | Extract<MissionStatus, 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'PENDING_REVIEW' | 'COMPLETED' | 'REJECTED'>
+
+const missionFilters: { id: MissionFilterId; label: string }[] = [
+  { id: 'ALL', label: 'All' },
+  { id: 'DRAFT', label: 'Draft' },
+  { id: 'ACTIVE', label: 'Active' },
+  { id: 'PAUSED', label: 'Paused' },
+  { id: 'PENDING_REVIEW', label: 'In Review' },
+  { id: 'COMPLETED', label: 'Completed' },
+  { id: 'REJECTED', label: 'Rejected' },
+]
 
 function getMissionDestination(mission: ApiMission) {
   if (mission.status === 'COMPLETED') {
@@ -65,6 +78,10 @@ export function FounderMissionsTab({
   onOpenDialog,
 }: FounderMissionsTabProps) {
   const router = useRouter()
+  const [selectedFilter, setSelectedFilter] = useState<MissionFilterId>('ALL')
+  const selectedFilterLabel = missionFilters.find((filter) => filter.id === selectedFilter)?.label ?? 'All'
+  const filteredMissions =
+    selectedFilter === 'ALL' ? missions : missions.filter((mission) => mission.status === selectedFilter)
 
   let content
 
@@ -87,10 +104,18 @@ export function FounderMissionsTab({
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
+  } else if (filteredMissions.length === 0) {
+    content = (
+      <EmptyStatePanel
+        title={`No ${selectedFilterLabel.toLowerCase()} missions`}
+        description="Try another filter to see more missions."
+        icon={<ClipboardList className="h-16 w-16 text-text-muted" />}
+      />
+    )
   } else {
     content = (
       <div className="space-y-4">
-        {missions.map((mission) => {
+        {filteredMissions.map((mission) => {
           const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
           const isSubmitting = actionLoading?.missionId === mission.id && actionLoading.action === 'submit'
           const isLaunching = actionLoading?.missionId === mission.id && actionLoading.action === 'launch'
@@ -317,9 +342,32 @@ export function FounderMissionsTab({
           <h2 className="mt-2 text-2xl font-black text-white">Your Missions</h2>
         </div>
         <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
-          + Initialize New Node
+          + New Mission
         </Link>
       </div>
+
+      {!isLoading && !loadError && missions.length > 0 ? (
+        <div className="mb-5 flex flex-wrap gap-2 rounded-card border border-border-subtle bg-surface-elevated p-2">
+          {missionFilters.map((filter) => {
+            const isActive = selectedFilter === filter.id
+
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-colors ${
+                  isActive
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-text-muted hover:bg-surface hover:text-text-main'
+                }`}
+                onClick={() => setSelectedFilter(filter.id)}
+              >
+                {filter.label}
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
 
       {content}
     </section>

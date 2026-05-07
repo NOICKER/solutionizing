@@ -513,7 +513,7 @@ function FounderDashboardContent() {
                     </div>
                   )}
                   <button className={`px-5 py-3 text-sm ${primaryButtonClass}`} onClick={() => setActiveTab('wallets')}>
-                    Deploy +
+                    Buy Coins
                   </button>
                   <ThemeToggleButton />
                 </div>

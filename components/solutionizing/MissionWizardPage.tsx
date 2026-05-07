@@ -1287,7 +1287,11 @@ function MissionWizardContent() {
                 </div>
               </div>
             </div>
+          </div>
+        ) : null}
 
+        {step === 2 ? (
+          <div className="space-y-8">
             <div>
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">DIFFICULTY</label>
               <div className="grid gap-4 md:grid-cols-3">
@@ -1328,11 +1332,7 @@ function MissionWizardContent() {
                 ))}
               </div>
             </div>
-          </div>
-        ) : null}
 
-        {step === 2 ? (
-          <div className="space-y-8">
             <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">ESTIMATED MINUTES</label>
               <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
@@ -1366,8 +1366,6 @@ function MissionWizardContent() {
                 <p className="rounded-2xl bg-white/5 px-4 py-4 text-sm text-red-200">{costEstimateError}</p>
               )}
             </div>
-
-            {!isBalanceLoading && total !== null && coinBalance < total ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">You need {formatCoins(total - coinBalance)} more coins (≈ ₹{((total - coinBalance) / 100).toFixed(0)}). Buy coins before launching.</div> : null}
 
             <div className="space-y-4">
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100">

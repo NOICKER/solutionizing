@@ -375,7 +375,7 @@ export function FounderDashboardTab({
         {!isLoading && !loadError ? (
           <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
             <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
-              + Initialize New Node
+              + New Mission
             </Link>
             <button
               type="button"
