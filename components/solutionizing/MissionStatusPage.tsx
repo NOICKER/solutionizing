@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MissionLifecycleTracker } from '@/components/solutionizing/MissionLifecycleTracker'
 import {
   ConfirmationDialog,
   MissionStatusBadge,
@@ -540,6 +541,10 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
             </svg>
             Back to dashboard
           </Link>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="mb-8">
+          <MissionLifecycleTracker mission={mission} />
         </motion.div>
 
         <motion.div variants={itemVariants} className="mb-10">

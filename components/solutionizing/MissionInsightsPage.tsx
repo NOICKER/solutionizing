@@ -13,13 +13,14 @@ import {
   ApiMissionRetestSummary,
   SynthesisResult,
 } from '@/types/api'
-import {
+import { 
   NotFoundPanel,
   StarRow,
   primaryButtonClass,
   textFieldClass,
   SpinnerIcon,
 } from '@/components/solutionizing/ui'
+import { MissionLifecycleTracker } from '@/components/solutionizing/MissionLifecycleTracker'
 import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -1153,6 +1154,15 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           >
             Mission Status <ArrowRight size={16} />
           </Link>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-8"
+        >
+          <MissionLifecycleTracker mission={mission} />
         </motion.div>
 
         <motion.section 
