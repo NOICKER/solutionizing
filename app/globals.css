@@ -15,10 +15,21 @@
 
 :root {
   color-scheme: dark;
+  --color-text-main: 255 255 255;
+  --color-surface-white: 255 255 255;
 }
 
 html.dark {
   color-scheme: dark;
+}
+
+.light-surface {
+  --color-text-main: 26 22 37;
+  --color-surface-white: 255 255 255;
+}
+
+.dark-surface {
+  --color-text-main: 255 255 255;
 }
 
 html,

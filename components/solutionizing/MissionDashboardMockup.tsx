@@ -2,8 +2,8 @@ export function MissionDashboardMockup() {
   return (
     <div className="group relative">
       <div className="absolute -inset-10 rounded-full bg-primary/10 opacity-40 blur-[100px]" />
-      <div className="relative z-10 aspect-[4/3] overflow-hidden rounded-[2.5rem] border border-secondary/20 bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)]">
-        <div className="flex items-center justify-between border-b border-secondary/20 bg-neutral-bg/80 px-6 py-4 lg:px-8 lg:py-5">
+      <div className="light-surface relative z-10 aspect-[4/3] overflow-hidden rounded-[2.5rem] border border-secondary/20 bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)]">
+        <div className="dark-surface flex items-center justify-between border-b border-secondary/20 bg-neutral-bg/80 px-6 py-4 lg:px-8 lg:py-5">
           <div className="flex gap-2.5">
             <div className="h-3.5 w-3.5 rounded-full bg-red-500/60" />
             <div className="h-3.5 w-3.5 rounded-full bg-orange-500/60" />
@@ -13,7 +13,7 @@ export function MissionDashboardMockup() {
         </div>
 
         <div className="flex flex-col gap-8 p-6 lg:p-8">
-          <div className="rounded-2xl border border-secondary/20 bg-neutral-bg p-6 lg:p-7">
+          <div className="dark-surface rounded-2xl border border-secondary/20 bg-neutral-bg p-6 lg:p-7">
             <div className="mb-5 flex items-start justify-between gap-4">
               <h3 className="text-lg font-black text-text-main">Checkout clarity validation</h3>
               <span className="rounded-md bg-secondary px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white">Active</span>

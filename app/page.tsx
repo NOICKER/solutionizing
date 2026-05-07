@@ -79,6 +79,15 @@ const contributionItems = [
   }
 ];
 
+const testerProfileMock = {
+  name: "Aarohi Nair",
+  context: "B2B SaaS operator",
+  missionCount: "31 missions reviewed",
+  reputationScore: "94/100",
+  quote:
+    "I knew what the product did, but the pricing labels made me wonder if this was built for teams bigger than mine."
+};
+
 const workflowSteps = [
   {
     number: "01",
@@ -224,19 +233,19 @@ export default function LandingPage() {
 
             <div className="grid gap-8 md:grid-cols-3">
               {productPillars.map((pillar) => (
-                <article key={pillar.title} className="rounded-[2.5rem] border border-secondary/15 bg-white p-8 shadow-card-soft">
+                <article key={pillar.title} className="light-surface rounded-[2.5rem] border border-secondary/15 bg-white p-8 text-[#1a1a1a] shadow-card-soft">
                   <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <span className="material-symbols-outlined text-3xl">{pillar.icon}</span>
                   </div>
-                  <h3 className="text-2xl font-black tracking-tight text-text-main">{pillar.title}</h3>
-                  <p className="mt-4 text-base leading-relaxed text-text-main/65 lg:text-lg">{pillar.body}</p>
+                  <h3 className="text-2xl font-black tracking-tight text-[#1a1a1a]">{pillar.title}</h3>
+                  <p className="mt-4 text-base leading-relaxed text-[#222222]/80 lg:text-lg">{pillar.body}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="methodology" className="border-y border-secondary/15 bg-surface-white py-24 lg:py-28">
+        <section id="methodology" className="border-y border-secondary/15 bg-neutral-card py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
               <h2 className="mb-6 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Most feedback systems create noise.</h2>
@@ -260,7 +269,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#f7f4ee] py-24 lg:py-28">
+        <section className="bg-neutral-bg py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl">
@@ -275,10 +284,10 @@ export default function LandingPage() {
 
             <div className="grid gap-6 lg:grid-cols-3">
               {exampleSignals.map((item) => (
-                <article key={item.title} className="rounded-[2rem] border border-secondary/15 bg-white p-6 shadow-card-soft">
-                  <div className="text-sm font-black uppercase tracking-[0.18em] text-secondary">{item.title}</div>
-                  <p className="mt-4 text-base leading-relaxed text-text-main/70">{item.summary}</p>
-                  <div className="mt-5 rounded-2xl bg-neutral-bg px-4 py-4">
+                <article key={item.title} className="rounded-[2rem] border border-secondary/15 bg-white p-6 text-[#1a1a1a] shadow-card-soft">
+                  <div className="text-sm font-black uppercase tracking-[0.18em] text-[#222222]">{item.title}</div>
+                  <p className="mt-4 text-base leading-relaxed text-[#222222]/80">{item.summary}</p>
+                  <div className="dark-surface mt-5 rounded-2xl bg-neutral-bg px-4 py-4">
                     <div className="text-xs font-black uppercase tracking-[0.18em] text-text-main/45">Recommended next move</div>
                     <p className="mt-2 text-base font-semibold leading-relaxed text-text-main">{item.outcome}</p>
                   </div>
@@ -290,7 +299,7 @@ export default function LandingPage() {
 
         <section id="testers" className="bg-neutral-bg py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="rounded-[3rem] border border-secondary/15 bg-surface-white p-8 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] sm:p-10 lg:p-16">
+            <div className="rounded-[3rem] border border-secondary/15 bg-neutral-card p-8 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] sm:p-10 lg:p-16">
               <div className="flex flex-col items-center gap-14 lg:flex-row lg:gap-16">
                 <div className="lg:w-1/2">
                   <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-secondary/10 bg-neutral-bg px-4 py-2 text-sm font-black uppercase tracking-[0.3em] text-text-main">Tester contribution model</div>
@@ -322,16 +331,51 @@ export default function LandingPage() {
                 </div>
 
                 <div className="relative lg:w-1/2">
-                  <div className="relative aspect-square overflow-hidden rounded-[3rem] border border-white/10 bg-text-main shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)]">
+                  <div className="light-surface relative aspect-square overflow-hidden rounded-[3rem] border border-white/10 bg-text-main shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-secondary/50 via-transparent to-transparent" />
-                    <div className="flex h-full flex-col items-center justify-center p-10 text-center sm:p-12 lg:p-14">
-                      <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full border-2 border-secondary/50 bg-secondary/30 text-secondary shadow-[0_0_40px_rgba(95,125,129,0.3)] lg:h-28 lg:w-28">
-                        <span className="material-symbols-outlined text-6xl">psychology_alt</span>
+                    <div className="relative flex h-full flex-col justify-between p-8 sm:p-10 lg:p-12">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.22em] text-white/55">
+                            <span className="material-symbols-outlined text-sm text-primary">verified_user</span>
+                            Matched tester
+                          </div>
+
+                          <div className="mt-6 flex items-center gap-4">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-xl font-black tracking-[0.18em] text-white shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)]">
+                              AN
+                            </div>
+
+                            <div>
+                              <div className="text-2xl font-black tracking-tight text-white sm:text-[1.7rem]">
+                                {testerProfileMock.name}
+                              </div>
+                              <p className="mt-1 text-sm font-medium text-white/60">
+                                {testerProfileMock.context} • {testerProfileMock.missionCount}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-[1.6rem] border border-primary/20 bg-primary/12 px-4 py-3 text-right shadow-[0_20px_40px_-28px_rgba(249,124,90,0.75)]">
+                          <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-primary/80">
+                            Reputation score
+                          </div>
+                          <div className="mt-1 text-2xl font-black tracking-tight text-white">
+                            {testerProfileMock.reputationScore}
+                          </div>
+                        </div>
                       </div>
-                      <h4 className="mb-4 text-3xl font-black tracking-tight text-white">Signal certification</h4>
-                      <p className="max-w-xs text-sm font-bold uppercase leading-relaxed tracking-[0.2em] text-white/55">
-                        Structured review protects mission quality, tester fit, and the privacy of both sides.
-                      </p>
+
+                      <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+                        <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.2em] text-white/45">
+                          <span className="material-symbols-outlined text-sm text-primary">format_quote</span>
+                          Sample feedback
+                        </div>
+                        <blockquote className="mt-4 text-lg font-medium leading-relaxed text-white/90">
+                          &ldquo;{testerProfileMock.quote}&rdquo;
+                        </blockquote>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -340,7 +384,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="workflow" className="bg-surface-white py-24 lg:py-28">
+        <section id="workflow" className="bg-neutral-card py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="mb-16 text-center text-4xl font-black tracking-tight text-text-main lg:mb-20 lg:text-5xl">The 2-minute workflow</h2>
 
@@ -369,14 +413,14 @@ export default function LandingPage() {
 
             <div className="grid gap-6 lg:grid-cols-3">
               {pricingPlans.map((plan) => (
-                <article key={plan.name} className={`rounded-[2.5rem] border p-8 shadow-card-soft ${plan.featured ? "border-primary bg-white shadow-[0_25px_60px_-20px_rgba(217,119,6,0.25)]" : "border-secondary/15 bg-white"}`}>
-                  <div className="text-sm font-black uppercase tracking-[0.18em] text-secondary">{plan.name}</div>
+                <article key={plan.name} className={`light-surface rounded-[2.5rem] border p-8 text-[#1a1a1a] shadow-card-soft ${plan.featured ? "border-primary bg-white shadow-[0_25px_60px_-20px_rgba(217,119,6,0.25)]" : "border-secondary/15 bg-white"}`}>
+                  <div className="text-sm font-black uppercase tracking-[0.18em] text-[#222222]">{plan.name}</div>
                   <div className="mt-5 flex items-end gap-2">
-                    <div className="text-5xl font-black tracking-tight text-text-main">{plan.price}</div>
-                    <div className="pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-text-main/45">{plan.cadence}</div>
+                    <div className="text-5xl font-black tracking-tight text-[#1a1a1a]">{plan.price}</div>
+                    <div className="pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-[#222222]/55">{plan.cadence}</div>
                   </div>
-                  <p className="mt-4 text-base leading-relaxed text-text-main/65">{plan.description}</p>
-                  <ul className="mt-6 space-y-3 text-base text-text-main/70">
+                  <p className="mt-4 text-base leading-relaxed text-[#222222]/80">{plan.description}</p>
+                  <ul className="mt-6 space-y-3 text-base text-[#222222]/80">
                     {plan.bullets.map((bullet) => (
                       <li key={bullet} className="flex items-start gap-3">
                         <span className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
@@ -393,7 +437,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#f7f4ee] py-28 text-center lg:py-32">
+        <section className="light-surface bg-[#f7f4ee] py-28 text-center lg:py-32">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="mb-8 sm:mb-10 text-4xl font-black leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[6rem]">
               Ready to make the next product decision
@@ -414,7 +458,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-secondary/20 bg-white py-14 lg:py-16">
+      <footer className="light-surface border-t border-secondary/20 bg-white py-14 lg:py-16">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-10 px-6 md:flex-row">
           <div className="flex items-center gap-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg">

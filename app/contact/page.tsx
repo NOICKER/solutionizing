@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function ContactPage() {
   return (
     <main className="min-h-screen bg-neutral-bg px-6 py-14 dark:bg-gray-900">
-      <div className="mx-auto max-w-3xl rounded-panel border border-secondary/15 bg-white p-8 shadow-card-soft dark:border-gray-700 dark:bg-gray-800/90 lg:p-10">
+      <div className="light-surface mx-auto max-w-3xl rounded-panel border border-secondary/15 bg-white p-8 shadow-card-soft dark:border-gray-700 dark:bg-gray-800/90 lg:p-10">
         <Link href="/" className="text-sm font-semibold text-primary hover:underline dark:text-[#f0a98c] dark:hover:text-white">Back to home</Link>
         <h1 className="mt-4 text-4xl font-black tracking-tight text-text-main dark:text-white">Contact</h1>
         <p className="mt-4 text-base leading-relaxed text-text-main/65 dark:text-gray-300">
@@ -11,11 +11,11 @@ export default function ContactPage() {
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-card bg-neutral-bg p-5 dark:bg-gray-900/70">
+          <div className="dark-surface rounded-card bg-neutral-bg p-5 dark:bg-gray-900/70">
             <div className="text-sm font-black uppercase tracking-[0.18em] text-secondary dark:text-gray-400">Email</div>
             <a href="mailto:hello@solutionizing.com" className="mt-3 block text-lg font-semibold text-text-main hover:text-primary dark:text-white dark:hover:text-[#f0a98c]">hello@solutionizing.com</a>
           </div>
-          <div className="rounded-card bg-neutral-bg p-5 dark:bg-gray-900/70">
+          <div className="dark-surface rounded-card bg-neutral-bg p-5 dark:bg-gray-900/70">
             <div className="text-sm font-black uppercase tracking-[0.18em] text-secondary dark:text-gray-400">Response time</div>
             <p className="mt-3 text-lg font-semibold text-text-main dark:text-white">Usually within one business day</p>
           </div>
