@@ -280,21 +280,37 @@ export function TesterOnboarding({
           Go to Dashboard
         </button>
       ) : (
-        <button
-          type="button"
-          onClick={() => void handleNext()}
-          disabled={isSavingProfile || isSavingBankDetails}
-          className={onboardingPrimaryButtonClass}
-        >
-          {isSavingProfile || isSavingBankDetails ? <SpinnerIcon className="h-5 w-5" /> : null}
-          {step === 1
-            ? 'Get Started'
-            : step === 3
-              ? 'Save Profile'
-              : step === 4
-                ? 'Save Banking Details'
-                : 'Next'}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {step === 4 && (
+            <button
+              type="button"
+              onClick={() => {
+                setErrorMessage('')
+                setBankFieldErrors({})
+                setStep(5)
+              }}
+              disabled={isSavingBankDetails}
+              className="px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:text-text-main"
+            >
+              Continue without bank details
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleNext()}
+            disabled={isSavingProfile || isSavingBankDetails}
+            className={onboardingPrimaryButtonClass}
+          >
+            {isSavingProfile || isSavingBankDetails ? <SpinnerIcon className="h-5 w-5" /> : null}
+            {step === 1
+              ? 'Get Started'
+              : step === 3
+                ? 'Save Profile'
+                : step === 4
+                  ? 'Save Banking Details'
+                  : 'Next'}
+          </button>
+        </div>
       )}
     </div>
   )

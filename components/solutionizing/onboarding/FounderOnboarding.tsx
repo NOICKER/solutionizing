@@ -167,7 +167,7 @@ export function FounderOnboarding({
         <button
           type="button"
           onClick={() => void handleNext()}
-          disabled={isSavingProfile}
+          disabled={isSavingProfile || isCompleting}
           className={onboardingPrimaryButtonClass}
         >
           {isSavingProfile ? <SpinnerIcon className="h-5 w-5" /> : null}
@@ -355,14 +355,11 @@ export function FounderOnboarding({
 
           <button
             type="button"
-            onClick={() => {
-              setSelectedPack(null)
-              setErrorMessage('')
-              setStep(5)
-            }}
+            onClick={() => void handleComplete()}
+            disabled={isCompleting}
             className={`mt-5 ${onboardingGhostButtonClass}`}
           >
-            Skip for now
+            Continue without bank details
           </button>
 
           {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
