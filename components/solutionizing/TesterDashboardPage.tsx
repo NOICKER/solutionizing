@@ -1,6 +1,7 @@
 "use client"
 
-import { ClipboardList, HelpCircle, LogOut, Settings } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowRightLeft, ClipboardList, HelpCircle, LogOut, Settings } from 'lucide-react'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
@@ -181,6 +182,7 @@ function TabButton({
 }
 
 function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
+  const router = useRouter()
   const { user, refetch, signOut } = useAuth()
   const hasInitialDashboardData = Boolean(initialData)
   const [stats, setStats] = useState<ApiTesterStats | null>(initialData?.stats ?? null)
@@ -199,6 +201,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isSwitchingToFounder, setIsSwitchingToFounder] = useState(false)
 
   const balance = stats?.coinBalance ?? user?.testerProfile?.coinBalance ?? 0
 
@@ -313,6 +316,46 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     }
   }
 
+  function getFounderSwitchDisplayName() {
+    const displayName =
+      user?.founderProfile?.displayName
+      ?? user?.testerProfile?.displayName
+      ?? user?.email.split('@')[0]
+      ?? 'Founder'
+    const trimmedDisplayName = displayName.trim()
+
+    return trimmedDisplayName.length >= 2 ? trimmedDisplayName : 'Founder'
+  }
+
+  async function handleSwitchToFounder() {
+    setIsSwitchingToFounder(true)
+
+    try {
+      await apiFetch('/api/v1/auth/select-role', {
+        method: 'POST',
+        body: {
+          role: 'FOUNDER',
+          displayName: getFounderSwitchDisplayName(),
+        },
+      })
+      await refetch()
+      router.push('/dashboard/founder')
+    } catch (error) {
+      if (user?.founderProfile) {
+        router.push('/dashboard/founder')
+        return
+      }
+
+      const message =
+        isApiClientError(error) && error.code === 'NETWORK_ERROR'
+          ? 'Check your internet connection'
+          : 'Could not switch to founder mode. Please try again.'
+      toast.error(message)
+    } finally {
+      setIsSwitchingToFounder(false)
+    }
+  }
+
   async function handleAccountDelete() {
     setDeleteError('')
     setIsDeleting(true)
@@ -395,6 +438,17 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
             <div className="border-t border-border-subtle pt-4" />
             <button
               type="button"
+              className="flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/15"
+              onClick={() => void handleSwitchToFounder()}
+              disabled={isSwitchingToFounder}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15">
+                <ArrowRightLeft className="h-4 w-4" />
+              </div>
+              {isSwitchingToFounder ? 'Switching...' : 'Switch to Founder'}
+            </button>
+            <button
+              type="button"
               className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-red-400 transition-all hover:bg-red-500/10"
               onClick={() => void signOut()}
             >
@@ -423,6 +477,15 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base">{topBarDescription}</p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-end">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:border-primary/40 hover:text-text-main disabled:cursor-wait disabled:opacity-70"
+                    onClick={() => void handleSwitchToFounder()}
+                    disabled={isSwitchingToFounder}
+                  >
+                    <ArrowRightLeft className="h-4 w-4" />
+                    {isSwitchingToFounder ? 'Switching...' : 'Switch to Founder'}
+                  </button>
                   <ThemeToggleButton />
                 </div>
               </div>
