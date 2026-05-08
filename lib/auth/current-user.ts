@@ -2,12 +2,14 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
 export type AppRole = 'FOUNDER' | 'TESTER' | 'ADMIN' | null
+export type DashboardRole = 'FOUNDER' | 'TESTER'
 export type PreferredDevice = 'desktop' | 'mobile' | 'both'
 
 export interface CurrentAppUser {
   id: string
   email: string
   role: AppRole
+  roles: DashboardRole[]
   founderProfile: {
     id: string
     displayName: string
@@ -25,6 +27,16 @@ export interface CurrentAppUser {
   } | null
 }
 
+type DashboardRoleSource = {
+  founderProfile: unknown
+  testerProfile: unknown
+}
+
+type OnboardingRoleSource = {
+  founderProfile: { onboardingCompleted: boolean } | null
+  testerProfile: { onboardingCompleted: boolean } | null
+}
+
 export function getDashboardPathForRole(role: Exclude<AppRole, null>) {
   if (role === 'FOUNDER') {
     return '/dashboard/founder'
@@ -37,16 +49,67 @@ export function getDashboardPathForRole(role: Exclude<AppRole, null>) {
   return '/dashboard/admin'
 }
 
-export function hasCompletedOnboarding(user: Pick<CurrentAppUser, 'role' | 'founderProfile' | 'testerProfile'>) {
-  if (user.role === 'FOUNDER') {
+export function getDashboardRoles(user: DashboardRoleSource) {
+  const founderRoles: DashboardRole[] = user.founderProfile ? ['FOUNDER'] : []
+  const testerRoles: DashboardRole[] = user.testerProfile ? ['TESTER'] : []
+
+  return [...founderRoles, ...testerRoles]
+}
+
+export function hasRole(
+  user: Pick<CurrentAppUser, 'role' | 'roles'>,
+  role: Exclude<AppRole, null>
+) {
+  if (role === 'ADMIN') {
+    return user.role === 'ADMIN'
+  }
+
+  return user.roles.includes(role)
+}
+
+export function getPreferredDashboardPath(user: Pick<CurrentAppUser, 'role' | 'roles'>) {
+  if (user.role === 'ADMIN') {
+    return getDashboardPathForRole('ADMIN')
+  }
+
+  if (user.role && hasRole(user, user.role)) {
+    return getDashboardPathForRole(user.role)
+  }
+
+  const fallbackRole = user.roles[0]
+
+  return fallbackRole ? getDashboardPathForRole(fallbackRole) : '/select-role'
+}
+
+export function hasCompletedOnboardingForRole(
+  user: OnboardingRoleSource,
+  role: DashboardRole
+) {
+  if (role === 'FOUNDER') {
     return Boolean(user.founderProfile?.onboardingCompleted)
   }
 
-  if (user.role === 'TESTER') {
-    return Boolean(user.testerProfile?.onboardingCompleted)
+  return Boolean(user.testerProfile?.onboardingCompleted)
+}
+
+export function hasCompletedOnboarding(user: Pick<CurrentAppUser, 'role' | 'roles'> & OnboardingRoleSource) {
+  if (user.role === 'ADMIN') {
+    return true
   }
 
-  return true
+  if (user.role && hasRole(user, user.role)) {
+    return hasCompletedOnboardingForRole(user, user.role)
+  }
+
+  return user.roles.every((role) => hasCompletedOnboardingForRole(user, role))
+}
+
+export function getOnboardingRole(user: Pick<CurrentAppUser, 'role' | 'roles'> & OnboardingRoleSource) {
+  if (user.role !== 'ADMIN' && user.role && hasRole(user, user.role) && !hasCompletedOnboardingForRole(user, user.role)) {
+    return user.role
+  }
+
+  return user.roles.find((role) => !hasCompletedOnboardingForRole(user, role)) ?? null
 }
 
 export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
@@ -93,19 +156,19 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
     return null
   }
 
+  const roles = getDashboardRoles(dbUser)
   const normalizedRole: AppRole =
     dbUser.role === 'ADMIN'
       ? 'ADMIN'
-      : dbUser.founderProfile
-        ? 'FOUNDER'
-        : dbUser.testerProfile
-          ? 'TESTER'
-          : null
+      : roles.includes(dbUser.role)
+        ? dbUser.role
+        : roles[0] ?? null
 
   return {
     id: dbUser.id,
     email: dbUser.email,
     role: normalizedRole,
+    roles,
     founderProfile: dbUser.founderProfile,
     testerProfile: dbUser.testerProfile as CurrentAppUser['testerProfile'],
   }

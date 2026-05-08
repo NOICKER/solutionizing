@@ -8,6 +8,12 @@ import { ok, apiError, serverError } from '@/lib/api/response'
 import { z } from 'zod'
 import { logApiRouteError } from '@/lib/api/log'
 import { Prisma } from '@prisma/client'
+import {
+  getDashboardRoles,
+  getPreferredDashboardPath,
+  hasCompletedOnboarding,
+  type AppRole,
+} from '@/lib/auth/current-user'
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -127,43 +133,40 @@ export async function POST(request: Request) {
       return apiError('Account deleted. Please contact support to reactivate.', 'ACCOUNT_DELETED', 403)
     }
 
-    const normalizedRole =
+    const roles = getDashboardRoles(dbUser)
+    const normalizedRole: AppRole =
       dbUser.role === 'ADMIN'
         ? 'ADMIN'
-        : dbUser.founderProfile
-          ? 'FOUNDER'
-          : dbUser.testerProfile
-            ? 'TESTER'
-            : null
+        : roles.includes(dbUser.role)
+          ? dbUser.role
+          : roles[0] ?? null
 
     // Sync role to app_metadata on login
     await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
-      app_metadata: { role: normalizedRole },
+      app_metadata: { role: normalizedRole, roles },
     })
 
-    const redirectMap: Record<string, string> = {
-      FOUNDER: '/dashboard/founder',
-      TESTER: '/dashboard/tester',
-      ADMIN: '/dashboard/admin',
-    }
     const onboardingCompleted =
-      normalizedRole === 'FOUNDER'
-        ? Boolean(dbUser.founderProfile?.onboardingCompleted)
-        : normalizedRole === 'TESTER'
-          ? Boolean(dbUser.testerProfile?.onboardingCompleted)
-          : true
+      normalizedRole === null
+        ? false
+        : hasCompletedOnboarding({
+            role: normalizedRole,
+            roles,
+            founderProfile: dbUser.founderProfile,
+            testerProfile: dbUser.testerProfile,
+          })
     const redirectTo =
       normalizedRole === null
         ? '/select-role'
         : !onboardingCompleted
           ? '/onboarding'
-          : (redirectMap[normalizedRole] ?? '/')
+          : getPreferredDashboardPath({ role: normalizedRole, roles })
 
     return applySupabaseCookies(
       ok({
         role: normalizedRole,
         redirectTo,
-        user: { id: dbUser.id, email: dbUser.email, role: normalizedRole },
+        user: { id: dbUser.id, email: dbUser.email, role: normalizedRole, roles },
       })
     )
   } catch (err) {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet, CheckCircle2, Circle } from 'lucide-react'
+import { ArrowRightLeft, ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet, CheckCircle2, Circle } from 'lucide-react'
 import posthog from 'posthog-js'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
@@ -199,7 +199,7 @@ const dashboardLoadingMessages = [
 
 function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
   const router = useRouter()
-  const { user, signOut } = useAuth()
+  const { user, refetch, signOut } = useAuth()
   const hasInitialDashboardData = Boolean(initialData)
   const [missions, setMissions] = useState<ApiMission[]>(initialData?.missions ?? [])
   const [coinBalance, setCoinBalance] = useState(initialData?.coinBalance ?? user?.founderProfile?.coinBalance ?? 0)
@@ -218,12 +218,13 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const [isSwitchingToTester, setIsSwitchingToTester] = useState(false)
 
   const loadBalance = useCallback(async () => {
     setIsBalanceLoading(true)
 
     try {
-      const response = await apiFetch<BalanceResponse>('/api/v1/coins/balance')
+      const response = await apiFetch<BalanceResponse>('/api/v1/coins/balance?role=FOUNDER')
       setCoinBalance(response.balance ?? response.coinBalance ?? 0)
     } finally {
       setIsBalanceLoading(false)
@@ -275,6 +276,46 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase() ?? '')
       .join('') || 'F'
+
+  function getTesterSwitchDisplayName() {
+    const displayName =
+      user?.testerProfile?.displayName
+      ?? user?.founderProfile?.displayName
+      ?? user?.email.split('@')[0]
+      ?? 'Tester'
+    const trimmedDisplayName = displayName.trim()
+
+    return trimmedDisplayName.length >= 2 ? trimmedDisplayName : 'Tester'
+  }
+
+  async function handleSwitchToTester() {
+    setIsSwitchingToTester(true)
+
+    try {
+      await apiFetch('/api/v1/auth/select-role', {
+        method: 'POST',
+        body: {
+          role: 'TESTER',
+          displayName: getTesterSwitchDisplayName(),
+        },
+      })
+      await refetch()
+      router.push('/dashboard/tester')
+    } catch (error) {
+      if (user?.testerProfile) {
+        router.push('/dashboard/tester')
+        return
+      }
+
+      const message =
+        isApiClientError(error) && error.code === 'NETWORK_ERROR'
+          ? 'Check your internet connection'
+          : 'Could not switch to tester mode. Please try again.'
+      toast.error(message)
+    } finally {
+      setIsSwitchingToTester(false)
+    }
+  }
 
   async function handleAccountDelete() {
     setIsDeleting(true)
@@ -481,6 +522,17 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
             </div>
             <button
               type="button"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/15"
+              onClick={() => void handleSwitchToTester()}
+              disabled={isSwitchingToTester}
+            >
+              <GlyphChip className="h-8 w-8 bg-primary/15 text-primary">
+                <ArrowRightLeft className="h-4 w-4" />
+              </GlyphChip>
+              {isSwitchingToTester ? 'Switching...' : 'Switch to Tester'}
+            </button>
+            <button
+              type="button"
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface hover:text-text-main"
               onClick={() => void signOut()}
             >
@@ -526,6 +578,15 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
                   )}
                   <button className={`px-5 py-3 text-sm ${primaryButtonClass}`} onClick={() => setActiveTab('wallets')}>
                     Buy Coins
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:border-primary/40 hover:text-text-main disabled:cursor-wait disabled:opacity-70"
+                    onClick={() => void handleSwitchToTester()}
+                    disabled={isSwitchingToTester}
+                  >
+                    <ArrowRightLeft className="h-4 w-4" />
+                    {isSwitchingToTester ? 'Switching...' : 'Switch to Tester'}
                   </button>
                   <ThemeToggleButton />
                 </div>

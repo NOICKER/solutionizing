@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { hasRole, useAuth } from '@/context/AuthContext'
 
 interface RequireAuthProps {
   children: React.ReactNode
@@ -39,7 +39,7 @@ export function RequireAuth({ children, role }: RequireAuthProps) {
   const pathname = usePathname()
   const { user, isAuthenticated, isLoading } = useAuth()
   const isRoleSelectionPage = pathname === '/select-role'
-  const isAwaitingRoleSelection = user?.role === null
+  const isAwaitingRoleSelection = user?.role === null && (user?.roles.length ?? 0) === 0
   const shouldAllowRoleSelection =
     isAuthenticated && !role && isRoleSelectionPage && isAwaitingRoleSelection
   const nextPath =
@@ -54,10 +54,12 @@ export function RequireAuth({ children, role }: RequireAuthProps) {
       redirectTarget = `/auth?next=${encodeURIComponent(nextPath)}`
     } else if (isAwaitingRoleSelection && !shouldAllowRoleSelection) {
       redirectTarget = '/select-role'
-    } else if (role && user?.role !== role) {
-      if (user?.role === 'FOUNDER') {
+    } else if (role && !hasRole(user, role)) {
+      if (user?.role === 'ADMIN') {
+        redirectTarget = '/dashboard/admin'
+      } else if (user?.roles.includes('FOUNDER')) {
         redirectTarget = '/dashboard/founder'
-      } else if (user?.role === 'TESTER') {
+      } else if (user?.roles.includes('TESTER')) {
         redirectTarget = '/dashboard/tester'
       } else {
         redirectTarget = '/'
@@ -89,7 +91,7 @@ export function RequireAuth({ children, role }: RequireAuthProps) {
     !isAuthenticated ||
     !user ||
     (!shouldAllowRoleSelection && isAwaitingRoleSelection) ||
-    (role && user.role !== role)
+    (role && !hasRole(user, role))
   ) {
     return <FullPageLoadingSkeleton />
   }

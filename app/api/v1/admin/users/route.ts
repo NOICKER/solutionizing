@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-import { Role } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
@@ -32,7 +31,11 @@ export async function GET(request: Request) {
     const query = queryResult.data
     const skip = (query.page - 1) * query.limit
     const where = {
-      ...(query.role ? { role: query.role as Role } : {}),
+      ...(query.role === 'FOUNDER'
+        ? { founderProfile: { isNot: null } }
+        : query.role === 'TESTER'
+          ? { testerProfile: { isNot: null } }
+          : {}),
       ...(query.search
         ? {
             email: {

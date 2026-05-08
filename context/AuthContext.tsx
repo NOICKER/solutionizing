@@ -16,11 +16,13 @@ import { identifyUser } from '@/lib/analytics/identify'
 import { registerSessionExpiredHandler } from '@/lib/auth/session'
 
 export type UserRole = 'FOUNDER' | 'TESTER' | 'ADMIN' | null
+export type DashboardRole = 'FOUNDER' | 'TESTER'
 
 export interface User {
   id: string
   email: string
   role: UserRole
+  roles: DashboardRole[]
   emailVerified: boolean
   founderProfile: {
     id: string
@@ -64,6 +66,33 @@ function isUserRole(value: unknown): value is UserRole {
   return value === 'FOUNDER' || value === 'TESTER' || value === 'ADMIN' || value === null
 }
 
+function isDashboardRole(value: unknown): value is DashboardRole {
+  return value === 'FOUNDER' || value === 'TESTER'
+}
+
+function getDashboardRoles(user: Pick<User, 'founderProfile' | 'testerProfile'>) {
+  const founderRoles: DashboardRole[] = user.founderProfile ? ['FOUNDER'] : []
+  const testerRoles: DashboardRole[] = user.testerProfile ? ['TESTER'] : []
+
+  return [...founderRoles, ...testerRoles]
+}
+
+function mergeRole(roles: DashboardRole[], role: DashboardRole) {
+  return Array.from(new Set([...roles, role]))
+}
+
+export function hasRole(user: Pick<User, 'role' | 'roles'> | null | undefined, role: Exclude<UserRole, null>) {
+  if (!user) {
+    return false
+  }
+
+  if (role === 'ADMIN') {
+    return user.role === 'ADMIN'
+  }
+
+  return user.roles.includes(role)
+}
+
 function readCachedAuthUser() {
   if (typeof window === 'undefined') {
     return null
@@ -86,13 +115,21 @@ function readCachedAuthUser() {
       return null
     }
 
+    const founderProfile = parsed.founderProfile ?? null
+    const testerProfile = parsed.testerProfile ?? null
+    const roles =
+      Array.isArray(parsed.roles) && parsed.roles.every(isDashboardRole)
+        ? parsed.roles
+        : getDashboardRoles({ founderProfile, testerProfile })
+
     return {
       id: parsed.id,
       email: parsed.email,
       role: parsed.role,
+      roles,
       emailVerified: Boolean(parsed.emailVerified),
-      founderProfile: parsed.founderProfile ?? null,
-      testerProfile: parsed.testerProfile ?? null,
+      founderProfile,
+      testerProfile,
     } satisfies User
   } catch {
     window.sessionStorage.removeItem(authRoleStorageKey)
@@ -143,12 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const nextUser = {
             ...currentUser,
             role,
+            roles: mergeRole(currentUser.roles, role),
             founderProfile: {
               id: currentUser.founderProfile?.id ?? `pending-founder-${currentUser.id}`,
               displayName,
               coinBalance: currentUser.founderProfile?.coinBalance ?? 0,
             },
-            testerProfile: null,
           }
           writeCachedAuthUser(nextUser)
           return nextUser
@@ -157,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const nextUser = {
           ...currentUser,
           role,
-          founderProfile: null,
+          roles: mergeRole(currentUser.roles, role),
           testerProfile: {
             id: currentUser.testerProfile?.id ?? `pending-tester-${currentUser.id}`,
             displayName,

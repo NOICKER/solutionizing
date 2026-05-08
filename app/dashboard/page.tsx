@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import {
   getCurrentAppUser,
-  getDashboardPathForRole,
+  getPreferredDashboardPath,
   hasCompletedOnboarding,
 } from '@/lib/auth/current-user'
 
@@ -20,5 +20,5 @@ export default async function DashboardRedirectPage() {
     redirect('/onboarding')
   }
 
-  redirect(getDashboardPathForRole(user.role))
+  redirect(getPreferredDashboardPath(user))
 }

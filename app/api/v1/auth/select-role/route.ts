@@ -3,23 +3,30 @@ import { requireAuth } from '@/lib/api/middleware'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 import { validateBody } from '@/lib/api/validate'
-import { ok, conflict, serverError } from '@/lib/api/response'
+import { ok, notFound, serverError } from '@/lib/api/response'
 import { z } from 'zod'
 import { logApiRouteError } from '@/lib/api/log'
 import { Prisma } from '@prisma/client'
+import type { DashboardRole } from '@/lib/auth/current-user'
 
 const SelectRoleSchema = z.object({
   role: z.enum(['FOUNDER', 'TESTER']),
   displayName: z.string().min(2).max(50),
 })
 
-async function syncRoleMetadata(userId: string, appMetadata: Record<string, unknown>, role: 'FOUNDER' | 'TESTER') {
+async function syncRoleMetadata(
+  userId: string,
+  appMetadata: Record<string, unknown>,
+  role: DashboardRole,
+  roles: DashboardRole[]
+) {
   try {
     const result = await Promise.race([
       supabaseAdmin.auth.admin.updateUserById(userId, {
         app_metadata: {
           ...appMetadata,
           role,
+          roles,
         },
       }),
       new Promise<never>((_, reject) => {
@@ -45,15 +52,28 @@ export async function POST(request: Request) {
       include: { founderProfile: true, testerProfile: true },
     })
 
-    if (existingUser?.founderProfile || existingUser?.testerProfile) {
-      return conflict('Role already set')
+    if (!existingUser) {
+      return notFound('User')
     }
+
+    const existingProfile = body.role === 'FOUNDER'
+      ? existingUser.founderProfile
+      : existingUser.testerProfile
+    const founderRoles: DashboardRole[] =
+      existingUser.founderProfile || body.role === 'FOUNDER' ? ['FOUNDER'] : []
+    const testerRoles: DashboardRole[] =
+      existingUser.testerProfile || body.role === 'TESTER' ? ['TESTER'] : []
+    const nextRoles: DashboardRole[] = [...founderRoles, ...testerRoles]
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: authUser.id },
         data: { role: body.role },
       })
+
+      if (existingProfile) {
+        return
+      }
 
       if (body.role === 'FOUNDER') {
         await tx.founderProfile.create({
@@ -72,9 +92,14 @@ export async function POST(request: Request) {
       }
     })
 
-    await syncRoleMetadata(authUser.id, (authUser.app_metadata ?? {}) as Record<string, unknown>, body.role)
+    await syncRoleMetadata(
+      authUser.id,
+      (authUser.app_metadata ?? {}) as Record<string, unknown>,
+      body.role,
+      nextRoles
+    )
 
-    return ok({ role: body.role, displayName: body.displayName })
+    return ok({ role: body.role, roles: nextRoles, displayName: body.displayName })
   } catch (err) {
     if (err instanceof Response) return err
     logApiRouteError(request, err)

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { FounderOnboarding } from '@/components/solutionizing/onboarding/FounderOnboarding'
 import { TesterOnboarding } from '@/components/solutionizing/onboarding/TesterOnboarding'
-import { getCurrentAppUser, hasCompletedOnboarding } from '@/lib/auth/current-user'
+import { getCurrentAppUser, getOnboardingRole, hasCompletedOnboarding } from '@/lib/auth/current-user'
 
 export default async function OnboardingPage() {
   const user = await getCurrentAppUser()
@@ -26,12 +26,14 @@ export default async function OnboardingPage() {
     redirect('/dashboard')
   }
 
-  return user.role === 'FOUNDER' && user.founderProfile ? (
+  const onboardingRole = getOnboardingRole(user)
+
+  return onboardingRole === 'FOUNDER' && user.founderProfile ? (
     <FounderOnboarding
       initialDisplayName={user.founderProfile.displayName}
       initialCompanyName={user.founderProfile.companyName}
     />
-  ) : user.role === 'TESTER' && user.testerProfile ? (
+  ) : onboardingRole === 'TESTER' && user.testerProfile ? (
     <TesterOnboarding
       initialDisplayName={user.testerProfile.displayName}
       initialExpertiseTags={user.testerProfile.expertiseTags}

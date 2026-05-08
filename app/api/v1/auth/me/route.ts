@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { ok, notFound, serverError, unauthorized } from '@/lib/api/response'
 import { logApiRouteError } from '@/lib/api/log'
 import { Prisma } from '@prisma/client'
+import { getDashboardRoles, type AppRole } from '@/lib/auth/current-user'
 
 export async function GET(request: Request) {
   try {
@@ -17,19 +18,19 @@ export async function GET(request: Request) {
     if (!dbUser) return notFound('User')
     if (dbUser.isDeleted) return unauthorized()
 
-    const normalizedRole =
+    const roles = getDashboardRoles(dbUser)
+    const normalizedRole: AppRole =
       dbUser.role === 'ADMIN'
         ? 'ADMIN'
-        : dbUser.founderProfile
-          ? 'FOUNDER'
-          : dbUser.testerProfile
-            ? 'TESTER'
-            : null
+        : roles.includes(dbUser.role)
+          ? dbUser.role
+          : roles[0] ?? null
 
     return ok({
       id: dbUser.id,
       email: dbUser.email,
       role: normalizedRole,
+      roles,
       emailVerified: dbUser.emailVerified,
       founderProfile: dbUser.founderProfile
         ? {

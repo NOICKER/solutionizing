@@ -46,8 +46,8 @@ export async function requireRole(role: Role) {
   const dbUser = await prisma.user.findUnique({
     where: { id: authUser.id },
     include: {
-      founderProfile: role === 'FOUNDER',
-      testerProfile: role === 'TESTER',
+      founderProfile: true,
+      testerProfile: true,
     }
   })
   if (!dbUser) throw unauthorized()
@@ -57,6 +57,9 @@ export async function requireRole(role: Role) {
   if (dbUser.isDeleted) {
     throw apiError('Account deleted. Please contact support to reactivate.', 'ACCOUNT_DELETED', 403)
   }
-  if (dbUser.role !== role && dbUser.role !== 'ADMIN') throw forbidden()
+  if (dbUser.role === 'ADMIN') return dbUser
+  if (role === 'ADMIN') throw forbidden()
+  if (role === 'FOUNDER' && !dbUser.founderProfile) throw forbidden()
+  if (role === 'TESTER' && !dbUser.testerProfile) throw forbidden()
   return dbUser
 }

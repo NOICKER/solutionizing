@@ -21,7 +21,7 @@ import {
   textFieldClass,
 } from '@/components/solutionizing/ui'
 import { FlagSignalModal } from '@/components/solutionizing/FlagSignalModal'
-import { useAuth } from '@/context/AuthContext'
+import { hasRole, useAuth } from '@/context/AuthContext'
 import { type FlagReasonValue } from '@/lib/flags'
 import { buildSubmissionResponses, type SubmissionMode } from '@/lib/tester-workspace-submission'
 
@@ -1144,11 +1144,11 @@ export function TesterWorkspaceRoutePage({ assignmentId }: { assignmentId: strin
     return <TesterWorkspaceSkeleton />
   }
 
-  if (user.role === 'FOUNDER' || user.role === 'ADMIN') {
-    return <WorkspaceStatusPanel title="This page is for testers only." actionHref="/dashboard/founder" actionLabel="GO TO DASHBOARD" />
+  if (user.role === 'ADMIN') {
+    return <WorkspaceStatusPanel title="This page is for testers only." actionHref="/dashboard/admin" actionLabel="GO TO DASHBOARD" />
   }
 
-  if (user.role !== 'TESTER') {
+  if (!hasRole(user, 'TESTER')) {
     return <WorkspaceStatusPanel title="This page is for testers only." actionHref="/select-role" actionLabel="CHOOSE ROLE" />
   }
 

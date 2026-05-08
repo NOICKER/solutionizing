@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation'
 import { TesterDashboardPage as TesterDashboardAppPage } from '@/components/solutionizing/TesterDashboardPage'
-import { getCurrentAppUser, hasCompletedOnboarding } from '@/lib/auth/current-user'
+import {
+  getCurrentAppUser,
+  getPreferredDashboardPath,
+  hasCompletedOnboardingForRole,
+  hasRole,
+} from '@/lib/auth/current-user'
 import { getTesterDashboardInitialData } from '@/lib/dashboard-initial-data'
 
 export default async function TesterDashboardPage() {
@@ -14,20 +19,20 @@ export default async function TesterDashboardPage() {
     redirect('/select-role')
   }
 
-  if (user.role === 'FOUNDER') {
-    redirect('/dashboard/founder')
-  }
-
   if (user.role === 'ADMIN') {
     redirect('/dashboard/admin')
   }
 
-  if (!hasCompletedOnboarding(user)) {
-    redirect('/onboarding')
+  if (!hasRole(user, 'TESTER')) {
+    redirect(getPreferredDashboardPath(user))
   }
 
   if (!user.testerProfile) {
     redirect('/select-role')
+  }
+
+  if (!hasCompletedOnboardingForRole(user, 'TESTER')) {
+    redirect('/onboarding')
   }
 
   const initialData = await getTesterDashboardInitialData(user.testerProfile.id)

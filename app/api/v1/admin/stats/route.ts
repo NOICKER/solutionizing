@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-import { MissionStatus, Role, TxType } from '@prisma/client'
+import { MissionStatus, TxType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, serverError } from '@/lib/api/response'
@@ -26,8 +26,8 @@ export async function GET(request: Request) {
       platformRevenueSum,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.user.count({ where: { role: Role.FOUNDER } }),
-      prisma.user.count({ where: { role: Role.TESTER } }),
+      prisma.founderProfile.count(),
+      prisma.testerProfile.count(),
       prisma.mission.count(),
       prisma.mission.count({ where: { status: MissionStatus.COMPLETED } }),
       prisma.missionResponse.count(),
