@@ -34,7 +34,7 @@ export function TesterHeroAction() {
 
 export function PricingAction({ plan }: { plan: any }) {
   return (
-    <AuthActionLink authedHref={plan.authedHref} role={plan.role} mode={plan.mode} className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-black transition-all ${plan.featured ? "bg-primary text-white shadow-cta-orange hover:bg-primary-hover" : "border border-secondary/20 bg-neutral-bg text-text-main hover:bg-white"}`}>
+    <AuthActionLink authedHref={plan.authedHref} role={plan.role} mode={plan.mode} className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-4 text-lg font-black transition-all ${plan.featured ? "bg-primary text-white shadow-cta-orange hover:bg-primary-hover" : "border border-secondary/20 bg-neutral-bg text-white hover:bg-secondary hover:text-white"}`}>
       {plan.cta}
     </AuthActionLink>
   );

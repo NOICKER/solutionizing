@@ -303,11 +303,14 @@ export default function LandingPage() {
               <div className="flex flex-col items-center gap-14 lg:flex-row lg:gap-16">
                 <div className="lg:w-1/2">
                   <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-secondary/10 bg-neutral-bg px-4 py-2 text-sm font-black uppercase tracking-[0.3em] text-text-main">Tester contribution model</div>
-                  <h2 className="mb-8 text-4xl font-black leading-[1.05] tracking-tight text-text-main lg:text-5xl">
+                  <h2 className="mb-4 text-4xl font-black leading-[1.05] tracking-tight text-text-main lg:text-5xl">
                     Expert insights,
                     <br />
                     <span className="text-secondary">not anonymous gig work.</span>
                   </h2>
+                  <p className="mb-8 text-lg font-bold text-primary lg:text-xl">
+                    Testers earn real money for every mission they complete.
+                  </p>
                   <p className="mb-10 text-lg font-medium leading-relaxed text-text-main/65 lg:text-xl">
                     The best feedback comes from people who understand the context.
                     We design the tester experience around clarity, fit, and thoughtful explanation.
