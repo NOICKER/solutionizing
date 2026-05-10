@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AuthActionLink } from "@/components/AuthActionLink";
 import { useState } from "react";
 
@@ -18,7 +19,7 @@ export function LandingPageHeader() {
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden sm:h-10 sm:w-10">
-              <img src="/logo-icon.png" alt="Solutionizing" className="h-9 w-9 sm:h-10 sm:w-10 object-cover" />
+              <Image src="/logo-icon.png" alt="Solutionizing" width={40} height={40} className="h-9 w-9 sm:h-10 sm:w-10 object-cover" />
             </div>
             <h2 className="text-lg font-extrabold tracking-tight text-text-main sm:text-xl">
               Solutionizing
