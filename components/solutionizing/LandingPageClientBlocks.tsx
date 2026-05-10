@@ -26,9 +26,11 @@ export function HeroActionButtons() {
 
 export function TesterHeroAction() {
   return (
-    <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="mt-10 inline-flex rounded-2xl border border-secondary bg-secondary px-10 py-5 text-xl font-black text-white shadow-xl shadow-secondary/20 transition-all hover:bg-teal-900">
-      Apply as a tester
-    </AuthActionLink>
+    <div className="mt-12 flex justify-center lg:mt-16">
+      <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="w-full sm:w-auto text-center rounded-2xl border-b-4 border-orange-800 bg-primary px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
+        Apply as a tester
+      </AuthActionLink>
+    </div>
   );
 }
 

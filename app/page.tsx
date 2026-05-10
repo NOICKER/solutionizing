@@ -300,89 +300,38 @@ export default function LandingPage() {
         <section id="testers" className="bg-neutral-bg py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="rounded-[3rem] border border-secondary/15 bg-neutral-card p-8 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] sm:p-10 lg:p-16">
-              <div className="flex flex-col items-center gap-14 lg:flex-row lg:gap-16">
-                <div className="lg:w-1/2">
-                  <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-secondary/10 bg-neutral-bg px-4 py-2 text-sm font-black uppercase tracking-[0.3em] text-text-main">Tester contribution model</div>
-                  <h2 className="mb-4 text-4xl font-black leading-[1.05] tracking-tight text-text-main lg:text-5xl">
-                    Expert insights,
-                    <br />
-                    <span className="text-secondary">not anonymous gig work.</span>
-                  </h2>
-                  <p className="mb-8 text-lg font-bold text-primary lg:text-xl">
-                    Testers earn real money for every mission they complete.
-                  </p>
-                  <p className="mb-10 text-lg font-medium leading-relaxed text-text-main/65 lg:text-xl">
-                    The best feedback comes from people who understand the context.
-                    We design the tester experience around clarity, fit, and thoughtful explanation.
-                  </p>
-
-                  <div className="grid gap-8">
-                    {contributionItems.map((item) => (
-                      <div key={item.title} className="flex items-start gap-6">
-                        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl border border-secondary/20 bg-secondary/10 text-secondary shadow-sm">
-                          <span className="material-symbols-outlined text-3xl font-bold">{item.icon}</span>
-                        </div>
-                        <div>
-                          <h4 className="mb-2 text-xl font-black text-text-main lg:text-2xl">{item.title}</h4>
-                          <p className="text-base font-medium text-text-main/60 lg:text-lg">{item.body}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <TesterHeroAction />
-                </div>
-
-                <div className="relative lg:w-1/2">
-                  <div className="light-surface relative aspect-square overflow-hidden rounded-[3rem] border border-white/10 bg-text-main shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-secondary/50 via-transparent to-transparent" />
-                    <div className="relative flex h-full flex-col justify-between p-8 sm:p-10 lg:p-12">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.65rem] font-black uppercase tracking-[0.22em] text-white/55">
-                            <span className="material-symbols-outlined text-sm text-primary">verified_user</span>
-                            Matched tester
-                          </div>
-
-                          <div className="mt-6 flex items-center gap-4">
-                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-xl font-black tracking-[0.18em] text-white shadow-[0_18px_40px_-24px_rgba(0,0,0,0.65)]">
-                              AN
-                            </div>
-
-                            <div>
-                              <div className="text-2xl font-black tracking-tight text-white sm:text-[1.7rem]">
-                                {testerProfileMock.name}
-                              </div>
-                              <p className="mt-1 text-sm font-medium text-white/60">
-                                {testerProfileMock.context} • {testerProfileMock.missionCount}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="rounded-[1.6rem] border border-primary/20 bg-primary/12 px-4 py-3 text-right shadow-[0_20px_40px_-28px_rgba(249,124,90,0.75)]">
-                          <div className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-primary/80">
-                            Reputation score
-                          </div>
-                          <div className="mt-1 text-2xl font-black tracking-tight text-white">
-                            {testerProfileMock.reputationScore}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-                        <div className="flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.2em] text-white/45">
-                          <span className="material-symbols-outlined text-sm text-primary">format_quote</span>
-                          Sample feedback
-                        </div>
-                        <blockquote className="mt-4 text-lg font-medium leading-relaxed text-white/90">
-                          &ldquo;{testerProfileMock.quote}&rdquo;
-                        </blockquote>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="mx-auto max-w-3xl text-center">
+                <h2 className="mb-6 text-4xl font-black leading-[1.05] tracking-tight text-text-main lg:text-5xl">
+                  Get paid to click buttons and share your honest opinion.
+                </h2>
+                <p className="text-lg font-medium leading-relaxed text-text-main/65 lg:text-xl">
+                  Founders need real people to use their product and answer a few questions. You do that. You earn money. That is the whole job.
+                </p>
               </div>
+
+              <div className="mt-14 grid gap-6 md:grid-cols-3 lg:mt-16">
+                {[
+                  {
+                    title: "No expertise required",
+                    body: "If you use apps and have opinions, you qualify."
+                  },
+                  {
+                    title: "Short missions",
+                    body: "Most missions take 10-15 minutes. Answer questions, get paid."
+                  },
+                  {
+                    title: "Real earnings",
+                    body: "Every completed mission adds to your balance, redeemable for real money."
+                  }
+                ].map((card) => (
+                  <div key={card.title} className="rounded-2xl border border-secondary/20 bg-neutral-bg/50 p-6 sm:p-8">
+                    <h3 className="mb-3 text-xl font-black text-text-main">{card.title}</h3>
+                    <p className="text-base font-medium text-text-main/60">{card.body}</p>
+                  </div>
+                ))}
+              </div>
+
+              <TesterHeroAction />
             </div>
           </div>
         </section>
