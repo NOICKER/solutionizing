@@ -35,21 +35,21 @@ const statusToneMap: Record<MissionStatus, string> = {
 
 const stageStateToneMap = {
   complete: {
-    card: 'border-emerald-500/25 bg-emerald-500/10 dark:bg-emerald-500/10',
+    card: 'border-emerald-500/25 bg-emerald-500/10',
     marker: 'bg-emerald-500 text-white',
-    pill: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
+    pill: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
     label: 'Complete',
   },
   current: {
-    card: 'border-[#d77a57]/50 bg-[#d77a57]/10 dark:bg-[#d77a57]/12',
-    marker: 'bg-[#d77a57] text-white shadow-[0_10px_25px_-14px_rgba(215,122,87,0.8)]',
-    pill: 'border-[#d77a57]/35 bg-[#d77a57]/10 text-[#b85c3a] dark:text-[#f0a98c]',
+    card: 'border-primary/50 bg-primary/10',
+    marker: 'bg-primary text-white shadow-[0_10px_25px_-14px_rgba(249,124,90,0.8)]',
+    pill: 'border-primary/35 bg-primary/10 text-primary',
     label: 'Current',
   },
   upcoming: {
-    card: 'border-[#ece6df] bg-white/70 dark:border-gray-700 dark:bg-gray-900/40',
-    marker: 'bg-[#f4eee8] text-[#8b8797] dark:bg-gray-700 dark:text-gray-300',
-    pill: 'border-[#ece6df] bg-[#faf9f7] text-[#8b8797] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400',
+    card: 'border-border-subtle bg-surface-elevated',
+    marker: 'bg-surface text-text-muted',
+    pill: 'border-border-subtle bg-surface text-text-muted',
     label: 'Upcoming',
   },
 } as const
@@ -88,11 +88,11 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
   const progressPercent = (currentIndex / (lifecycleStages.length - 1)) * 100
 
   return (
-    <section className="overflow-hidden rounded-panel border border-[#ece6df] bg-white/85 p-5 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.24)] backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800/90 sm:p-6">
+    <section className="overflow-hidden rounded-panel border border-border-subtle bg-surface p-5 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-[#1a1625] dark:text-white">Mission lifecycle</h2>
-          <p className="mt-1 text-sm font-medium text-[#6b687a] dark:text-gray-400">
+          <h2 className="text-xl font-black text-white">Mission lifecycle</h2>
+          <p className="mt-1 text-sm font-medium text-text-muted">
             Track the founder workflow from draft through completion.
           </p>
         </div>
@@ -103,9 +103,9 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
       </div>
 
       <div className="mt-6">
-        <div className="h-2 overflow-hidden rounded-full bg-[#ede7e2] dark:bg-gray-700">
+        <div className="h-2 overflow-hidden rounded-full bg-surface-elevated">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#d77a57] via-amber-400 to-emerald-400 transition-[width] duration-700"
+            className="h-full rounded-full bg-gradient-to-r from-primary via-primary-hover to-emerald-400 transition-[width] duration-700"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -131,8 +131,8 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
                     </span>
                   </div>
 
-                  <div className="text-sm font-black text-[#1a1625] dark:text-white">{stage.label}</div>
-                  <p className="mt-2 min-h-10 text-xs font-medium leading-5 text-[#6b687a] dark:text-gray-400">
+                  <div className="text-sm font-black text-white">{stage.label}</div>
+                  <p className="mt-2 min-h-10 text-xs font-medium leading-5 text-text-muted">
                     {getTimestampLabel(mission, stage)}
                   </p>
                 </div>

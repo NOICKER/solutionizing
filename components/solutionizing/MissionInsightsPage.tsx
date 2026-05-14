@@ -41,18 +41,18 @@ const stagger = {
 }
 
 function MissionInsightsPageSkeleton() {
-  const skeletonBar = 'animate-pulse rounded-full bg-[#ece4dd]'
-  const skeletonBlock = 'animate-pulse rounded-panel bg-[#f5ede7]'
+  const skeletonBar = 'animate-pulse rounded-full bg-surface-elevated'
+  const skeletonBlock = 'animate-pulse rounded-panel bg-surface-elevated'
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#faf9f7]/50 via-white to-[#fdf0eb]/50 pb-24 pt-8 sm:pt-12">
+    <div className="min-h-screen overflow-hidden bg-background pb-24 pt-8 text-text-main sm:pt-12">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className={`h-10 w-44 ${skeletonBar}`} />
           <div className={`h-6 w-32 ${skeletonBar}`} />
         </div>
 
-        <section className="rounded-panel border border-white/60 bg-white/70 p-8 shadow-2xl shadow-[#fdf0eb]/80 backdrop-blur-2xl sm:p-12">
+        <section className="rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-12">
           <div className={`mb-6 h-8 w-36 ${skeletonBar}`} />
           <div className={`h-14 w-full max-w-3xl rounded-[2rem] ${skeletonBar}`} />
           <div className={`mt-6 h-6 w-full max-w-2xl ${skeletonBar}`} />
@@ -60,26 +60,26 @@ function MissionInsightsPageSkeleton() {
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)]">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="rounded-panel border border-white/60 bg-white/70 p-6 shadow-xl shadow-[#fdf0eb]/60">
+            <div key={index} className="rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
               <div className={`h-4 w-28 ${skeletonBar}`} />
               <div className={`mt-5 h-10 w-24 ${skeletonBar}`} />
               <div className={`mt-4 h-4 w-32 ${skeletonBar}`} />
             </div>
           ))}
-          <div className="rounded-panel bg-[#b85c3a] p-8">
+          <div className="rounded-panel bg-gradient-to-br from-primary to-primary-hover p-8">
             <div className={`h-4 w-28 bg-white/20 rounded-full animate-pulse`} />
             <div className={`mt-6 h-28 rounded-[2rem] bg-white/15 animate-pulse`} />
             <div className={`mt-8 h-4 w-36 bg-white/20 rounded-full animate-pulse`} />
           </div>
         </div>
 
-        <section className="mt-8 rounded-panel border border-white/60 bg-[#fdf8f6] p-8 shadow-xl shadow-[#fdf0eb]/70">
+        <section className="mt-8 rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
           <div className={`h-8 w-40 ${skeletonBar}`} />
           <div className={`mt-6 h-40 ${skeletonBlock}`} />
         </section>
 
-        <section className="mt-12 rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40">
-          <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
+        <section className="mt-12 rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
+          <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
             <div className={`h-8 w-48 ${skeletonBar}`} />
           </div>
           <div className="space-y-6 p-8">
@@ -159,31 +159,31 @@ function SummaryStatCard({
     <motion.div 
       variants={fadeInUp}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group relative overflow-hidden rounded-panel border border-white/60 bg-white/70 p-6 shadow-xl shadow-[#fdf0eb]/70 backdrop-blur-xl transition-all hover:bg-white/90"
+      className="group relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] transition-all hover:border-primary/30 hover:bg-surface-elevated"
     >
-      <div className="absolute -right-6 -top-6 rounded-full bg-[#faf9f7]/80 p-8 transition-transform group-hover:scale-110">
-        <Icon className="h-8 w-8 text-[#D97757]/45" />
+      <div className="absolute -right-6 -top-6 rounded-full bg-surface-elevated p-8 transition-transform group-hover:scale-110">
+        <Icon className="h-8 w-8 text-primary/45" />
       </div>
 
       <div className="relative mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
-          <Icon className="h-4 w-4 text-[#D97757]" />
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          <Icon className="h-4 w-4 text-primary" />
           {label}
         </div>
         {chip && (
-          <div className="rounded-full bg-emerald-100/80 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700 backdrop-blur-md">
+          <div className="rounded-full bg-emerald-900/40 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-300">
             {chip}
           </div>
         )}
       </div>
 
       <div className="relative mb-2 flex items-baseline gap-2">
-        <div className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-700">
+        <div className="text-4xl font-extrabold tracking-tight text-white">
           {value}
         </div>
       </div>
 
-      {footer && <div className="relative mt-4 border-t border-slate-100/80 pt-4">{footer}</div>}
+      {footer && <div className="relative mt-4 border-t border-border-subtle pt-4">{footer}</div>}
     </motion.div>
   )
 }
@@ -195,18 +195,18 @@ function TextResponseCard({ index, response }: { index: number; response: string
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -2 }}
-      className="group relative rounded-[1.5rem] border border-slate-200/60 bg-white p-5 shadow-sm transition-all hover:border-[#fdf0eb]/80 hover:shadow-md"
+      className="group relative rounded-[1.5rem] border border-border-subtle bg-surface p-5 shadow-sm transition-all hover:border-primary/30 hover:bg-surface-elevated"
     >
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#faf9f7] to-[#fdf0eb] text-[#D97757] shadow-inner">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
           <MessageCircle size={18} />
         </div>
         <div>
-          <div className="text-sm font-bold text-slate-900">Tester {index + 1}</div>
-          <div className="text-xs font-medium text-slate-500">Anonymous response</div>
+          <div className="text-sm font-bold text-white">Tester {index + 1}</div>
+          <div className="text-xs font-medium text-text-muted">Anonymous response</div>
         </div>
       </div>
-      <p className="text-sm leading-relaxed text-slate-600">{response}</p>
+      <p className="text-sm leading-relaxed text-text-muted">{response}</p>
     </motion.div>
   )
 }
@@ -232,7 +232,7 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsExpanded(true)}
-            className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[1.5rem] border-2 border-dashed border-[#fdf0eb] bg-[#faf9f7]/30 text-[#D97757] transition-colors hover:border-[#fdf0eb] hover:bg-[#faf9f7]/70"
+            className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[1.5rem] border-2 border-dashed border-border-subtle bg-surface text-primary transition-colors hover:border-primary/40 hover:bg-surface-elevated"
           >
             <MessageSquare className="h-6 w-6 opacity-50" />
             <span className="text-sm font-bold tracking-wide">View {remainingCount} more</span>
@@ -250,7 +250,7 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
           >
             <button
               onClick={() => setIsExpanded(false)}
-              className="flex items-center gap-2 rounded-full bg-slate-100 px-5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200"
+              className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-5 py-2 text-sm font-semibold text-text-muted transition-colors hover:text-white"
             >
               Show less <ChevronUp size={16} />
             </button>
@@ -264,14 +264,14 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
 function RatingBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, { type: 'RATING_1_5' }> }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[200px_1fr] items-center">
-      <div className="flex flex-col items-center justify-center rounded-panel border border-amber-100/50 bg-gradient-to-br from-amber-50 to-orange-50/50 p-6 text-center shadow-inner">
-        <div className="text-5xl font-black text-amber-600">
+      <div className="flex flex-col items-center justify-center rounded-panel border border-amber-500/20 bg-amber-900/10 p-6 text-center shadow-inner">
+        <div className="text-5xl font-black text-amber-300">
           {question.averageRating?.toFixed(1) ?? '0.0'}
         </div>
         <div className="mt-3">
           <StarRow value={question.averageRating ?? 0} size={20} />
         </div>
-        <div className="mt-2 text-[0.65rem] font-bold uppercase tracking-wider text-amber-700/60">
+        <div className="mt-2 text-[0.65rem] font-bold uppercase tracking-wider text-amber-300/70">
           Average Rating
         </div>
       </div>
@@ -279,10 +279,10 @@ function RatingBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, 
       <div className="space-y-3">
         {question.distribution.map((item, i) => (
           <div key={`${question.questionId}-${item.rating}`} className="group flex items-center gap-4">
-            <div className="flex w-6 shrink-0 items-center justify-end gap-1 text-sm font-bold text-slate-600">
+            <div className="flex w-6 shrink-0 items-center justify-end gap-1 text-sm font-bold text-text-muted">
               {item.rating} <Star size={12} className="fill-amber-400 text-amber-400" />
             </div>
-            <div className="relative flex-1 h-3 overflow-hidden rounded-full bg-slate-100">
+            <div className="relative flex-1 h-3 overflow-hidden rounded-full bg-surface-elevated">
               <motion.div
                 initial={{ width: 0 }}
                 whileInView={{ width: `${item.percentage}%` }}
@@ -291,7 +291,7 @@ function RatingBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, 
                 className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
               />
             </div>
-            <div className="w-10 shrink-0 text-right text-sm font-bold text-slate-500">
+            <div className="w-10 shrink-0 text-right text-sm font-bold text-text-muted">
               {item.percentage.toFixed(0)}%
             </div>
           </div>
@@ -315,19 +315,19 @@ function ChoiceBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, 
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: i * 0.1 }}
-          className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm"
+          className="relative overflow-hidden rounded-2xl border border-border-subtle bg-surface p-5 shadow-sm transition-colors hover:border-primary/30 hover:bg-surface-elevated"
         >
           <div className="relative z-10 flex items-center justify-between mb-3">
-            <span className="font-semibold text-slate-900 pr-4 truncate">{item.option}</span>
-            <span className="shrink-0 font-bold text-[#D97757]">{item.percentage.toFixed(0)}%</span>
+            <span className="truncate pr-4 font-semibold text-white">{item.option}</span>
+            <span className="shrink-0 font-bold text-primary">{item.percentage.toFixed(0)}%</span>
           </div>
-          <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: `${item.percentage}%` }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: 'easeOut', delay: 0.2 + (i*0.1) }}
-              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#D97757] to-[#D97757]"
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary-hover"
             />
           </div>
         </motion.div>
@@ -434,15 +434,15 @@ function TesterRatingCard({
   return (
     <motion.div
       variants={fadeInUp}
-      className="group relative overflow-hidden rounded-panel border border-white/60 bg-white/70 p-6 shadow-xl shadow-[#fdf0eb]/70 backdrop-blur-xl transition-all hover:bg-white/90"
+      className="group relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] transition-all hover:border-primary/30 hover:bg-surface-elevated"
     >
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#faf9f7] to-[#fdf0eb] text-[#D97757] shadow-inner">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
           <Users size={18} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-slate-900">Tester {testerIndex + 1} anonymous</h3>
-          <div className="text-xs font-medium text-slate-500">
+          <h3 className="text-sm font-bold text-white">Tester {testerIndex + 1} anonymous</h3>
+          <div className="text-xs font-medium text-text-muted">
             Founders rate completed assignments one by one.
           </div>
         </div>
@@ -451,7 +451,7 @@ function TesterRatingCard({
       <div className="space-y-5">
           {/* Star rating */}
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-muted">
               Rating
             </label>
             <StarRow value={score} size={24} onChange={setScore} readonly={formDisabled} />
@@ -459,8 +459,8 @@ function TesterRatingCard({
 
           {/* Note */}
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Note <span className="normal-case font-normal tracking-normal text-slate-400">(optional)</span>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Note <span className="normal-case font-normal tracking-normal text-text-muted/80">(optional)</span>
             </label>
             <textarea
               value={note}
@@ -478,7 +478,7 @@ function TesterRatingCard({
               setFlagError('')
               setFlagOpen(true)
             }}
-            className="text-sm font-semibold text-[#D97757] hover:underline"
+            className="text-sm font-semibold text-primary hover:underline"
           >
             Flag this tester
           </button>
@@ -502,10 +502,10 @@ function TesterRatingCard({
 
           {error ? <p className="text-xs font-semibold text-red-500">{error}</p> : null}
           {submitted && !isAlreadyRated ? (
-            <p className="text-sm font-semibold text-emerald-600">Rating submitted successfully.</p>
+            <p className="text-sm font-semibold text-emerald-300">Rating submitted successfully.</p>
           ) : null}
           {isAlreadyRated ? (
-            <p className="text-sm font-semibold text-slate-500">This tester was already rated.</p>
+            <p className="text-sm font-semibold text-text-muted">This tester was already rated.</p>
           ) : null}
         </div>
         {flagOpen ? (
@@ -543,14 +543,14 @@ function RateTestersSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
+      className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
     >
-      <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
-        <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
+      <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
+        <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
           <Star className="text-amber-500" />
           Rate Your Testers
         </h2>
-        <p className="mt-2 text-sm font-medium text-slate-500">
+        <p className="mt-2 text-sm font-medium text-text-muted">
           Share feedback on each tester&apos;s contribution to help the community grow.
         </p>
       </div>
@@ -575,181 +575,6 @@ function RateTestersSection({
   )
 }
 
-/*
-function RetestDeltaSection({
-  mission,
-  currentClarityScore,
-}: {
-  mission: ApiMissionDetail
-  currentClarityScore: number | null
-}) {
-  const router = useRouter()
-  const [timelineRuns, setTimelineRuns] = useState<RetestTimelineRun[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let isCancelled = false
-
-    const currentRun = {
-      id: mission.id,
-      title: mission.title,
-      completedAt: mission.completedAt,
-    }
-
-    setTimelineRuns([{ ...currentRun, clarityScore: currentClarityScore }])
-
-    async function loadTimeline() {
-      const parentMission = mission.parentMissionId
-        ? await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.parentMissionId}`).catch(() => null)
-        : null
-
-      const relatedRuns = [
-        ...(parentMission
-          ? [{ id: parentMission.id, title: parentMission.title, completedAt: parentMission.completedAt }]
-          : []),
-        ...(parentMission?.retests ?? []),
-        currentRun,
-        ...(mission.retests ?? []),
-      ]
-
-      const uniqueRuns = Array.from(new Map(relatedRuns.map((run) => [run.id, run])).values())
-      const clarityScores = await Promise.all(
-        uniqueRuns.map((run) =>
-          run.id === mission.id ? Promise.resolve(currentClarityScore) : loadMissionClarityScore(run.id)
-        )
-      )
-
-      if (isCancelled) {
-        return
-      }
-
-      setTimelineRuns(
-        uniqueRuns
-          .map((run, index) => ({
-            ...run,
-            clarityScore: clarityScores[index],
-          }))
-          .sort(
-            (leftRun, rightRun) =>
-              getRetestTimelineTimestamp(leftRun.completedAt) -
-              getRetestTimelineTimestamp(rightRun.completedAt)
-          )
-      )
-    }
-
-    void loadTimeline()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [
-    currentClarityScore,
-    mission.completedAt,
-    mission.id,
-    mission.parentMissionId,
-    mission.retests,
-    mission.title,
-  ])
-
-  const currentRun = timelineRuns.find((run) => run.id === mission.id) ?? null
-  const currentRunIndex = timelineRuns.findIndex((run) => run.id === mission.id)
-  const previousRun =
-    currentRunIndex <= 0
-      ? null
-      : timelineRuns
-          .slice(0, currentRunIndex)
-          .reverse()
-          .find((run) => run.completedAt !== null) ?? null
-
-  const scoreDelta =
-    currentRun?.clarityScore !== null && currentRun?.clarityScore !== undefined &&
-    previousRun?.clarityScore !== null && previousRun?.clarityScore !== undefined
-      ? currentRun.clarityScore - previousRun.clarityScore
-      : null
-
-  let deltaToneClass = 'bg-slate-100 text-slate-600'
-  let deltaLabel = 'Baseline run'
-
-  if (previousRun) {
-    if (scoreDelta === null) {
-      deltaLabel = 'No score delta yet'
-    } else if (scoreDelta === 0) {
-      deltaLabel = 'No change since last run'
-    } else {
-      deltaToneClass = scoreDelta > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-      deltaLabel = `${scoreDelta > 0 ? '+' : ''}${scoreDelta.toFixed(1)} since last run`
-    }
-  }
-
-  async function handleRunRetest() {
-    setSubmitError(null)
-    setIsSubmitting(true)
-
-    try {
-      const newMission = await apiFetch<ApiMissionDetail>(`/api/v1/missions/${mission.id}/retest`, {
-        method: 'POST',
-      })
-
-      router.push(`/mission/wizard?edit=${newMission.id}`)
-    } catch (error) {
-      setSubmitError(isApiClientError(error) ? error.message : 'Something went wrong. Try again.')
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.45 }}
-      className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
-    >
-      <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
-            <LineChart className="text-[#D97757]" />
-            Retest Delta
-          </h2>
-          <p className="mt-2 text-sm font-medium text-slate-500">
-            Track clarity changes across every related run and launch the next retest from here.
-          </p>
-        </div>
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            {/*
-            <div className={`rounded-full px-4 py-2 text-sm font-black ${deltaToneClass}`}>
-            {delta > 0 ? '↑' : '↓'} {Math.abs(delta).toFixed(1)} since last run
-          </div>
-        )}
-      </div>
-
-      <div className="relative flex justify-between gap-2 pt-4">
-        <div className="absolute left-0 top-[2.25rem] -z-10 h-0.5 w-full bg-slate-200" />
-        
-        {sorted.map((item, idx) => {
-          const isCurrent = item.id === currentMissionId
-          return (
-            <Link key={item.id} href={`/mission/insights/${item.id}`} className="group flex flex-col items-center gap-3">
-              <div className={`relative flex h-4 w-4 items-center justify-center rounded-full ring-4 ${isCurrent ? 'bg-[#D97757] ring-[#fdf0eb]' : 'bg-slate-300 ring-white group-hover:bg-slate-400'}`}>
-                {isCurrent && <div className="absolute -top-8 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-bold text-white shadow-lg">You are here</div>}
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <span className={`text-xs font-bold ${isCurrent ? 'text-slate-900' : 'text-slate-500'}`}>Run {idx + 1}</span>
-                <span className="text-xs font-medium text-slate-400">{item.completedAt ? format(new Date(item.completedAt), 'MMM d') : 'Draft'}</span>
-                {item.clarityScore && (
-                  <span className="mt-1 font-mono text-sm font-bold text-[#D97757]">{item.clarityScore.toFixed(1)}</span>
-                )}
-              </div>
-            </Link>
-          )
-        })}
-      </div>
-    </motion.section>
-  )
-}
-
-/* ────────────────────────────────────────────────────────────────────────────────────────────── */
 
 function RetestDeltaSection({
   mission,
@@ -845,7 +670,7 @@ function RetestDeltaSection({
       ? currentRun.clarityScore - previousRun.clarityScore
       : null
 
-  let deltaToneClass = 'bg-slate-100 text-slate-600'
+  let deltaToneClass = 'bg-surface-elevated text-text-muted'
   let deltaLabel = 'Baseline run'
 
   if (previousRun) {
@@ -855,7 +680,7 @@ function RetestDeltaSection({
       deltaLabel = 'No change since last run'
     } else {
       deltaToneClass =
-        scoreDelta > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+        scoreDelta > 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'
       deltaLabel = `${scoreDelta > 0 ? '+' : ''}${scoreDelta.toFixed(1)} since last run`
     }
   }
@@ -881,16 +706,16 @@ function RetestDeltaSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45 }}
-      className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
+      className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
     >
-      <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
+      <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
-              <LineChart className="text-[#D97757]" />
+            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
+              <LineChart className="text-primary" />
               Retest Delta
             </h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-sm font-medium text-text-muted">
               Track clarity changes across every related run and launch the next retest from here.
             </p>
           </div>
@@ -908,7 +733,7 @@ function RetestDeltaSection({
               {isSubmitting ? <SpinnerIcon /> : null}
               Run Retest
             </button>
-            {submitError ? <p className="text-sm font-medium text-red-600">{submitError}</p> : null}
+            {submitError ? <p className="text-sm font-medium text-red-400">{submitError}</p> : null}
           </div>
         </div>
       </div>
@@ -916,7 +741,7 @@ function RetestDeltaSection({
       <div className="p-8">
         <div className="overflow-x-auto">
           <div className="relative flex min-w-max items-start gap-5 pb-2">
-            <div className="absolute left-8 right-8 top-5 h-px bg-slate-200" />
+            <div className="absolute left-8 right-8 top-5 h-px bg-border-subtle" />
 
             {timelineRuns.map((run, index) => {
               const isCurrentRun = run.id === mission.id
@@ -929,10 +754,10 @@ function RetestDeltaSection({
                   <div className="flex items-center gap-3">
                     <div
                       className={`h-4 w-4 rounded-full ring-4 ${
-                        isCurrentRun ? 'bg-[#D97757] ring-[#fdf0eb]' : 'bg-slate-300 ring-white'
+                        isCurrentRun ? 'bg-primary ring-primary/20' : 'bg-surface-elevated ring-border-subtle'
                       }`}
                     />
-                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-slate-500">
+                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">
                       Run {index + 1}
                     </span>
                   </div>
@@ -940,28 +765,28 @@ function RetestDeltaSection({
                   <div
                     className={`rounded-2xl border p-5 shadow-sm transition-colors ${
                       isCurrentRun
-                        ? 'border-[#D97757]/30 bg-[#fff7f3]'
-                        : 'border-slate-200 bg-white hover:border-[#D97757]/30'
+                        ? 'border-primary/40 bg-primary/10'
+                        : 'border-border-subtle bg-surface-elevated hover:border-primary/30'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="line-clamp-2 text-sm font-black text-slate-900">{run.title}</div>
+                      <div className="line-clamp-2 text-sm font-black text-white">{run.title}</div>
                       {isCurrentRun ? (
-                        <div className="rounded-full bg-[#D97757] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
+                        <div className="rounded-full bg-primary px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
                           Current
                         </div>
                       ) : null}
                     </div>
 
-                    <p className="mt-2 text-xs font-medium text-slate-500">
+                    <p className="mt-2 text-xs font-medium text-text-muted">
                       {run.completedAt ? format(new Date(run.completedAt), 'MMM d, yyyy') : 'Draft retest'}
                     </p>
 
                     <div className="mt-4">
-                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-400">
+                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
                         Clarity score
                       </div>
-                      <div className="mt-1 text-2xl font-black text-[#1a1625]">
+                      <div className="mt-1 text-2xl font-black text-white">
                         {run.clarityScore === null ? 'Pending' : run.clarityScore.toFixed(1)}
                       </div>
                     </div>
@@ -1069,10 +894,10 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
   if (loadError) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-        <div className="w-full max-w-xl rounded-panel border border-red-200 bg-red-50 p-8 text-center">
-          <h1 className="text-2xl font-black text-slate-900">Unable to load insights</h1>
-          <p className="mt-3 text-sm font-medium text-slate-600">{loadError}</p>
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-text-main">
+        <div className="w-full max-w-xl rounded-panel border border-red-500/20 bg-red-950/20 p-8 text-center">
+          <h1 className="text-2xl font-black text-white">Unable to load insights</h1>
+          <p className="mt-3 text-sm font-medium text-text-muted">{loadError}</p>
           <button
             type="button"
             onClick={() => void loadData()}
@@ -1091,24 +916,24 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
   if (mission.testersCompleted === 0 || notReady || !feedback) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#faf9f7]/40 via-white to-[#fdf0eb]/40 px-6 py-12">
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-text-main">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-xl text-center"
         >
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/60 bg-white shadow-xl shadow-[#fdf0eb]">
-            <Clock className="h-10 w-10 text-[#D97757]" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
+            <Clock className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="mb-4 text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="mb-4 text-3xl font-black tracking-tight text-white">
             Awaiting Tester Feedback
           </h1>
-          <p className="mb-8 text-lg font-medium text-slate-600">
+          <p className="mb-8 text-lg font-medium text-text-muted">
             The insights report unlocks automatically as soon as responses start rolling in. Check back soon.
           </p>
           <Link 
             href={`/mission/status/${missionId}`}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-8 py-3.5 font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:scale-[1.02] hover:bg-[#D97757] hover:shadow-[#D97757]/30"
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-primary-hover px-8 py-3.5 font-bold text-white transition-all hover:scale-[1.02] hover:shadow-[0_8px_24px_rgba(249,124,90,0.35)]"
           >
             View Mission Status <ArrowRight size={18} />
           </Link>
@@ -1128,11 +953,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const shouldShowRetestDelta = mission.status === 'COMPLETED'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#faf9f7]/50 via-white to-[#fdf0eb]/50 pb-24 pt-8 sm:pt-12 relative overflow-hidden">
-      {/* Decorative background blobs */}
-      <div className="pointer-events-none absolute -left-1/4 top-0 h-[800px] w-[800px] rounded-full bg-[#D97757]/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-1/4 bottom-0 h-[600px] w-[600px] rounded-full bg-[#D97757]/10 blur-[120px]" />
-
+    <div className="relative min-h-screen overflow-hidden bg-background pb-24 pt-8 text-text-main sm:pt-12">
       <div className="relative mx-auto max-w-[1200px] px-6 lg:px-8">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -1141,16 +962,16 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
         >
           <Link
             href="/dashboard/founder"
-            className="group flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900"
+            className="group flex items-center gap-2 text-sm font-semibold text-text-muted transition-colors hover:text-white"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-transform group-hover:-translate-x-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-elevated transition-transform group-hover:-translate-x-1">
               <ArrowLeft size={16} />
             </div>
             Back to Dashboard
           </Link>
           <Link
             href={`/mission/status/${missionId}`}
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#D97757] transition-colors hover:text-[#b85c3a] hover:underline underline-offset-4"
+            className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline underline-offset-4"
           >
             Mission Status <ArrowRight size={16} />
           </Link>
@@ -1169,20 +990,20 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-panel border border-white/60 bg-white/70 p-8 shadow-2xl shadow-[#fdf0eb]/80 backdrop-blur-2xl sm:p-12"
+          className="relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-12"
         >
-          <div className="pointer-events-none absolute left-0 top-0 h-2 w-full bg-gradient-to-r from-[#D97757] via-[#D97757] to-pink-500" />
+          <div className="pointer-events-none absolute left-0 top-0 h-2 w-full bg-gradient-to-r from-primary to-primary-hover" />
           
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#faf9f7]/80 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-[#b85c3a] ring-1 ring-[#fdf0eb]/50 backdrop-blur-sm">
-                <Sparkles size={14} className="text-[#D97757]" />
-                {formatStatusLabel(mission.status)} Report
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-primary">
+                <Sparkles size={14} className="text-primary" />
+                {formatStatusLabel(mission.status)} Mission report
               </div>
-              <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-800 to-[#b85c3a]">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl/tight">
                 {mission.title}
               </h1>
-              <p className="mt-6 text-lg/relaxed font-medium text-slate-600 max-w-2xl">
+              <p className="mt-6 max-w-2xl text-lg/relaxed font-medium text-text-muted">
                 {mission.goal}
               </p>
             </div>
@@ -1192,7 +1013,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 type="button"
                 disabled
                 title="PDF export coming soon"
-                className="inline-flex h-12 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gradient-to-b from-white to-slate-50 px-6 font-bold text-slate-400 shadow-sm ring-1 ring-slate-200/80 opacity-80"
+                className="inline-flex h-12 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-6 font-bold text-text-muted opacity-80"
               >
                 <Download size={18} />
                 Export PDF
@@ -1212,13 +1033,13 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
             value={feedback.summary.completedCount.toLocaleString()}
             icon={Users}
             chip="Live Signal"
-            footer={<span className="text-sm text-slate-500 font-medium">From {mission.testersCompleted} completed</span>}
+            footer={<span className="text-sm font-medium text-text-muted">From {mission.testersCompleted} completed</span>}
           />
           <SummaryStatCard
             label="Avg Duration"
             value={formatDuration(feedback.timingMetrics?.avgCompletionSeconds)}
             icon={Clock}
-            footer={<span className="text-sm text-slate-500 font-medium">To complete mission</span>}
+            footer={<span className="text-sm font-medium text-text-muted">To complete mission</span>}
           />
           <SummaryStatCard
             label="Clarity Score"
@@ -1229,21 +1050,18 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
           <motion.div 
             variants={fadeInUp}
-            className="group relative overflow-hidden rounded-panel bg-[#b85c3a] p-8 text-white shadow-2xl shadow-[#b85c3a]/30 xl:p-10"
+            className="group relative overflow-hidden rounded-panel border border-primary/30 bg-gradient-to-br from-primary to-primary-hover p-8 text-white shadow-[0_24px_80px_-56px_rgba(249,124,90,0.9)] xl:p-10"
           >
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#D97757]/20 blur-3xl transition-transform duration-700 group-hover:scale-150" />
-            <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-[#D97757]/20 blur-3xl transition-transform duration-700 group-hover:scale-150" />
-            
             <div className="relative z-10 flex h-full flex-col justify-between">
               <div>
-                <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#fdf0eb]">
+                <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/80">
                   <Sparkles size={16} /> Key AI Insight
                 </div>
-                <p className="text-xl font-medium leading-relaxed text-[#faf9f7] lg:text-2xl">
+                <p className="text-xl font-medium leading-relaxed text-white lg:text-2xl">
                   &ldquo;{insightQuote}&rdquo;
                 </p>
               </div>
-              <div className="mt-8 border-t border-[#b85c3a]/40 pt-6 text-sm font-medium text-[#fdf0eb]">
+              <div className="mt-8 border-t border-white/20 pt-6 text-sm font-medium text-white/80">
                 Synthesized from full dataset
               </div>
             </div>
@@ -1255,15 +1073,15 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="mt-8 overflow-hidden rounded-panel border border-white/60 bg-[#fdf8f6] p-8 shadow-xl shadow-[#fdf0eb]/70 backdrop-blur-xl"
+          className="mt-8 overflow-hidden rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
-                <Sparkles className="text-[#d77a57]" />
+              <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
+                <Sparkles className="text-primary" />
                 AI Insights
               </h2>
-              <p className="mt-2 text-sm font-medium text-slate-500">
+              <p className="mt-2 text-sm font-medium text-text-muted">
                 AI-powered analysis of your feedback data
               </p>
             </div>
@@ -1272,19 +1090,19 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           {synthesis ? (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Summary</h3>
-                <p className="text-slate-700 leading-relaxed">{synthesis.summary}</p>
+                <h3 className="mb-2 text-lg font-bold text-white">Summary</h3>
+                <p className="leading-relaxed text-text-muted">{synthesis.summary}</p>
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Recommended Next Action</h3>
-                <p className="text-[#d77a57] font-semibold text-lg">{synthesis.recommendation}</p>
+                <h3 className="mb-2 text-lg font-bold text-white">Recommended Next Action</h3>
+                <p className="text-lg font-semibold text-primary">{synthesis.recommendation}</p>
               </div>
 
               {synthesis.frictionPoints.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">Key Friction Points</h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-700">
+                  <h3 className="mb-2 text-lg font-bold text-white">Key Friction Points</h3>
+                  <ul className="list-inside list-disc space-y-1 text-text-muted">
                     {synthesis.frictionPoints.map((point, index) => (
                       <li key={index}>{point}</li>
                     ))}
@@ -1293,19 +1111,19 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
               )}
 
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-600">Signal Strength:</span>
+                <span className="text-sm font-medium text-text-muted">Signal Strength:</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                  synthesis.signalStrength === 'HIGH' ? 'bg-green-100 text-green-700' :
-                  synthesis.signalStrength === 'MEDIUM' ? 'bg-amber-100 text-amber-700' :
-                  'bg-red-100 text-red-700'
+                  synthesis.signalStrength === 'HIGH' ? 'bg-emerald-900/40 text-emerald-300' :
+                  synthesis.signalStrength === 'MEDIUM' ? 'bg-amber-900/40 text-amber-300' :
+                  'bg-red-900/40 text-red-300'
                 }`}>
                   {synthesis.signalStrength}
                 </span>
               </div>
             </div>
           ) : synthesisError ? (
-            <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
-              <p className="text-sm font-semibold text-red-700">{synthesisError}</p>
+            <div className="rounded-3xl border border-red-500/20 bg-red-950/20 p-6 text-center">
+              <p className="text-sm font-semibold text-red-300">{synthesisError}</p>
               <button
                 type="button"
                 onClick={() => void loadSynthesis()}
@@ -1339,7 +1157,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 )}
               </button>
               {synthesisLoading && (
-                <p className="mt-4 text-sm text-slate-500">This may take a few seconds...</p>
+                <p className="mt-4 text-sm text-text-muted">This may take a few seconds...</p>
               )}
             </div>
           )}
@@ -1349,16 +1167,16 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-12 overflow-hidden rounded-panel border border-white/60 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl"
+          className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
         >
-          <div className="border-b border-slate-200/50 bg-white/50 px-8 py-6">
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-slate-900">
-              <BarChart3 className="text-[#D97757]" />
+          <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
+            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
+              <BarChart3 className="text-primary" />
               Response Analysis
             </h2>
           </div>
 
-          <div className="divide-y divide-slate-100/80">
+          <div className="divide-y divide-border-subtle">
             {reportQuestions.map((question, idx) => (
               <motion.div
                 key={question.questionId}
@@ -1366,31 +1184,31 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="grid gap-8 p-8 lg:grid-cols-[320px_minmax(0,1fr)] xl:p-12 hover:bg-white/40 transition-colors"
+                className="grid gap-8 p-8 transition-colors hover:bg-surface-elevated/40 lg:grid-cols-[320px_minmax(0,1fr)] xl:p-12"
               >
                 <div>
-                  <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-[#faf9f7] px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-[#D97757] ring-1 ring-[#fdf0eb]/50">
+                  <div className="mb-4 inline-flex items-center justify-center rounded-xl border border-border-subtle bg-surface-elevated px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-primary">
                     Question {String(question.order).padStart(2, '0')}
                   </div>
-                  <h3 className="text-xl font-bold leading-tight text-slate-900 mb-4">{question.text}</h3>
-                  <p className="text-sm font-medium leading-relaxed text-slate-500">
+                  <h3 className="mb-4 text-xl font-bold leading-tight text-white">{question.text}</h3>
+                  <p className="text-sm font-medium leading-relaxed text-text-muted">
                     {getQuestionMeasureCopy(question)}
                   </p>
                 </div>
 
-                <div className="rounded-panel bg-slate-50/50 p-6 ring-1 ring-slate-200/50 transition-colors duration-300 hover:bg-white/50 sm:p-8">
+                <div className="rounded-panel border border-border-subtle bg-surface-elevated p-6 transition-colors duration-300 hover:border-primary/30 sm:p-8">
                   <QuestionBreakdown question={question} />
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200/50 bg-slate-50/50 px-8 py-6 text-sm font-medium text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-t border-border-subtle bg-surface-elevated px-8 py-6 text-sm font-medium text-text-muted sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Clock size={16} />
               Last updated: {format(new Date(lastUpdatedAt), 'MMMM d, yyyy \u2014 h:mm a')}
             </div>
-            <div className="flex items-center gap-2 font-semibold text-[#D97757]">
+            <div className="flex items-center gap-2 font-semibold text-primary">
               <Target size={16} />
               Model Confidence: {confidenceScore}%
             </div>

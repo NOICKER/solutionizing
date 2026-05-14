@@ -4,7 +4,7 @@ import { ClipboardList, Coins } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ApiMission } from '@/types/api'
 import {
   DashboardCardSkeleton,
@@ -17,6 +17,8 @@ import {
   formatCoins,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
+
+type MissionPulseFilter = 'current' | 'completed'
 
 function getMissionRecencyTimestamp(mission: ApiMission) {
   const timestamp = Date.parse(mission.completedAt ?? mission.updatedAt ?? mission.createdAt)
@@ -172,6 +174,38 @@ function RecentMissionCard({
   )
 }
 
+function EmptyMissionPulseState({ filter }: { filter: MissionPulseFilter }) {
+  const router = useRouter()
+  const isCurrentView = filter === 'current'
+
+  return (
+    <div className="rounded-card border border-dashed border-border-subtle bg-surface-elevated/60 p-6 sm:p-8">
+      <div className="max-w-xl">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <ClipboardList className="h-6 w-6" />
+        </div>
+        <h3 className="text-2xl font-black text-white">
+          {isCurrentView ? 'No running missions right now' : 'No completed missions yet'}
+        </h3>
+        <p className="mt-3 text-sm leading-6 text-text-muted">
+          {isCurrentView
+            ? 'Start a fresh mission from here, or switch the selector to completed missions for archived reports.'
+            : 'Completed missions stay here for review once testers finish the full run.'}
+        </p>
+        {isCurrentView ? (
+          <button
+            type="button"
+            className={`mt-6 px-6 py-3 text-base ${primaryButtonClass}`}
+            onClick={() => router.push('/mission/wizard')}
+          >
+            + New Mission
+          </button>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function ProductJourneySection({ missions }: { missions: ApiMission[] }) {
   const journeyMissions = useMemo(
     () =>
@@ -263,6 +297,7 @@ export function FounderDashboardTab({
   onViewAllMissions,
 }: FounderDashboardTabProps) {
   const router = useRouter()
+  const [missionPulseFilter, setMissionPulseFilter] = useState<MissionPulseFilter>('current')
 
   const missionStats = useMemo(
     () => ({
@@ -274,13 +309,27 @@ export function FounderDashboardTab({
     [missions]
   )
 
-  const recentMissions = useMemo(
+  const currentMissions = useMemo(
     () =>
       [...missions]
+        .filter((mission) => mission.status !== 'COMPLETED')
         .sort((leftMission, rightMission) => getMissionRecencyTimestamp(rightMission) - getMissionRecencyTimestamp(leftMission))
         .slice(0, 3),
     [missions]
   )
+
+  const completedMissions = useMemo(
+    () =>
+      [...missions]
+        .filter((mission) => mission.status === 'COMPLETED')
+        .sort((leftMission, rightMission) => getMissionRecencyTimestamp(rightMission) - getMissionRecencyTimestamp(leftMission))
+        .slice(0, 3),
+    [missions]
+  )
+
+  const visiblePulseMissions = missionPulseFilter === 'completed'
+    ? completedMissions
+    : currentMissions
 
   const statsCards = [
     { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-emerald-900/30 text-emerald-300' },
@@ -315,10 +364,12 @@ export function FounderDashboardTab({
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
+  } else if (visiblePulseMissions.length === 0) {
+    content = <EmptyMissionPulseState filter={missionPulseFilter} />
   } else {
     content = (
       <div className="space-y-4">
-        {recentMissions.map((mission) => (
+        {visiblePulseMissions.map((mission) => (
           <RecentMissionCard key={mission.id} mission={mission} href={getDashboardMissionHref(mission)} />
         ))}
       </div>
@@ -362,12 +413,31 @@ export function FounderDashboardTab({
         id="missions-section"
         className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6"
       >
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Pulse</div>
-            <h2 className="mt-2 text-2xl font-black text-white">Recent Missions</h2>
-            <p className="mt-2 max-w-2xl text-sm text-text-muted">A quick look at your three most recent missions.</p>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              {missionPulseFilter === 'completed' ? 'Completed Missions' : 'Current Missions'}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-text-muted">
+              {missionPulseFilter === 'completed'
+                ? 'Completed missions stay here for review without competing with live work.'
+                : 'A quick look at your active, draft, review, and approved missions.'}
+            </p>
           </div>
+
+          <label className="flex w-full flex-col gap-2 sm:w-56">
+            <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Show</span>
+            <select
+              aria-label="Choose mission pulse list"
+              value={missionPulseFilter}
+              onChange={(event) => setMissionPulseFilter(event.target.value as MissionPulseFilter)}
+              className="w-full rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-white outline-none transition-colors hover:border-primary/40 focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="current">Current Missions</option>
+              <option value="completed">Completed Missions</option>
+            </select>
+          </label>
         </div>
 
         {content}
