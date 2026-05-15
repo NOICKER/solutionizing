@@ -1,3 +1,35 @@
+import dns from 'node:dns/promises'
+
+// Private / reserved IP ranges that must never be fetched
+const PRIVATE_IP_RANGES = [
+  // IPv4
+  { prefix: '127.',       mask: null },        // 127.0.0.0/8  loopback
+  { prefix: '10.',        mask: null },        // 10.0.0.0/8   private
+  { prefix: '192.168.',   mask: null },        // 192.168.0.0/16
+  { prefix: '169.254.',   mask: null },        // 169.254.0.0/16 link-local (AWS metadata)
+  // 172.16.0.0/12 → 172.16.x – 172.31.x
+  { prefix: '172.',       mask: (ip: string) => {
+      const second = parseInt(ip.split('.')[1], 10)
+      return second >= 16 && second <= 31
+    }
+  },
+  // IPv6 loopback
+  { prefix: '::1',        mask: null },
+]
+
+function isPrivateIp(ip: string): boolean {
+  // Normalise IPv6-mapped IPv4 (e.g. ::ffff:127.0.0.1 → 127.0.0.1)
+  const normalised = ip.replace(/^::ffff:/, '')
+
+  for (const range of PRIVATE_IP_RANGES) {
+    if (normalised.startsWith(range.prefix)) {
+      if (range.mask === null) return true
+      if (range.mask(normalised)) return true
+    }
+  }
+  return false
+}
+
 // Blocked domains — URLs containing these are rejected
 const BLOCKED_DOMAINS = [
   'stripe.com', 'paypal.com', 'checkout.com', 'square.com',
@@ -37,6 +69,28 @@ export async function checkUrl(url: string): Promise<UrlCheckResult> {
       }
     }
   }
+
+  // ── SSRF guard: resolve hostname and reject private IPs ──
+  let hostname: string
+  try {
+    hostname = new URL(url).hostname
+  } catch {
+    return { safe: false, reason: 'Invalid URL', code: 'INVALID_URL' }
+  }
+
+  try {
+    const { address } = await dns.lookup(hostname)
+    if (isPrivateIp(address)) {
+      return {
+        safe: false,
+        reason: 'URL resolves to a private or reserved IP address',
+        code: 'SSRF_BLOCKED',
+      }
+    }
+  } catch {
+    return { safe: false, reason: 'Could not resolve URL hostname', code: 'DNS_FAILURE' }
+  }
+
   // Verify URL is reachable (HEAD request, 5 second timeout)
   try {
     const controller = new AbortController()

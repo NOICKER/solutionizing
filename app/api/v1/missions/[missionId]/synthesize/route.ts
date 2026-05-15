@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { requireRole } from '@/lib/api/middleware'
 import { ok, apiError, badRequest, notFound, serverError } from '@/lib/api/response'
+import { enforceRateLimit } from '@/lib/api/rate-limit'
 import { computeFeedback } from '@/lib/business/feedback'
 import { SynthesisError, synthesizeFeedback } from '@/lib/ai/synthesize'
 import { logApiRouteError } from '@/lib/api/log'
@@ -82,6 +83,9 @@ export async function GET(
   context: { params: { missionId: string } }
 ) {
   try {
+    const rateLimited = await enforceRateLimit(request, 'mission-synthesize')
+    if (rateLimited) return rateLimited
+
     const founder = await requireRole('FOUNDER')
 
     if (!founder.founderProfile) {

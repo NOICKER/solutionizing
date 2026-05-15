@@ -2,7 +2,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { tooManyRequests } from '@/lib/api/response'
 
-type RateLimitPolicy = 'auth-login' | 'auth-register'
+type RateLimitPolicy = 'auth-login' | 'auth-register' | 'coins-withdraw' | 'mission-synthesize'
 
 type RateLimitGlobalState = typeof globalThis & {
   __solutionizingRateLimitRedis?: Redis
@@ -24,6 +24,14 @@ const rateLimitConfigs: Record<
   'auth-register': {
     limit: 5,
     prefix: 'rl:auth:register',
+  },
+  'coins-withdraw': {
+    limit: 3,
+    prefix: 'rl:coins:withdraw',
+  },
+  'mission-synthesize': {
+    limit: 5,
+    prefix: 'rl:mission:synthesize',
   },
 }
 
