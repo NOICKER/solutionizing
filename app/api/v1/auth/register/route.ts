@@ -28,6 +28,9 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signUp({
       email: body.email,
       password: body.password,
+      options: {
+        emailRedirectTo: undefined,
+      },
     })
 
     if (error) {
@@ -43,6 +46,22 @@ export async function POST(request: Request) {
         return conflict('Email already registered')
       }
       return serverError()
+    }
+
+    // If Supabase didn't return a session (email not yet confirmed),
+    // sign the user in immediately so they aren't blocked on verification.
+    let session = data?.session
+    if (data?.user && !session) {
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: body.email,
+        password: body.password,
+      })
+
+      if (signInError) {
+        console.warn('[register] Auto sign-in after signup failed:', signInError.message)
+      } else {
+        session = signInData.session
+      }
     }
 
     if (data?.user) {
@@ -71,7 +90,9 @@ export async function POST(request: Request) {
 
     return applySupabaseCookies(
       created({
-        message: 'Verification email sent. Please check your inbox.'
+        message: session
+          ? 'Account created and signed in.'
+          : 'Account created. Please check your inbox to verify your email.',
       })
     )
   } catch (err) {
