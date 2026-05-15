@@ -85,7 +85,40 @@ function createQueue<Payload>(
   }
 }
 
-export const assignmentQueue = createQueue(getAssignmentBullmqQueue, processAssignmentJob)
+/**
+ * Assignment queue with notification follow-up.
+ *
+ * When running inline (no Redis), the processor returns assignments and we
+ * enqueue notification jobs ourselves — this breaks the circular dependency
+ * that previously existed when processors/assignment.ts imported this file.
+ */
+function createAssignmentQueue(): QueueLike<AssignmentJobPayload> {
+  return {
+    async add(name, payload) {
+      if (!isRedisConfigured) {
+        logInlineQueueWarning()
+        const assignments = await processAssignmentJob(payload)
+
+        // Enqueue notifications for each assignment (inline)
+        await Promise.all(
+          assignments.map((assignment) =>
+            notificationQueue.add('notify', {
+              type: 'ASSIGNMENT_RECEIVED',
+              userId: assignment.userId,
+              missionId: assignment.missionId,
+              assignmentId: assignment.assignmentId,
+            })
+          )
+        )
+        return
+      }
+
+      return getAssignmentBullmqQueue().add(name, payload)
+    },
+  }
+}
+
+export const assignmentQueue = createAssignmentQueue()
 export const timeoutQueue = createQueue(getTimeoutBullmqQueue, processTimeoutJob)
 export const notificationQueue = createQueue(
   getNotificationBullmqQueue,
