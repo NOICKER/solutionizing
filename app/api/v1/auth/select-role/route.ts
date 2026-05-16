@@ -6,13 +6,17 @@ import { validateBody } from '@/lib/api/validate'
 import { ok, notFound, serverError } from '@/lib/api/response'
 import { z } from 'zod'
 import { logApiRouteError } from '@/lib/api/log'
-import { Prisma } from '@prisma/client'
+import { MissionStatus, Prisma } from '@prisma/client'
 import type { DashboardRole } from '@/lib/auth/current-user'
+import { assignTestersToMission } from '@/lib/business/assignment'
+import { OPEN_ASSIGNMENT_STATUSES } from '@/lib/business/mission-assignments'
 
 const SelectRoleSchema = z.object({
   role: z.enum(['FOUNDER', 'TESTER']),
   displayName: z.string().min(2).max(50),
 })
+
+const OVERASSIGNMENT_FACTOR = 1.3
 
 async function syncRoleMetadata(
   userId: string,
@@ -42,6 +46,51 @@ async function syncRoleMetadata(
   }
 }
 
+/**
+ * Fire-and-forget: assign the new tester to any ACTIVE missions with open slots.
+ * Runs asynchronously so it doesn't block the onboarding response.
+ */
+async function assignNewTesterToActiveMissions() {
+  try {
+    const activeMissions = await prisma.mission.findMany({
+      where: { status: MissionStatus.ACTIVE },
+      select: {
+        id: true,
+        testersRequired: true,
+        testersCompleted: true,
+        _count: {
+          select: {
+            assignments: {
+              where: {
+                status: { in: [...OPEN_ASSIGNMENT_STATUSES] },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const missionsNeedingTesters = activeMissions.filter((mission) => {
+      const remaining = mission.testersRequired - mission.testersCompleted
+      const slotsNeeded =
+        Math.ceil(remaining * OVERASSIGNMENT_FACTOR) - mission._count.assignments
+      return slotsNeeded > 0
+    })
+
+    if (missionsNeedingTesters.length === 0) return
+
+    console.log(
+      `[select-role] New tester available — attempting assignment to ${missionsNeedingTesters.length} mission(s)`
+    )
+
+    await Promise.allSettled(
+      missionsNeedingTesters.map((m) => assignTestersToMission(m.id))
+    )
+  } catch (err) {
+    console.error('[select-role] post-onboarding assignment failed', err)
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const authUser = await requireAuth()
@@ -64,6 +113,8 @@ export async function POST(request: Request) {
     const testerRoles: DashboardRole[] =
       existingUser.testerProfile || body.role === 'TESTER' ? ['TESTER'] : []
     const nextRoles: DashboardRole[] = [...founderRoles, ...testerRoles]
+
+    const isNewTester = body.role === 'TESTER' && !existingProfile
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
@@ -98,6 +149,14 @@ export async function POST(request: Request) {
       body.role,
       nextRoles
     )
+
+    // After a new tester completes onboarding, attempt to assign them
+    // to any active missions with open slots (fire-and-forget).
+    if (isNewTester) {
+      assignNewTesterToActiveMissions().catch((err) =>
+        console.error('[select-role] background assignment error', err)
+      )
+    }
 
     return ok({ role: body.role, roles: nextRoles, displayName: body.displayName })
   } catch (err) {

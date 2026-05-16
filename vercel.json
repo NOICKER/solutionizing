@@ -1,1 +1,6 @@
-{}
+{
+  "crons": [
+    { "path": "/api/v1/cron/check-timeouts", "schedule": "*/15 * * * *" },
+    { "path": "/api/v1/cron/assign-pending", "schedule": "*/15 * * * *" }
+  ]
+}
