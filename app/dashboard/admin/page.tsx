@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ClipboardList, Flag, LayoutDashboard, Rocket, Settings, Users } from 'lucide-react'
+import { ClipboardList, Flag, LayoutDashboard, Rocket, Settings, Users, MessageSquare } from 'lucide-react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
@@ -62,6 +62,19 @@ interface User {
   testerProfile: UserProfile | null
 }
 
+interface FeedbackItem {
+  id: string
+  userId: string | null
+  page: string
+  screenshotUrl: string | null
+  message: string
+  category: string
+  createdAt: string
+  user: {
+    email: string
+  } | null
+}
+
 type ReportResolutionStatus = FlagStatus
 
 type MissionDialogState =
@@ -90,6 +103,7 @@ const overviewSidebarProps = { glyph: <LayoutDashboard className="h-4 w-4" /> }
 const missionsSidebarProps = { glyph: <Rocket className="h-4 w-4" /> }
 const usersSidebarProps = { glyph: <Users className="h-4 w-4" /> }
 const flagsSidebarProps = { glyph: <Flag className="h-4 w-4" /> }
+const feedbackSidebarProps = { glyph: <MessageSquare className="h-4 w-4" /> }
 const settingsSidebarProps = { glyph: <Settings className="h-4 w-4" /> }
 
 const adminNavItems = [
@@ -97,6 +111,7 @@ const adminNavItems = [
   { id: 'missions', label: 'Missions', icon: Rocket, sidebarProps: missionsSidebarProps },
   { id: 'users', label: 'Users', icon: Users, sidebarProps: usersSidebarProps },
   { id: 'flags', label: 'Flags', icon: Flag, sidebarProps: flagsSidebarProps },
+  { id: 'feedback', label: 'Feedback', icon: MessageSquare, sidebarProps: feedbackSidebarProps },
 ] as const
 
 type AdminTab = (typeof adminNavItems)[number]['id']
@@ -134,6 +149,8 @@ export default function AdminDashboardPage() {
   const [pendingMissions, setPendingMissions] = useState<any[]>([])
   const [pendingMissionsError, setPendingMissionsError] = useState('')
   const [flaggedItems, setFlaggedItems] = useState<ApiMissionFlagGroup[]>([])
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([])
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [userList, setUserList] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isActionLoading, setIsActionLoading] = useState(false)
@@ -211,12 +228,25 @@ export default function AdminDashboardPage() {
     }
   }, [])
 
+  const fetchFeedbackContent = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const res = await apiFetch<{ items: FeedbackItem[] }>('/api/v1/admin/feedback')
+      setFeedbackItems(res.items)
+    } catch (err) {
+      console.error('Failed to fetch feedback content', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (activeTab === 'overview') void fetchDashboardData()
     if (activeTab === 'missions') void fetchPendingMissions()
     if (activeTab === 'users') void fetchAllUsers()
     if (activeTab === 'flags') void fetchFlaggedContent()
-  }, [activeTab, fetchDashboardData, fetchPendingMissions, fetchAllUsers, fetchFlaggedContent])
+    if (activeTab === 'feedback') void fetchFeedbackContent()
+  }, [activeTab, fetchDashboardData, fetchPendingMissions, fetchAllUsers, fetchFlaggedContent, fetchFeedbackContent])
 
   const closeMissionDialog = useCallback(() => {
     setMissionDialog(null)
@@ -478,12 +508,14 @@ export default function AdminDashboardPage() {
               activeTab === 'overview' ? 'System Overview' :
               activeTab === 'missions' ? 'Mission Control' :
               activeTab === 'flags' ? 'Flag Review Queue' :
+              activeTab === 'feedback' ? 'User Feedback' :
               'User Management'
             }
             subtitle={
               activeTab === 'overview' ? 'Monitor platform activity.' :
               activeTab === 'missions' ? 'Moderate mission submissions.' :
               activeTab === 'flags' ? 'Review structured flags.' :
+              activeTab === 'feedback' ? 'Review user feedback and bugs.' :
               'Manage platform users.'
             }
           >
@@ -495,6 +527,7 @@ export default function AdminDashboardPage() {
                 if (activeTab === 'missions') void fetchPendingMissions()
                 if (activeTab === 'users') void fetchAllUsers()
                 if (activeTab === 'flags') void fetchFlaggedContent()
+                if (activeTab === 'feedback') void fetchFeedbackContent()
               }}
             >
               Refresh Data
@@ -1008,6 +1041,71 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
               ) : null}
+
+              {activeTab === 'feedback' ? (
+                <div className="overflow-hidden rounded-panel border border-[#e5e4e0] bg-white text-[#1a1625] dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                  <div className="border-b border-[#e5e4e0] p-6 dark:border-gray-700">
+                    <h3 className="text-xl font-bold">Feedback Submissions ({feedbackItems.length})</h3>
+                  </div>
+                  {feedbackItems.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-[#faf9f7] text-[0.65rem] font-bold uppercase tracking-wider text-[#8b8797] dark:bg-gray-900 dark:text-gray-400">
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">User</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">Category</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4">Message</th>
+                            <th className="hidden px-6 py-4 md:table-cell">Page</th>
+                            <th className="hidden px-6 py-4 lg:table-cell">Date</th>
+                            <th className="px-4 py-3 sm:px-6 sm:py-4 text-right">Screenshot</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#f0efed] dark:divide-gray-700">
+                          {feedbackItems.map((item) => (
+                            <tr key={item.id} className="text-sm">
+                              <td className="px-4 py-4 sm:px-6 text-[#1a1625] dark:text-white">
+                                <span className="font-bold line-clamp-1">{item.user?.email || 'Anonymous'}</span>
+                              </td>
+                              <td className="px-4 py-4 sm:px-6">
+                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[0.65rem] font-bold text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                  {item.category}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 sm:px-6">
+                                <p className="line-clamp-2 text-xs text-[#6b687a] dark:text-gray-300">{item.message}</p>
+                              </td>
+                              <td className="hidden px-6 py-4 text-xs text-[#6b687a] md:table-cell dark:text-gray-400">
+                                <span className="line-clamp-1 max-w-[150px]">{item.page}</span>
+                              </td>
+                              <td className="hidden px-6 py-4 text-xs text-[#6b687a] lg:table-cell dark:text-gray-400">
+                                {format(new Date(item.createdAt), 'MMM d, yyyy HH:mm')}
+                              </td>
+                              <td className="px-4 py-4 sm:px-6 text-right">
+                                {item.screenshotUrl ? (
+                                  <button
+                                    onClick={() => setSelectedImage(item.screenshotUrl)}
+                                    className="text-xs font-bold text-[#d77a57] hover:underline dark:text-[#d77a57]"
+                                  >
+                                    View
+                                  </button>
+                                ) : (
+                                  <span className="text-xs text-[#8b8797] dark:text-gray-500">None</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <EmptyStatePanel
+                      title="No feedback yet"
+                      description="No user feedback has been submitted."
+                      icon={<MessageSquare className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+                    />
+                  )}
+                </div>
+              ) : null}
             </div>
           )}
         </main>
@@ -1075,6 +1173,21 @@ export default function AdminDashboardPage() {
               </div>
             ) : null}
           </ConfirmationDialog>
+        ) : null}
+
+        {selectedImage ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setSelectedImage(null)}>
+            <div className="relative flex max-h-full max-w-full items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <img src={selectedImage} alt="Feedback Screenshot" className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" />
+              <button 
+                className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow-lg hover:bg-gray-200" 
+                onClick={() => setSelectedImage(null)}
+              >
+                <span className="sr-only">Close</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+          </div>
         ) : null}
       </div>
     </RequireAuth>

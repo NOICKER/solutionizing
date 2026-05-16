@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import PostHogProvider from "@/providers/PostHogProvider";
 import { CookieConsent } from "@/components/solutionizing/CookieConsent";
 import { AppThemeBoundary } from "@/components/AppThemeBoundary";
+import FeedbackWidget from "@/components/feedback/FeedbackWidget";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default function RootLayout({
               <AppStateProvider>
                 {children}
                 <CookieConsent />
+                <FeedbackWidget />
                 <Toaster />
               </AppStateProvider>
             </AppThemeBoundary>

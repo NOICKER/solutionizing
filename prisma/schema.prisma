@@ -91,6 +91,7 @@ model User {
   submittedFlags   MissionFlag[] @relation("MissionFlagReporter")
   receivedFlags    MissionFlag[] @relation("MissionFlagTarget")
   resolvedFlags    MissionFlag[] @relation("MissionFlagResolver")
+  feedbacks        Feedback[]
   @@map("users")
 }
 model FounderProfile {
@@ -334,4 +335,23 @@ model MissionFlag {
   @@index([status])
   @@index([reason])
   @@map("mission_flags")
+}
+model Feedback {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  page          String
+  screenshotUrl String?
+  message       String
+  category      String
+  createdAt     DateTime @default(now())
+  @@index([category])
+  @@index([createdAt])
+  @@map("feedback")
+}
+model FeedbackWidgetWaitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  @@map("feedback_widget_waitlist")
 }
