@@ -76,6 +76,13 @@ function createMiddlewareSupabaseClient(request: NextRequest, response: NextResp
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
   const path = request.nextUrl.pathname
+
+  // Let the OAuth callback route handle its own auth via exchangeCodeForSession.
+  // Must be skipped entirely — no session check, no redirect.
+  if (path === '/auth/callback' || path.startsWith('/auth/callback/')) {
+    return response
+  }
+
   const isPublicRoute = publicRoutes.has(path)
 
   // Redirect logged-in users away from the landing page in one hop.
