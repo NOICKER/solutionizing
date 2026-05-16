@@ -10,6 +10,7 @@ export async function GET(request: Request) {
   const type = requestUrl.searchParams.get('type')
   const { supabase, applySupabaseCookies } = createSupabaseRouteHandlerClient(request)
   let userId: string | null = null
+  let userEmail: string | null = null
   let isEmailConfirmed = false
 
   if (tokenHash && type) {
@@ -19,26 +20,43 @@ export async function GET(request: Request) {
     })
 
     userId = data.user?.id ?? null
+    userEmail = data.user?.email ?? null
     isEmailConfirmed = !!data.user?.email_confirmed_at
   } else if (code) {
     const { data } = await supabase.auth.exchangeCodeForSession(code)
 
     userId = data.user?.id ?? null
+    userEmail = data.user?.email ?? null
     isEmailConfirmed = !!data.user?.email_confirmed_at
   }
 
-  if (userId && isEmailConfirmed) {
+  let redirectPath = type === 'recovery' ? '/auth/reset-password' : '/dashboard'
+
+  if (userId) {
     try {
-      await prisma.user.update({
+      // Upsert: create user record if it doesn't exist (e.g. first-time OAuth),
+      // or update emailVerified if already present.
+      const dbUser = await prisma.user.upsert({
         where: { id: userId },
-        data: { emailVerified: true },
+        update: {
+          emailVerified: isEmailConfirmed || undefined,
+        },
+        create: {
+          id: userId,
+          email: userEmail!,
+          emailVerified: isEmailConfirmed,
+        },
+        select: { role: true },
       })
+
+      // Send new users (no role yet) to role selection instead of dashboard
+      if (type !== 'recovery' && !dbUser.role) {
+        redirectPath = '/select-role'
+      }
     } catch (error) {
-      console.error('[auth:callback] Failed to sync emailVerified:', error)
+      console.error('[auth:callback] Failed to upsert user:', error)
     }
   }
-
-  const redirectPath = type === 'recovery' ? '/auth/reset-password' : '/dashboard'
 
   return applySupabaseCookies(
     NextResponse.redirect(new URL(redirectPath, request.url))
