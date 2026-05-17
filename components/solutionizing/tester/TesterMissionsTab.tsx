@@ -53,6 +53,7 @@ function CheckMissionsButton({ onRefresh }: { onRefresh: () => void }) {
         onRefresh() // Refresh the dashboard to show new assignments
       } else {
         setMessage('No new missions right now. Check back later.')
+        toast.info("You're all caught up — no new missions available right now")
       }
 
       setState('success')
