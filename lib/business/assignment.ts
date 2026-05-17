@@ -120,6 +120,24 @@ export async function assignTestersToMission(
       return []
     }
 
+    const lockResults = await Promise.all(
+      selectedTesters.map(async (tester) => {
+        const testerLockKey = `lock:assignment:${missionId}:tester:${tester.id}`
+        const acquired = await acquireLock(testerLockKey, TESTER_LOCK_TTL_SECONDS)
+        if (acquired) {
+          claimedTesterLocks.push(testerLockKey)
+          return tester
+        }
+        return null
+      })
+    )
+    
+    const lockedTesters = lockResults.filter((t): t is NonNullable<typeof t> => t !== null)
+
+    if (lockedTesters.length === 0) {
+      return []
+    }
+
     const timeoutAt = addHours(now, 24)
 
     const createdAssignments = await prisma.$transaction<AssignedTesterNotification[]>(
@@ -160,22 +178,10 @@ export async function assignTestersToMission(
         const latestMinimumReputationScore = TIER_THRESHOLDS[latestMission.minRepTier].min
         const created: AssignedTesterNotification[] = []
 
-        for (const tester of selectedTesters) {
+        for (const tester of lockedTesters) {
           if (created.length >= currentSlotsNeeded) {
             break
           }
-
-          const testerLockKey = `lock:assignment:${missionId}:tester:${tester.id}`
-          const testerLockAcquired = await acquireLock(
-            testerLockKey,
-            TESTER_LOCK_TTL_SECONDS
-          )
-
-          if (!testerLockAcquired) {
-            continue
-          }
-
-          claimedTesterLocks.push(testerLockKey)
 
           const eligibleTester = await tx.testerProfile.findFirst({
             where: {
@@ -250,7 +256,8 @@ export async function assignTestersToMission(
         }
 
         return created
-      }
+      },
+      { maxWait: 15000, timeout: 15000 }
     )
 
     if (createdAssignments.length > 0) {
