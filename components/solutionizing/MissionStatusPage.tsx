@@ -359,6 +359,84 @@ function MissionStatusPageSkeleton() {
   )
 }
 
+// ─── Find More Testers button ─────────────────────────────────────────────────
+
+function FindMoreTestersButton({ missionId }: { missionId: string }) {
+  const [state, setState] = useState<'idle' | 'loading' | 'success' | 'rate-limited' | 'error'>('idle')
+  const [message, setMessage] = useState('')
+
+  async function handleClick() {
+    setState('loading')
+    setMessage('')
+
+    try {
+      const data = await apiFetch<{ newTestersAssigned: number }>(`/api/v1/missions/${missionId}/reassign`, {
+        method: 'POST',
+      })
+
+      if (data.newTestersAssigned > 0) {
+        setMessage(`${data.newTestersAssigned} new tester${data.newTestersAssigned !== 1 ? 's' : ''} assigned!`)
+        toast.success(`${data.newTestersAssigned} new tester${data.newTestersAssigned !== 1 ? 's' : ''} assigned to your mission.`)
+      } else {
+        setMessage('No new testers available right now. Try again later.')
+      }
+
+      setState('success')
+    } catch (fetchError) {
+      if (isApiClientError(fetchError) && fetchError.status === 429) {
+        setState('rate-limited')
+        setMessage('Please wait 10 minutes between requests.')
+      } else {
+        setState('error')
+        setMessage(
+          isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'
+            ? 'Check your internet connection'
+            : 'Something went wrong. Please try again.'
+        )
+      }
+    }
+  }
+
+  return (
+    <div className="mt-6 flex flex-col items-center gap-3">
+      <button
+        type="button"
+        disabled={state === 'loading'}
+        onClick={() => void handleClick()}
+        className="group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full border border-[#d77a57]/30 bg-gradient-to-r from-[#d77a57]/10 to-[#d77a57]/5 px-7 py-3.5 font-bold tracking-wide text-[#d77a57] transition-all hover:border-[#d77a57]/50 hover:from-[#d77a57]/20 hover:to-[#d77a57]/10 hover:shadow-[0_0_20px_rgba(215,122,87,0.15)] focus:outline-none focus:ring-2 focus:ring-[#d77a57]/50 focus:ring-offset-2 focus:ring-offset-[#faf9f7] disabled:pointer-events-none disabled:opacity-60 dark:focus:ring-offset-gray-900"
+      >
+        {state === 'loading' ? (
+          <SpinnerIcon />
+        ) : (
+          <svg className="h-5 w-5 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        )}
+        push again to your testers
+      </button>
+
+      <AnimatePresence>
+        {message && (
+          <motion.p
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`text-center text-sm font-medium ${
+              state === 'success'
+                ? 'text-emerald-500 dark:text-emerald-400'
+                : state === 'rate-limited'
+                  ? 'text-amber-500 dark:text-amber-400'
+                  : 'text-red-500 dark:text-red-400'
+            }`}
+          >
+            {message}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export function MissionStatusPage({ missionId }: { missionId: string }) {
   const [mission, setMission] = useState<ApiMissionDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -598,6 +676,11 @@ export function MissionStatusPage({ missionId }: { missionId: string }) {
               </motion.div>
             ))}
           </div>
+
+          {/* Find More Testers button — visible when ACTIVE and slots remain */}
+          {mission.status === 'ACTIVE' && mission.testersCompleted < mission.testersRequired && (
+            <FindMoreTestersButton missionId={mission.id} />
+          )}
         </motion.div>
 
         <motion.div variants={itemVariants} className={`mb-8 flex flex-col items-start justify-between gap-4 py-6 sm:flex-row sm:items-center ${glassPanelClasses}`}>

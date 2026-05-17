@@ -2,7 +2,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { tooManyRequests } from '@/lib/api/response'
 
-type RateLimitPolicy = 'auth-login' | 'auth-register' | 'coins-withdraw' | 'mission-synthesize'
+type RateLimitPolicy = 'auth-login' | 'auth-register' | 'coins-withdraw' | 'mission-synthesize' | 'mission-reassign' | 'tester-find-missions'
 
 type RateLimitGlobalState = typeof globalThis & {
   __solutionizingRateLimitRedis?: Redis
@@ -15,6 +15,7 @@ const rateLimitConfigs: Record<
   {
     limit: number
     prefix: string
+    window?: string
   }
 > = {
   'auth-login': {
@@ -32,6 +33,16 @@ const rateLimitConfigs: Record<
   'mission-synthesize': {
     limit: 5,
     prefix: 'rl:mission:synthesize',
+  },
+  'mission-reassign': {
+    limit: 1,
+    prefix: 'rl:mission:reassign',
+    window: '10 m',
+  },
+  'tester-find-missions': {
+    limit: 1,
+    prefix: 'rl:tester:find-missions',
+    window: '10 m',
   },
 }
 
@@ -80,7 +91,7 @@ function getRateLimiter(policy: RateLimitPolicy) {
   const config = rateLimitConfigs[policy]
   const limiter = new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(config.limit, '1 m'),
+    limiter: Ratelimit.slidingWindow(config.limit, (config.window ?? '1 m') as Parameters<typeof Ratelimit.slidingWindow>[1]),
     prefix: config.prefix,
   })
 

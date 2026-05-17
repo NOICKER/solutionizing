@@ -4,12 +4,16 @@ import { CheckSquare, Coins, Info, Star, TrendingUp } from 'lucide-react'
 
 import Link from 'next/link'
 import { differenceInHours } from 'date-fns'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from '@/components/ui/sonner'
+import { apiFetch, isApiClientError } from '@/lib/api/client'
 import type { User } from '@/context/AuthContext'
 import { ApiTesterAssignmentSummary, ApiTesterStats } from '@/types/api'
 import {
   ErrorStatePanel,
   ReputationTierBadge,
+  SpinnerIcon,
   formatCoins,
   formatRupeesFromCoins,
   primaryButtonClass,
@@ -29,6 +33,84 @@ interface TesterMissionsTabProps {
   onOpenWithdrawal: () => void
   onAbandon: (assignment: ApiTesterAssignmentSummary) => void
 }
+
+function CheckMissionsButton({ onRefresh }: { onRefresh: () => void }) {
+  const [state, setState] = useState<'idle' | 'loading' | 'success' | 'rate-limited' | 'error'>('idle')
+  const [message, setMessage] = useState('')
+
+  async function handleClick() {
+    setState('loading')
+    setMessage('')
+
+    try {
+      const data = await apiFetch<{ newAssignments: number; missionsChecked: number }>('/api/v1/tester/find-missions', {
+        method: 'POST',
+      })
+
+      if (data.newAssignments > 0) {
+        setMessage(`${data.newAssignments} new mission${data.newAssignments !== 1 ? 's' : ''} assigned!`)
+        toast.success(`${data.newAssignments} new mission${data.newAssignments !== 1 ? 's' : ''} assigned.`)
+        onRefresh() // Refresh the dashboard to show new assignments
+      } else {
+        setMessage('No new missions right now. Check back later.')
+      }
+
+      setState('success')
+    } catch (fetchError) {
+      if (isApiClientError(fetchError) && fetchError.status === 429) {
+        setState('rate-limited')
+        setMessage('Please wait 10 minutes between checks.')
+      } else {
+        setState('error')
+        setMessage(
+          isApiClientError(fetchError) && fetchError.code === 'NETWORK_ERROR'
+            ? 'Check your connection'
+            : 'Something went wrong.'
+        )
+      }
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        disabled={state === 'loading'}
+        onClick={() => void handleClick()}
+        className="group relative inline-flex h-8 items-center justify-center gap-1.5 overflow-hidden rounded-full border border-sky-500/30 bg-gradient-to-r from-sky-500/10 to-sky-500/5 px-4 text-xs font-bold tracking-wide text-sky-400 transition-all hover:border-sky-500/50 hover:from-sky-500/20 hover:to-sky-500/10 hover:shadow-[0_0_15px_rgba(14,165,233,0.15)] focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:ring-offset-2 focus:ring-offset-surface disabled:pointer-events-none disabled:opacity-60"
+      >
+        {state === 'loading' ? (
+          <SpinnerIcon />
+        ) : (
+          <svg className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        )}
+        Check for Missions
+      </button>
+
+      <AnimatePresence>
+        {message && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className={`text-right text-[0.65rem] font-bold ${
+              state === 'success'
+                ? 'text-emerald-400'
+                : state === 'rate-limited'
+                  ? 'text-amber-400'
+                  : 'text-red-400'
+            }`}
+          >
+            {message}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 
 export function TesterMissionsTab({
   user,
@@ -300,9 +382,12 @@ export function TesterMissionsTab({
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-black text-white">Current Missions</h2>
-        <span className="rounded-full border border-border-subtle bg-surface-elevated px-4 py-1 text-sm font-bold text-text-muted">
-          {assignments.length} ACTIVE
-        </span>
+        <div className="flex items-center gap-4">
+          <CheckMissionsButton onRefresh={onRetry} />
+          <span className="rounded-full border border-border-subtle bg-surface-elevated px-4 py-1 text-sm font-bold text-text-muted">
+            {assignments.length} ACTIVE
+          </span>
+        </div>
       </div>
 
       {assignmentCards}
