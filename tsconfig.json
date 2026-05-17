@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "snapshots",
-    "oh-my-codex"
+    "oh-my-codex",
+    "supabase"
   ]
 }
