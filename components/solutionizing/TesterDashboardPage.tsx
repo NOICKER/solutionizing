@@ -239,10 +239,8 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   }, [])
 
   useEffect(() => {
-    if (!hasInitialDashboardData) {
-      void loadDashboard()
-      return
-    }
+    // If we don't have initial data, show the loading state. Otherwise, load silently in the background
+    void loadDashboard(hasInitialDashboardData)
 
     let isMounted = true
     const checkBackgroundMissions = async () => {
