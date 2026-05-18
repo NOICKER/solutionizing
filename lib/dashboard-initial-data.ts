@@ -223,11 +223,14 @@ export async function getTesterDashboardInitialData(
     ])
 
   if (!testerProfile) {
+    console.log(`[getTesterDashboardInitialData] testerProfileId:`, testerProfileId, `| Profile not found. Raw assignments result:`, assignments)
     return {
       stats: null,
       assignments: assignments.map(serializeAssignment),
     }
   }
+
+  console.log(`[getTesterDashboardInitialData] testerProfileId:`, testerProfileId, `| Raw assignments result:`, assignments)
 
   const totalAttempts = testerProfile.totalCompleted + testerProfile.totalAbandoned
   const completionRate = totalAttempts === 0

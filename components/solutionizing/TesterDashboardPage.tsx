@@ -219,6 +219,8 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         ),
       ])
 
+      console.log('Assignments API Response:', assignmentsResponse)
+
       setStats(statsResponse)
       setAssignments(assignmentsResponse)
     } catch (error) {
