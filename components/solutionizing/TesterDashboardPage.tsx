@@ -205,9 +205,11 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
 
   const balance = stats?.coinBalance ?? user?.testerProfile?.coinBalance ?? 0
 
-  const loadDashboard = useCallback(async () => {
-    setLoadError('')
-    setIsLoading(true)
+  const loadDashboard = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setLoadError('')
+      setIsLoading(true)
+    }
 
     try {
       const [statsResponse, assignmentsResponse] = await Promise.all([
@@ -220,22 +222,45 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
       setStats(statsResponse)
       setAssignments(assignmentsResponse)
     } catch (error) {
-      setLoadError(
-        isApiClientError(error) && error.code === 'NETWORK_ERROR'
-          ? 'Check your internet connection'
-          : "Couldn't load your missions"
-      )
+      if (!isSilent) {
+        setLoadError(
+          isApiClientError(error) && error.code === 'NETWORK_ERROR'
+            ? 'Check your internet connection'
+            : "Couldn't load your missions"
+        )
+      }
     } finally {
-      setIsLoading(false)
+      if (!isSilent) {
+        setIsLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
-    if (hasInitialDashboardData) {
+    if (!hasInitialDashboardData) {
+      void loadDashboard()
       return
     }
 
-    void loadDashboard()
+    let isMounted = true
+    const checkBackgroundMissions = async () => {
+      try {
+        const data = await apiFetch<{ newAssignments: number; missionsChecked: number }>('/api/v1/tester/find-missions', {
+          method: 'POST',
+        })
+        if (isMounted && data.newAssignments > 0) {
+          void loadDashboard(true)
+        }
+      } catch (e) {
+        // Silently ignore background check errors
+      }
+    }
+
+    void checkBackgroundMissions()
+
+    return () => {
+      isMounted = false
+    }
   }, [hasInitialDashboardData, loadDashboard])
 
   useEffect(() => {
