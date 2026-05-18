@@ -46,6 +46,9 @@ export async function GET(request: Request) {
 
     const query = queryResult.data
     const skip = (query.page - 1) * query.limit
+
+    console.log('[assignments] testerProfile.id:', tester.testerProfile.id)
+    console.log('[assignments] query statuses:', query.statuses)
     const where = {
       testerId: tester.testerProfile.id,
       ...(query.statuses?.length
