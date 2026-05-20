@@ -10,7 +10,7 @@ import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
-import { ModalShell, SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -530,11 +530,8 @@ function MissionWizardContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
-  const [exitAction, setExitAction] = useState<'draft' | 'delete' | null>(null)
   const dirtyRef = useRef(false)
   const assetFileInputRefs = useRef<Array<HTMLInputElement | null>>([])
-  const [exitDialogOpen, setExitDialogOpen] = useState(false)
-  const [exitError, setExitError] = useState('')
   const hydratedStateRef = useRef<WizardState>(initialState)
   const draftStorageKey = useMemo(
     () => (editMissionId ? `mission-wizard-draft:${editMissionId}` : 'mission-wizard-draft'),
@@ -1063,59 +1060,7 @@ function MissionWizardContent() {
     setStep((current) => current - 1)
   }
 
-  async function handleExitSaveDraft() {
-    setExitAction('draft')
-    setExitError('')
-    const validationErrors = getMissionValidationErrors(state)
 
-    if (Object.keys(validationErrors).length === 0) {
-      setExitDialogOpen(false)
-      await handleSave('draft')
-      setExitAction(null)
-      return
-    }
-
-    try {
-      sessionStorage.setItem(draftStorageKey, JSON.stringify(state))
-      sessionStorage.removeItem(refreshFlagKey)
-      dirtyRef.current = false
-      setExitDialogOpen(false)
-      toast.success('Draft saved locally. You can continue it later.')
-      router.push('/dashboard/founder')
-    } catch {
-      setExitError('We could not save this draft. Try again.')
-    } finally {
-      setExitAction(null)
-    }
-  }
-
-  async function handleExitDelete() {
-    setExitAction('delete')
-    setExitError('')
-
-    try {
-      clearLocalDraft()
-      dirtyRef.current = false
-
-      if (isEditMode && editMissionId) {
-        await apiFetch(`/api/v1/missions/${editMissionId}`, { method: 'DELETE' })
-        toast.success('Mission deleted.')
-      } else {
-        toast.success('Draft discarded.')
-      }
-
-      setExitDialogOpen(false)
-      router.push('/dashboard/founder')
-    } catch (error) {
-      if (isApiClientError(error)) {
-        setExitError(error.message)
-      } else {
-        setExitError('We could not delete this mission. Try again.')
-      }
-    } finally {
-      setExitAction(null)
-    }
-  }
 
   function insertQuestionTemplate(template: typeof questionTemplates[number]) {
     updateState((current) => {
@@ -1162,11 +1107,10 @@ function MissionWizardContent() {
               type="button"
               className="font-semibold text-[#d77a57] hover:text-[#c4673f] dark:text-[#f0a98c] dark:hover:text-white"
               onClick={() => {
-                setExitError('')
-                setExitDialogOpen(true)
+                router.push('/dashboard/founder')
               }}
             >
-              EXIT
+              Back to Dashboard
             </button>
             <button
               type="button"
@@ -1730,57 +1674,7 @@ function MissionWizardContent() {
 
         {renderStepNavigation('bottom')}
       </div>
-      {exitDialogOpen ? (
-        <ModalShell
-          onClose={() => {
-            if (exitAction === null) {
-              setExitDialogOpen(false)
-              setExitError('')
-            }
-          }}
-        >
-          <div className="mx-auto max-w-xl rounded-card border border-[#e5e4e0] bg-white p-6 sm:p-8 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
-            <div className="mb-6">
-              <h3 className="text-2xl font-black text-[#1a1625] dark:text-white">Exit mission wizard?</h3>
-              <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
-                Save your progress as a draft, delete this mission, or stay here and keep editing.
-              </p>
-            </div>
-            {exitError ? <p className="mb-4 text-sm text-red-600 dark:text-red-400">{exitError}</p> : null}
-            <div className="space-y-3">
-              <button
-                type="button"
-                disabled={exitAction !== null}
-                className={`flex w-full items-center justify-center gap-2 rounded-[2rem] px-6 py-3.5 ${primaryButtonClass} disabled:pointer-events-none disabled:opacity-70`}
-                onClick={() => void handleExitSaveDraft()}
-              >
-                {exitAction === 'draft' ? <SpinnerIcon className="h-5 w-5" /> : null}
-                SAVE AS DRAFT
-              </button>
-              <button
-                type="button"
-                disabled={exitAction !== null}
-                className="flex w-full items-center justify-center gap-2 rounded-[2rem] bg-gradient-to-r from-red-500 to-red-600 px-6 py-3.5 font-black text-white transition-all hover:scale-[1.02] hover:shadow-lg disabled:pointer-events-none disabled:opacity-70"
-                onClick={() => void handleExitDelete()}
-              >
-                {exitAction === 'delete' ? <SpinnerIcon className="h-5 w-5" /> : null}
-                DELETE MISSION
-              </button>
-              <button
-                type="button"
-                disabled={exitAction !== null}
-                className="w-full rounded-[2rem] border-2 border-[#e5e4e0] bg-[#f3f3f5] px-6 py-3.5 font-black text-[#1a1625] transition-all hover:bg-[#e5e4e0] disabled:pointer-events-none disabled:opacity-70 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-                onClick={() => {
-                  setExitDialogOpen(false)
-                  setExitError('')
-                }}
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
-        </ModalShell>
-      ) : null}
+
     </div>
   )
 }
