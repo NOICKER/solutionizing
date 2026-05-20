@@ -748,11 +748,29 @@ function MissionWizardContent() {
       return
     }
 
+    if (!isValidUrl(asset.url)) {
+      setAssetChecks((current) => {
+        const copy = { ...current }
+        delete copy[index]
+        return copy
+      })
+      setErrors((current) => ({
+        ...current,
+        [`asset-${index}`]: 'Enter a full URL, including https://',
+      }))
+      return
+    }
+
     setAssetChecks((current) => ({ ...current, [index]: 'checking' }))
 
     try {
       await fetch(asset.url, { method: 'HEAD', mode: 'no-cors' })
       setAssetChecks((current) => ({ ...current, [index]: 'reachable' }))
+      setErrors((current) => {
+        const copy = { ...current }
+        delete copy[`asset-${index}`]
+        return copy
+      })
     } catch {
       setAssetChecks((current) => ({ ...current, [index]: 'unreachable' }))
     }
@@ -1488,12 +1506,36 @@ function MissionWizardContent() {
                       ) : null}
                     </div>
                   ) : (
-                    <div className="relative">
-                      <input value={asset.url ?? ''} onBlur={() => void handleAssetReachability(index)} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, url: event.target.value } : currentAsset) }))} placeholder="https://example.com" className={textFieldClass} />
-                      {assetChecks[index] === 'checking' ? <SpinnerIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b98a8]" /> : null}
-                      {assetChecks[index] === 'reachable' ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600 dark:text-green-400" /> : null}
-                      {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600 dark:text-red-400" /> : null}
-                    </div>
+                     <div className="relative">
+                       <input
+                         value={asset.url ?? ''}
+                         onBlur={() => void handleAssetReachability(index)}
+                         onChange={(event) => {
+                           const val = event.target.value
+                           setAssetChecks((prev) => {
+                             const copy = { ...prev }
+                             delete copy[index]
+                             return copy
+                           })
+                           setErrors((prev) => {
+                             const copy = { ...prev }
+                             delete copy[`asset-${index}`]
+                             return copy
+                           })
+                           updateState((current) => ({
+                             ...current,
+                             assets: current.assets.map((currentAsset, assetIndex) =>
+                               assetIndex === index ? { ...currentAsset, url: val } : currentAsset
+                             ),
+                           }))
+                         }}
+                         placeholder="https://example.com"
+                         className={textFieldClass}
+                       />
+                       {assetChecks[index] === 'checking' ? <SpinnerIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9b98a8]" /> : null}
+                       {assetChecks[index] === 'reachable' && !errors[`asset-${index}`] ? <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-green-600 dark:text-green-400" /> : null}
+                       {assetChecks[index] === 'unreachable' ? <XCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-red-600 dark:text-red-400" /> : null}
+                     </div>
                   )}
 
                   <input value={asset.label ?? ''} onChange={(event) => updateState((current) => ({ ...current, assets: current.assets.map((currentAsset, assetIndex) => assetIndex === index ? { ...currentAsset, label: event.target.value } : currentAsset) }))} placeholder="Optional label" className={`${textFieldClass} mt-3`} />
