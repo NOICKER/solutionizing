@@ -706,6 +706,27 @@ function MissionWizardContent() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [refreshFlagKey])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (!window.history.state || typeof window.history.state.step === 'undefined') {
+        window.history.replaceState({ step: 1 }, '')
+      } else {
+        setStep(window.history.state.step)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && typeof event.state.step === 'number') {
+        setStep(event.state.step)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const updateState = useCallback((updater: (current: WizardState) => WizardState) => {
     dirtyRef.current = true
     setState((current) => {
@@ -731,7 +752,13 @@ function MissionWizardContent() {
       return
     }
 
-    setStep((current) => Math.min(4, current + 1))
+    const nextStep = Math.min(4, step + 1)
+    if (nextStep !== step) {
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: nextStep }, '')
+      }
+      setStep(nextStep)
+    }
   }
 
   function handleGoalBlur() {
@@ -910,7 +937,11 @@ function MissionWizardContent() {
     const firstErrorKey = Object.keys(validationErrors)[0]
     if (firstErrorKey) {
       setErrors(validationErrors)
-      setStep(getStepForFieldKey(firstErrorKey))
+      const targetStep = getStepForFieldKey(firstErrorKey)
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: targetStep }, '')
+      }
+      setStep(targetStep)
       window.setTimeout(() => scrollToField(firstErrorKey === 'assets' ? 'asset-0' : firstErrorKey), 0)
       return
     }
@@ -1075,7 +1106,11 @@ function MissionWizardContent() {
       return
     }
 
-    setStep((current) => current - 1)
+    if (typeof window !== 'undefined') {
+      window.history.back()
+    } else {
+      setStep((current) => current - 1)
+    }
   }
 
 
