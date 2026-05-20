@@ -1324,8 +1324,8 @@ function MissionWizardContent() {
 
         {step === 2 ? (
           <div className="space-y-8">
-            <div>
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">DIFFICULTY</label>
+            <div className="pt-6">
+              <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">DIFFICULTY</label>
               <div className="grid gap-4 md:grid-cols-3">
                 {([
                   {
@@ -1365,56 +1365,64 @@ function MissionWizardContent() {
               </div>
             </div>
 
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">ESTIMATED MINUTES</label>
-              <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
-              <div className="mt-4 text-center">
-                <div className="text-2xl font-black text-[#1a1625] dark:text-white">{state.estimatedMinutes} minutes</div>
-                <p className="mt-1 text-sm text-[#9b98a8] dark:text-gray-400">Missions must be 2–4 minutes</p>
+            <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
+              <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">ESTIMATED MINUTES</label>
+              <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
+                <div className="mt-4 text-center">
+                  <div className="text-2xl font-black text-[#1a1625] dark:text-white">{state.estimatedMinutes} minutes</div>
+                  <p className="mt-1 text-sm text-[#9b98a8] dark:text-gray-400">Missions must be 2–4 minutes</p>
+                </div>
               </div>
             </div>
 
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">NUMBER OF TESTERS</label>
-              <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
-              <div className="mt-4 text-center text-2xl font-black text-[#1a1625] dark:text-white">{state.testersRequired} testers</div>
+            <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
+              <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">NUMBER OF TESTERS</label>
+              <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
+                <div className="mt-4 text-center text-2xl font-black text-[#1a1625] dark:text-white">{state.testersRequired} testers</div>
+              </div>
             </div>
 
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">Tester Deadline</label>
-              <select
-                value={state.timeoutDuration}
-                onChange={(event) => updateState((current) => ({ ...current, timeoutDuration: Number(event.target.value) }))}
-                className="w-full rounded-2xl border border-[#e5e4e0] bg-[#faf9f7] px-4 py-3 text-base font-bold text-[#1a1625] outline-none transition-colors focus:border-[#d77a57] focus:ring-2 focus:ring-[#d77a57]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              >
-                {testerDeadlineOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-2 text-sm text-[#9b98a8] dark:text-gray-400">
-                Testers must complete the mission before this deadline after assignment.
-              </p>
+            <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
+              <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">TESTER DEADLINE</label>
+              <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <select
+                  value={state.timeoutDuration}
+                  onChange={(event) => updateState((current) => ({ ...current, timeoutDuration: Number(event.target.value) }))}
+                  className="w-full rounded-2xl border border-[#e5e4e0] bg-[#faf9f7] px-4 py-3 text-base font-bold text-[#1a1625] outline-none transition-colors focus:border-[#d77a57] focus:ring-2 focus:ring-[#d77a57]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                >
+                  {testerDeadlineOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-sm text-[#9b98a8] dark:text-gray-400">
+                  Testers must complete the mission before this deadline after assignment.
+                </p>
+              </div>
             </div>
 
-            <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
-              <div className="mb-4 text-xs font-bold uppercase tracking-wide text-white/50">LIVE COST ESTIMATE</div>
-              {isCostEstimateLoading ? (
-                <div className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-sm text-white/80">
-                  <SpinnerIcon className="h-4 w-4" />
-                  Updating live estimate...
-                </div>
-              ) : costEstimate ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between"><span>{formatCoins(costEstimate.coinPerTester)} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal ?? 0)} coins</span></div>
-                  <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee ?? 0)} coins</span></div>
-                  <div className="my-3 border-t border-white/20" />
-                  <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><div className="text-right"><div className="text-xl font-black">{formatCoins(total ?? 0)} coins</div><div className="text-sm text-white/70">≈ ₹{((total ?? 0) / 100).toFixed(0)}</div></div></div>
-                </div>
-              ) : (
-                <p className="rounded-2xl bg-white/5 px-4 py-4 text-sm text-red-200">{costEstimateError}</p>
-              )}
+            <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
+              <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">LIVE COST ESTIMATE</label>
+              <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
+                {isCostEstimateLoading ? (
+                  <div className="flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-4 text-sm text-white/80">
+                    <SpinnerIcon className="h-4 w-4" />
+                    Updating live estimate...
+                  </div>
+                ) : costEstimate ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between"><span>{formatCoins(costEstimate.coinPerTester)} × {state.testersRequired} testers</span><span className="font-bold">{formatCoins(subtotal ?? 0)} coins</span></div>
+                    <div className="flex items-center justify-between"><span>Platform fee (20%)</span><span className="font-bold">+ {formatCoins(fee ?? 0)} coins</span></div>
+                    <div className="my-3 border-t border-white/20" />
+                    <div className="flex items-center justify-between"><span className="text-xl font-black">TOTAL</span><div className="text-right"><div className="text-xl font-black">{formatCoins(total ?? 0)} coins</div><div className="text-sm text-white/70">≈ ₹{((total ?? 0) / 100).toFixed(0)}</div></div></div>
+                  </div>
+                ) : (
+                  <p className="rounded-2xl bg-white/5 px-4 py-4 text-sm text-red-200">{costEstimateError}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
