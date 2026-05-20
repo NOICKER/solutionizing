@@ -1208,7 +1208,7 @@ function MissionWizardContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-        <div className="mx-auto max-w-4xl space-y-6">
+        <div className="mx-auto max-w-[720px] space-y-6">
           <WizardStepSkeleton step={1} />
         </div>
       </div>
@@ -1217,7 +1217,7 @@ function MissionWizardContent() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60 transition-all duration-300">
+      <div className="mx-auto max-w-[720px] rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60 transition-all duration-300">
         {showDraftBanner ? (
           <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/70 dark:bg-amber-950/40">
             <span className="text-sm font-semibold text-amber-800 dark:text-amber-100">You have an unsaved draft. Continue where you left off?</span>
@@ -1777,7 +1777,7 @@ export function MissionWizardPage() {
 function MissionWizardPageLoading() {
   return (
     <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-4xl rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60">
+      <div className="mx-auto max-w-[720px] rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60">
         <div className="mb-8">
           <div className="mb-4 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1 text-sm font-bold text-[#d77a57]">
             Step 1 of 4
