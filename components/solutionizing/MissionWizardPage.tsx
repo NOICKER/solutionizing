@@ -1154,26 +1154,30 @@ function MissionWizardContent() {
 
     return (
       <div className={containerClass}>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="font-semibold text-[#d77a57] hover:text-[#c4673f] dark:text-[#f0a98c] dark:hover:text-white"
-            onClick={() => {
-              setExitError('')
-              setExitDialogOpen(true)
-            }}
-          >
-            EXIT
-          </button>
-          <button
-            type="button"
-            disabled={!canGoBack}
-            className="font-semibold text-[#6b687a] hover:text-[#1a1625] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:text-white"
-            onClick={handleBack}
-          >
-            {'<- Back'}
-          </button>
-        </div>
+        {position === 'bottom' ? (
+          <div />
+        ) : (
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="font-semibold text-[#d77a57] hover:text-[#c4673f] dark:text-[#f0a98c] dark:hover:text-white"
+              onClick={() => {
+                setExitError('')
+                setExitDialogOpen(true)
+              }}
+            >
+              EXIT
+            </button>
+            <button
+              type="button"
+              disabled={!canGoBack}
+              className="font-semibold text-[#6b687a] hover:text-[#1a1625] disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:text-white"
+              onClick={handleBack}
+            >
+              {'<- Back'}
+            </button>
+          </div>
+        )}
         {step < 4 ? (
           <button type="button" className={`px-8 py-3.5 ${primaryButtonClass}`} onClick={handleNext}>
             {'CONTINUE ->'}
