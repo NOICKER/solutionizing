@@ -59,6 +59,14 @@ const MissionAssetSchema = z.object({
   }
 })
 
+const VALID_TIMEOUT_DURATIONS = [24, 72, 168, 336] as const
+type TimeoutDuration = (typeof VALID_TIMEOUT_DURATIONS)[number]
+
+const TimeoutDurationSchema = z.number().int().refine(
+  value => VALID_TIMEOUT_DURATIONS.includes(value as TimeoutDuration),
+  'Tester deadline must be 24 hours, 3 days, 7 days, or 14 days'
+)
+
 const MissionQuestionSchema = z.object({
   order: z.number().int().min(1).max(6),
   type: z.nativeEnum(QuestionType),
@@ -81,6 +89,7 @@ const UpdateMissionSchema = z.object({
   difficulty: z.nativeEnum(Difficulty).optional(),
   estimatedMinutes: z.number().int().min(2).max(4).optional(),
   testersRequired: z.number().int().min(5).max(50).optional(),
+  timeoutDuration: TimeoutDurationSchema.optional(),
   assets: z.array(MissionAssetSchema).min(1).max(3).optional(),
   questions: z.array(MissionQuestionSchema).min(1).max(6).optional(),
 }).superRefine((value, ctx) => {
@@ -227,6 +236,7 @@ export async function PATCH(
     const effectiveDifficulty = body.difficulty ?? mission.difficulty
     const effectiveEstimatedMinutes = body.estimatedMinutes ?? mission.estimatedMinutes
     const effectiveTestersRequired = body.testersRequired ?? mission.testersRequired
+    const effectiveTimeoutDuration = body.timeoutDuration ?? mission.timeoutDuration
     const effectiveQuestions = body.questions ?? mission.questions
     const effectiveAssets = body.assets ?? mission.assets
 
@@ -263,6 +273,7 @@ export async function PATCH(
           difficulty: effectiveDifficulty,
           estimatedMinutes: effectiveEstimatedMinutes,
           testersRequired: effectiveTestersRequired,
+          timeoutDuration: effectiveTimeoutDuration,
           minRepTier: getMinRepTier(effectiveDifficulty),
           coinPerTester,
           coinPlatformFee,

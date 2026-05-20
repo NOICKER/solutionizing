@@ -21,7 +21,14 @@ export async function GET(request: Request) {
     await touchTesterPresence(tester.testerProfile.id)
 
     const testerProfileId = tester.testerProfile.id
-    const [testerProfile, avgRatingResult, recentActivity, activeMissionCount] = await Promise.all([
+    const [
+      testerProfile,
+      avgRatingResult,
+      recentActivity,
+      activeMissionCount,
+      ratingEvents,
+      missedMissionCount,
+    ] = await Promise.all([
       prisma.testerProfile.findUnique({
         where: { id: testerProfileId },
         select: {
@@ -30,6 +37,7 @@ export async function GET(request: Request) {
           reputationTier: true,
           totalCompleted: true,
           totalAbandoned: true,
+          totalTimedOut: true,
         },
       }),
       prisma.testerRating.aggregate({
@@ -62,13 +70,37 @@ export async function GET(request: Request) {
           status: MissionStatus.ACTIVE,
         },
       }),
+      prisma.testerRatingEvent.findMany({
+        where: { testerId: testerProfileId },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: {
+          id: true,
+          delta: true,
+          reason: true,
+          missionId: true,
+          createdAt: true,
+          mission: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      }),
+      prisma.missionAssignment.count({
+        where: {
+          testerId: testerProfileId,
+          status: AssignmentStatus.TIMED_OUT,
+        },
+      }),
     ])
 
     if (!testerProfile) {
       return notFound('Tester profile')
     }
 
-    const totalAttempts = testerProfile.totalCompleted + testerProfile.totalAbandoned
+    const totalTimedOut = Math.max(testerProfile.totalTimedOut, missedMissionCount)
+    const totalAttempts = testerProfile.totalCompleted + testerProfile.totalAbandoned + totalTimedOut
     const completionRate = totalAttempts === 0
       ? 0
       : roundToTwo((testerProfile.totalCompleted / totalAttempts) * 100)
@@ -79,11 +111,13 @@ export async function GET(request: Request) {
       reputationTier: testerProfile.reputationTier,
       totalCompleted: testerProfile.totalCompleted,
       totalAbandoned: testerProfile.totalAbandoned,
+      missedMissionCount,
       completionRate,
       avgRating: avgRatingResult._avg.score === null
         ? null
         : roundToTwo(avgRatingResult._avg.score),
       activeMissionCount,
+      ratingEvents,
       recentActivity,
     })
   } catch (err) {

@@ -609,8 +609,10 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
                     coinBalance={coinBalance}
                     isBalanceLoading={isBalanceLoading}
                     loadingMessage={dashboardLoadingMessages[loadingMessageIndex]}
+                    actionLoading={actionLoading}
                     onSkeletonClick={handleSkeletonClick}
                     onRetry={() => void loadDashboard()}
+                    onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
                     onViewAllMissions={() => setActiveTab('missions')}
                   />
                 )

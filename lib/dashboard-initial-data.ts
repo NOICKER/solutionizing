@@ -60,9 +60,23 @@ const recentActivitySelect = {
   },
 } satisfies Prisma.MissionAssignmentSelect
 
+const ratingEventSelect = {
+  id: true,
+  delta: true,
+  reason: true,
+  missionId: true,
+  createdAt: true,
+  mission: {
+    select: {
+      title: true,
+    },
+  },
+} satisfies Prisma.TesterRatingEventSelect
+
 type FounderMissionRecord = Prisma.MissionGetPayload<{ include: typeof founderMissionInclude }>
 type TesterAssignmentRecord = Prisma.MissionAssignmentGetPayload<{ select: typeof testerAssignmentSelect }>
 type RecentActivityRecord = Prisma.MissionAssignmentGetPayload<{ select: typeof recentActivitySelect }>
+type RatingEventRecord = Prisma.TesterRatingEventGetPayload<{ select: typeof ratingEventSelect }>
 
 function toIso(value: Date | null) {
   return value ? value.toISOString() : null
@@ -80,6 +94,7 @@ function serializeMission(mission: FounderMissionRecord): ApiMission {
     difficulty: mission.difficulty,
     estimatedMinutes: mission.estimatedMinutes,
     testersRequired: mission.testersRequired,
+    timeoutDuration: mission.timeoutDuration,
     testersAssigned: mission.testersAssigned,
     testersCompleted: mission.testersCompleted,
     minRepTier: mission.minRepTier,
@@ -149,6 +164,17 @@ function serializeRecentActivity(assignment: RecentActivityRecord) {
   }
 }
 
+function serializeRatingEvent(event: RatingEventRecord) {
+  return {
+    id: event.id,
+    delta: event.delta,
+    reason: event.reason,
+    missionId: event.missionId,
+    createdAt: event.createdAt.toISOString(),
+    mission: event.mission,
+  }
+}
+
 export async function getFounderDashboardInitialData(
   founderProfileId: string
 ): Promise<FounderDashboardInitialData> {
@@ -176,7 +202,15 @@ export async function getTesterDashboardInitialData(
 ): Promise<TesterDashboardInitialData> {
   await touchTesterPresence(testerProfileId)
 
-  const [testerProfile, avgRatingResult, recentActivity, activeMissionCount, assignments] =
+  const [
+    testerProfile,
+    avgRatingResult,
+    recentActivity,
+    activeMissionCount,
+    assignments,
+    ratingEvents,
+    missedMissionCount,
+  ] =
     await Promise.all([
       prisma.testerProfile.findUnique({
         where: { id: testerProfileId },
@@ -186,6 +220,7 @@ export async function getTesterDashboardInitialData(
           reputationTier: true,
           totalCompleted: true,
           totalAbandoned: true,
+          totalTimedOut: true,
         },
       }),
       prisma.testerRating.aggregate({
@@ -213,12 +248,24 @@ export async function getTesterDashboardInitialData(
         where: {
           testerId: testerProfileId,
           status: {
-            in: [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS],
+            in: [AssignmentStatus.ASSIGNED, AssignmentStatus.IN_PROGRESS, AssignmentStatus.TIMED_OUT],
           },
         },
         orderBy: { assignedAt: 'desc' },
         take: 10,
         select: testerAssignmentSelect,
+      }),
+      prisma.testerRatingEvent.findMany({
+        where: { testerId: testerProfileId },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: ratingEventSelect,
+      }),
+      prisma.missionAssignment.count({
+        where: {
+          testerId: testerProfileId,
+          status: AssignmentStatus.TIMED_OUT,
+        },
       }),
     ])
 
@@ -232,7 +279,8 @@ export async function getTesterDashboardInitialData(
 
   console.log(`[getTesterDashboardInitialData] testerProfileId:`, testerProfileId, `| Raw assignments result:`, assignments)
 
-  const totalAttempts = testerProfile.totalCompleted + testerProfile.totalAbandoned
+  const totalTimedOut = Math.max(testerProfile.totalTimedOut, missedMissionCount)
+  const totalAttempts = testerProfile.totalCompleted + testerProfile.totalAbandoned + totalTimedOut
   const completionRate = totalAttempts === 0
     ? 0
     : roundToTwo((testerProfile.totalCompleted / totalAttempts) * 100)
@@ -244,11 +292,13 @@ export async function getTesterDashboardInitialData(
       reputationTier: testerProfile.reputationTier,
       totalCompleted: testerProfile.totalCompleted,
       totalAbandoned: testerProfile.totalAbandoned,
+      missedMissionCount,
       completionRate,
       avgRating: avgRatingResult._avg.score === null
         ? null
         : roundToTwo(avgRatingResult._avg.score),
       activeMissionCount,
+      ratingEvents: ratingEvents.map(serializeRatingEvent),
       recentActivity: recentActivity.map(serializeRecentActivity),
     },
     assignments: assignments.map(serializeAssignment),

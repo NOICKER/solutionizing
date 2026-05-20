@@ -81,7 +81,9 @@ export async function POST(
         note: typeof note === 'string' ? note : null,
       },
     })
-    await applyRatingToReputation(assignment.testerId, score, normalizedFlaggedLowEffort)
+    await applyRatingToReputation(assignment.testerId, score, normalizedFlaggedLowEffort, {
+      missionId: context.params.missionId,
+    })
     return ok(rating)
   } catch (err) {
     if (err instanceof Response) return err

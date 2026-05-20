@@ -138,8 +138,6 @@ export async function assignTestersToMission(
       return []
     }
 
-    const timeoutAt = addHours(now, 24)
-
     const createdAssignments = await prisma.$transaction<AssignedTesterNotification[]>(
       async (tx) => {
         const latestMission = await tx.mission.findUnique({
@@ -150,6 +148,7 @@ export async function assignTestersToMission(
             testersRequired: true,
             testersCompleted: true,
             minRepTier: true,
+            timeoutDuration: true,
           },
         })
 
@@ -221,13 +220,15 @@ export async function assignTestersToMission(
             continue
           }
 
+          const assignedAt = now
+
           const assignment = await tx.missionAssignment.create({
             data: {
               missionId,
               testerId: eligibleTester.id,
               status: AssignmentStatus.ASSIGNED,
-              assignedAt: now,
-              timeoutAt,
+              assignedAt,
+              timeoutAt: addHours(assignedAt, latestMission.timeoutDuration),
             },
             select: {
               id: true,

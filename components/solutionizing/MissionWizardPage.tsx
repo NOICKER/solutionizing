@@ -20,6 +20,7 @@ interface WizardState {
   difficulty: Difficulty
   estimatedMinutes: number
   testersRequired: number
+  timeoutDuration: number
   assets: WizardAsset[]
   questions: WizardQuestion[]
 }
@@ -48,9 +49,17 @@ const initialState: WizardState = {
   difficulty: 'MEDIUM',
   estimatedMinutes: 3,
   testersRequired: 10,
+  timeoutDuration: 168,
   assets: [{ type: 'LINK', url: '', label: '' }],
   questions: [{ text: '', type: 'TEXT_SHORT', required: true, order: 0 }],
 }
+
+const testerDeadlineOptions = [
+  { value: 24, label: '24 hours' },
+  { value: 72, label: '3 days' },
+  { value: 168, label: '7 days' },
+  { value: 336, label: '14 days' },
+] as const
 
 const questionTypeDescriptions: Record<WizardQuestion['type'], string> = {
   TEXT_SHORT: 'Testers type a short answer (up to 500 characters)',
@@ -337,6 +346,7 @@ function toFrontendMission(mission: ApiMissionDetail): WizardState {
     difficulty: mission.difficulty,
     estimatedMinutes: mission.estimatedMinutes,
     testersRequired: mission.testersRequired,
+    timeoutDuration: mission.timeoutDuration,
     assets: mission.assets.map((asset) =>
       asset.type === 'TEXT_DESCRIPTION'
         ? { type: 'TEXT', text: asset.url, label: asset.label ?? '' }
@@ -349,6 +359,25 @@ function toFrontendMission(mission: ApiMissionDetail): WizardState {
       options: question.options,
       order: question.order - 1,
     })),
+  }
+}
+
+function normalizeWizardState(value: unknown): WizardState {
+  if (!value || typeof value !== 'object') {
+    return initialState
+  }
+
+  const draft = value as Partial<WizardState>
+  const timeoutDuration =
+    typeof draft.timeoutDuration === 'number' &&
+    testerDeadlineOptions.some((option) => option.value === draft.timeoutDuration)
+      ? draft.timeoutDuration
+      : initialState.timeoutDuration
+
+  return {
+    ...initialState,
+    ...draft,
+    timeoutDuration,
   }
 }
 
@@ -545,7 +574,7 @@ function MissionWizardContent() {
         try {
           const draftJson = sessionStorage.getItem(draftStorageKey)
           if (draftJson) {
-            const draft = JSON.parse(draftJson)
+            const draft = normalizeWizardState(JSON.parse(draftJson))
             setState(draft)
             setShowDraftBanner(true)
           } else {
@@ -572,7 +601,7 @@ function MissionWizardContent() {
         const draftJson = sessionStorage.getItem(draftStorageKey)
         if (draftJson) {
           try {
-            setState(JSON.parse(draftJson))
+            setState(normalizeWizardState(JSON.parse(draftJson)))
             setShowDraftBanner(true)
           } catch {
             setState(baseState)
@@ -880,6 +909,7 @@ function MissionWizardContent() {
         difficulty: preparedState.difficulty,
         estimatedMinutes: preparedState.estimatedMinutes,
         testersRequired: preparedState.testersRequired,
+        timeoutDuration: preparedState.timeoutDuration,
         assets: preparedState.assets.map((asset, index) => ({
           type: asset.type === 'TEXT' ? 'TEXT_DESCRIPTION' : asset.type === 'VIDEO' ? 'SHORT_VIDEO' : asset.type,
           url: asset.type === 'TEXT' ? undefined : asset.url?.trim(),
@@ -912,6 +942,7 @@ function MissionWizardContent() {
         posthog.capture('mission_created', {
           difficulty: mission.difficulty,
           testersRequired: mission.testersRequired,
+          timeoutDuration: mission.timeoutDuration,
         })
       }
 
@@ -1348,6 +1379,24 @@ function MissionWizardContent() {
               <div className="mt-4 text-center text-2xl font-black text-[#1a1625] dark:text-white">{state.testersRequired} testers</div>
             </div>
 
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">Tester Deadline</label>
+              <select
+                value={state.timeoutDuration}
+                onChange={(event) => updateState((current) => ({ ...current, timeoutDuration: Number(event.target.value) }))}
+                className="w-full rounded-2xl border border-[#e5e4e0] bg-[#faf9f7] px-4 py-3 text-base font-bold text-[#1a1625] outline-none transition-colors focus:border-[#d77a57] focus:ring-2 focus:ring-[#d77a57]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              >
+                {testerDeadlineOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-sm text-[#9b98a8] dark:text-gray-400">
+                Testers must complete the mission before this deadline after assignment.
+              </p>
+            </div>
+
             <div className="rounded-3xl bg-gradient-to-br from-[#1a1625] to-[#2d2840] p-6 text-white">
               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-white/50">LIVE COST ESTIMATE</div>
               {isCostEstimateLoading ? (
@@ -1602,6 +1651,12 @@ function MissionWizardContent() {
             <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">GOAL</div>
               <p className="text-[#1a1625] dark:text-white">{state.goal}</p>
+            </div>
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div className="mb-2 text-sm font-bold text-[#d77a57]">TESTER DEADLINE</div>
+              <div className="text-xl font-black text-[#1a1625] dark:text-white">
+                {testerDeadlineOptions.find((option) => option.value === state.timeoutDuration)?.label ?? '7 days'}
+              </div>
             </div>
             <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-4 text-sm font-bold uppercase tracking-wide text-[#d77a57]">Pre-submission checklist</div>

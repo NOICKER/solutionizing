@@ -428,7 +428,7 @@ export async function POST(
 
     if (result.outcome === 'expired') {
       if (result.penaltyApplied) {
-        await updateReputation(tester.testerProfile.id, 'TIMEOUT')
+        await updateReputation(tester.testerProfile.id, 'TIMEOUT', { missionId: result.missionId })
         await invalidateTesterAvailabilityCache()
       }
 
@@ -455,14 +455,14 @@ export async function POST(
     }
 
     if (result.shortTextPenaltyApplied) {
-      await updateReputation(tester.testerProfile.id, 'SHORT_TEXT_RESPONSE')
+      await updateReputation(tester.testerProfile.id, 'SHORT_TEXT_RESPONSE', { missionId: result.missionId })
       console.info('Applied SHORT_TEXT_RESPONSE penalty', {
         assignmentId: context.params.assignmentId,
         testerId: tester.testerProfile.id,
       })
     }
 
-    const reputation = await updateReputation(tester.testerProfile.id, 'COMPLETION')
+    const reputation = await updateReputation(tester.testerProfile.id, 'COMPLETION', { missionId: result.missionId })
     await invalidateTesterAvailabilityCache()
 
     return ok({

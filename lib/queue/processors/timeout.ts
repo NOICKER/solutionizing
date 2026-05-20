@@ -77,7 +77,7 @@ export async function processTimeoutJob({ assignmentId }: TimeoutCheckPayload) {
   }
 
   await invalidateTesterAvailabilityCache()
-  await updateReputation(assignment.testerId, 'TIMEOUT')
+  await updateReputation(assignment.testerId, 'TIMEOUT', { missionId: assignment.missionId })
 
   if (
     assignment.mission.status === MissionStatus.ACTIVE &&

@@ -75,6 +75,7 @@ export async function POST(
         difficulty: originalMission.difficulty,
         estimatedMinutes: originalMission.estimatedMinutes,
         testersRequired: originalMission.testersRequired,
+        timeoutDuration: originalMission.timeoutDuration,
         minRepTier: getMinRepTier(originalMission.difficulty),
         coinPerTester,
         coinPlatformFee,

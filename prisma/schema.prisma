@@ -141,6 +141,7 @@ model TesterProfile {
   updatedAt        DateTime @updatedAt
   assignments MissionAssignment[]
   ratings     TesterRating[]
+  ratingEvents TesterRatingEvent[]
   @@map("tester_profiles")
 }
 model Mission {
@@ -152,6 +153,7 @@ model Mission {
   difficulty        Difficulty    @default(MEDIUM)
   estimatedMinutes  Int
   testersRequired   Int
+  timeoutDuration   Int @default(168)
   testersAssigned   Int @default(0)
   testersCompleted  Int @default(0)
   minRepTier        RepTier @default(NEWCOMER)
@@ -177,6 +179,7 @@ model Mission {
   questions   MissionQuestion[]
   assignments MissionAssignment[]
   flags       MissionFlag[]
+  ratingEvents TesterRatingEvent[]
   @@index([founderId])
   @@index([parentMissionId])
   @@index([status])
@@ -282,6 +285,19 @@ model TesterRating {
   @@index([testerId])
   @@index([founderId])
   @@map("tester_ratings")
+}
+model TesterRatingEvent {
+  id        String   @id @default(cuid())
+  testerId  String
+  tester    TesterProfile @relation(fields: [testerId], references: [id], onDelete: Cascade)
+  delta     Int
+  reason    String
+  missionId String?
+  mission   Mission? @relation(fields: [missionId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  @@index([testerId, createdAt])
+  @@index([missionId])
+  @@map("tester_rating_events")
 }
 model QuestionTemplate {
   id          String       @id @default(cuid())

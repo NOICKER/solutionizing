@@ -86,7 +86,7 @@ export async function POST(
       }
     })
 
-    await updateReputation(tester.testerProfile.id, 'ABANDON')
+    await updateReputation(tester.testerProfile.id, 'ABANDON', { missionId: result.missionId })
 
     if (result.shouldReassign) {
       await assignmentQueue.add('reassign', {

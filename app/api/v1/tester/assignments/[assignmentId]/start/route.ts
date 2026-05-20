@@ -157,7 +157,7 @@ export async function POST(
 
     if (result.expired) {
       if (result.penaltyApplied) {
-        await updateReputation(tester.testerProfile.id, 'TIMEOUT')
+        await updateReputation(tester.testerProfile.id, 'TIMEOUT', { missionId: result.missionId })
         await invalidateTesterAvailabilityCache()
       }
 

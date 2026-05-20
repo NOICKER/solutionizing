@@ -3,7 +3,7 @@
 import { CheckSquare, Coins, Info, Star, TrendingUp } from 'lucide-react'
 
 import Link from 'next/link'
-import { differenceInHours } from 'date-fns'
+import { differenceInHours, format } from 'date-fns'
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from '@/components/ui/sonner'
@@ -21,6 +21,72 @@ import {
 import { minimumWithdrawalCoins } from '@/components/solutionizing/tester/constants'
 import { WelcomeBanner } from '@/components/solutionizing/shared/WelcomeBanner'
 
+const noAvailableMissionsMessage =
+  'No missions available right now. This could be because your current mission is pending, or no new missions match your profile yet. Check back soon.'
+
+function getNoAvailableMissionsMessage(missedMissionCount: number) {
+  if (missedMissionCount <= 0) {
+    return noAvailableMissionsMessage
+  }
+
+  return `${noAvailableMissionsMessage} You have ${missedMissionCount} missed missions affecting your score. See below.`
+}
+
+function formatEventDate(value: string | null | undefined) {
+  if (!value) {
+    return 'date unavailable'
+  }
+
+  const timestamp = Date.parse(value)
+
+  if (Number.isNaN(timestamp)) {
+    return 'date unavailable'
+  }
+
+  return format(new Date(timestamp), 'MMM d, yyyy')
+}
+
+function formatSignedDelta(delta: number) {
+  return `${delta > 0 ? '+' : ''}${delta}`
+}
+
+function formatRatingEventReason(reason: string, missionName: string) {
+  if (reason === 'founder rating') {
+    return `rating for ${missionName}`
+  }
+
+  if (reason === 'low effort flag') {
+    return `low effort flag on ${missionName}`
+  }
+
+  if (reason === 'short response') {
+    return `short response on ${missionName}`
+  }
+
+  return `${reason} ${missionName}`
+}
+
+function RatingEventList({ events }: { events: ApiTesterStats['ratingEvents'] }) {
+  if (events.length === 0) {
+    return <p className="mt-3 text-xs font-semibold text-text-muted">No score changes yet.</p>
+  }
+
+  return (
+    <div className="mt-3 space-y-2 border-t border-border-subtle pt-3">
+      {events.slice(0, 3).map((event) => {
+        const missionName = event.mission?.title ?? 'mission'
+        const eventText = `${formatSignedDelta(event.delta)} — ${formatRatingEventReason(event.reason, missionName)} on ${formatEventDate(event.createdAt)}`
+
+        return (
+          <p key={event.id} className="text-xs font-semibold leading-5 text-text-muted">
+            {eventText}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 interface TesterMissionsTabProps {
   user: User | null
   stats: ApiTesterStats | null
@@ -34,7 +100,13 @@ interface TesterMissionsTabProps {
   onAbandon: (assignment: ApiTesterAssignmentSummary) => void
 }
 
-function CheckMissionsButton({ onRefresh }: { onRefresh: () => void }) {
+function CheckMissionsButton({
+  missedMissionCount,
+  onRefresh,
+}: {
+  missedMissionCount: number
+  onRefresh: () => void
+}) {
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'rate-limited' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
@@ -52,8 +124,8 @@ function CheckMissionsButton({ onRefresh }: { onRefresh: () => void }) {
         toast.success(`${data.newAssignments} new mission${data.newAssignments !== 1 ? 's' : ''} assigned.`)
         onRefresh() // Refresh the dashboard to show new assignments
       } else {
-        setMessage('No new missions right now. Check back later.')
-        toast.info("You're all caught up — no new missions available right now")
+        setMessage(getNoAvailableMissionsMessage(missedMissionCount))
+        toast.info('No missions available right now.')
       }
 
       setState('success')
@@ -125,6 +197,17 @@ export function TesterMissionsTab({
   onOpenWithdrawal,
   onAbandon,
 }: TesterMissionsTabProps) {
+  const currentAssignments = useMemo(
+    () => assignments.filter((assignment) => assignment.status !== 'TIMED_OUT'),
+    [assignments]
+  )
+  const missedAssignments = useMemo(
+    () => assignments.filter((assignment) => assignment.status === 'TIMED_OUT'),
+    [assignments]
+  )
+  const missedMissionCount = stats?.missedMissionCount ?? missedAssignments.length
+  const ratingEvents = stats?.ratingEvents ?? []
+
   const assignmentCards = useMemo(() => {
     if (isLoading) {
       return (
@@ -151,7 +234,7 @@ export function TesterMissionsTab({
       )
     }
 
-    if (assignments.length === 0) {
+    if (currentAssignments.length === 0) {
       const activeMissionLabel =
         typeof stats?.activeMissionCount === 'number'
           ? `${stats.activeMissionCount} mission${stats.activeMissionCount === 1 ? ' is' : 's are'} currently active on the platform.`
@@ -166,7 +249,7 @@ export function TesterMissionsTab({
             <div className="space-y-2">
               <div className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">In Queue</div>
               <p className="text-base font-semibold text-white">
-                You&apos;re eligible and in the queue. Missions are assigned automatically when founders launch — check back soon.
+                {getNoAvailableMissionsMessage(missedMissionCount)}
               </p>
               {activeMissionLabel ? (
                 <p className="text-sm text-sky-100/80">{activeMissionLabel}</p>
@@ -179,7 +262,7 @@ export function TesterMissionsTab({
 
     return (
       <div className="space-y-4">
-        {assignments.map((assignment) => {
+        {currentAssignments.map((assignment) => {
           const remainingHours = differenceInHours(new Date(assignment.timeoutAt), now, {
             roundingMethod: 'floor',
           })
@@ -262,7 +345,7 @@ export function TesterMissionsTab({
         })}
       </div>
     )
-  }, [assignments, isLoading, loadError, now, onAbandon, onRetry, stats?.activeMissionCount])
+  }, [currentAssignments, isLoading, loadError, missedMissionCount, now, onAbandon, onRetry, stats?.activeMissionCount])
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -308,6 +391,7 @@ export function TesterMissionsTab({
             )}
           </div>
           {user?.testerProfile?.reputationTier ? <ReputationTierBadge tier={user.testerProfile.reputationTier} /> : null}
+          {!isLoading ? <RatingEventList events={ratingEvents} /> : null}
         </div>
 
         <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
@@ -338,6 +422,7 @@ export function TesterMissionsTab({
             )}
           </div>
           <div className="text-[0.75rem] font-black uppercase text-emerald-400 tracking-tighter">Consistency</div>
+          {!isLoading ? <RatingEventList events={ratingEvents} /> : null}
         </div>
       </div>
 
@@ -381,17 +466,60 @@ export function TesterMissionsTab({
         </div>
       </div>
 
+      <div className="mb-6 rounded-card border border-amber-900/50 bg-amber-950/20 p-4 text-sm leading-6 text-amber-100">
+        <div className="flex items-start gap-3">
+          <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+          <p>
+            Missions expire if not completed within the {"founder's"} set deadline. Missing a deadline reduces your score and consistency rating. Lower ratings mean fewer mission assignments.
+          </p>
+        </div>
+      </div>
+
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-black text-white">Current Missions</h2>
         <div className="flex items-center gap-4">
-          <CheckMissionsButton onRefresh={onRetry} />
+          <CheckMissionsButton missedMissionCount={missedMissionCount} onRefresh={onRetry} />
           <span className="rounded-full border border-border-subtle bg-surface-elevated px-4 py-1 text-sm font-bold text-text-muted">
-            {assignments.length} ACTIVE
+            {currentAssignments.length} ACTIVE
           </span>
         </div>
       </div>
 
       {assignmentCards}
+
+      {missedAssignments.length > 0 ? (
+        <section className="mt-10">
+          <div className="mb-4">
+            <h2 className="text-2xl font-black text-white">Missed Missions</h2>
+            <p className="mt-1 text-sm text-text-muted">Expired assignments stay here so you can track what affected your score.</p>
+          </div>
+          <div className="space-y-4">
+            {missedAssignments.map((assignment) => {
+              const expiredAt = assignment.timedOutAt ?? assignment.timeoutAt
+
+              return (
+                <div
+                  key={assignment.id}
+                  className="rounded-card border border-gray-700/70 bg-gray-900/50 p-4 opacity-75 sm:p-5"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-black text-gray-200">{assignment.mission.title}</h3>
+                      <p className="mt-1 text-sm text-gray-400">Expired {formatEventDate(expiredAt)}</p>
+                    </div>
+                    <span className="inline-flex rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-xs font-bold text-gray-400">
+                      TIMED OUT
+                    </span>
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-gray-300">
+                    Your rating dropped due to this missed mission.
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
     </div>
   )
 }

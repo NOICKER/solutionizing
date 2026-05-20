@@ -63,6 +63,7 @@ export interface ApiMission {
   difficulty: Difficulty
   estimatedMinutes: number
   testersRequired: number
+  timeoutDuration: number
   testersAssigned: number
   testersCompleted: number
   minRepTier: ReputationTier
@@ -127,15 +128,28 @@ export interface ApiTesterAssignmentDetail {
   mission: ApiMission
 }
 
+export interface ApiTesterRatingEvent {
+  id: string
+  delta: number
+  reason: string
+  missionId: string | null
+  createdAt: string
+  mission: {
+    title: string
+  } | null
+}
+
 export interface ApiTesterStats {
   coinBalance: number
   reputationScore: number
   reputationTier: ReputationTier
   totalCompleted: number
   totalAbandoned: number
+  missedMissionCount: number
   completionRate: number
   avgRating: number | null
   activeMissionCount: number
+  ratingEvents: ApiTesterRatingEvent[]
   recentActivity: Array<{
     id: string
     missionId: string

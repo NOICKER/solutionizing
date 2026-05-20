@@ -29,6 +29,14 @@ const MissionListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 })
 
+const VALID_TIMEOUT_DURATIONS = [24, 72, 168, 336] as const
+type TimeoutDuration = (typeof VALID_TIMEOUT_DURATIONS)[number]
+
+const TimeoutDurationSchema = z.number().int().refine(
+  value => VALID_TIMEOUT_DURATIONS.includes(value as TimeoutDuration),
+  'Tester deadline must be 24 hours, 3 days, 7 days, or 14 days'
+)
+
 const MissionAssetSchema = z.object({
   type: z.nativeEnum(AssetType),
   url: z.string().optional(),
@@ -81,6 +89,7 @@ const CreateMissionSchema = z.object({
   difficulty: z.nativeEnum(Difficulty),
   estimatedMinutes: z.number().int().min(2).max(4),
   testersRequired: z.number().int().min(5).max(50),
+  timeoutDuration: TimeoutDurationSchema.default(168),
   assets: z.array(MissionAssetSchema).min(1).max(3),
   questions: z.array(MissionQuestionSchema).min(1).max(6),
 }).superRefine((value, ctx) => {
@@ -211,6 +220,7 @@ export async function POST(request: Request) {
         difficulty: body.difficulty,
         estimatedMinutes: body.estimatedMinutes,
         testersRequired: body.testersRequired,
+        timeoutDuration: body.timeoutDuration,
         minRepTier: getMinRepTier(body.difficulty),
         coinPerTester,
         coinPlatformFee,

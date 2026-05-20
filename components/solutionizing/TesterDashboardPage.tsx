@@ -215,7 +215,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
       const [statsResponse, assignmentsResponse] = await Promise.all([
         apiFetch<ApiTesterStats>('/api/v1/tester/stats'),
         apiFetch<ApiTesterAssignmentSummary[]>(
-          '/api/v1/tester/assignments?status=ASSIGNED&status=IN_PROGRESS&page=1&limit=10'
+          '/api/v1/tester/assignments?status=ASSIGNED&status=IN_PROGRESS&status=TIMED_OUT&page=1&limit=20'
         ),
       ])
 

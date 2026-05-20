@@ -13,8 +13,10 @@ import {
   MissionHealthScoreBadge,
   MissionStatusBadge,
   RetestCountChip,
+  SpinnerIcon,
   clampPercent,
   formatCoins,
+  outlineButtonClass,
   primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
@@ -53,7 +55,7 @@ function getDashboardMissionHref(mission: ApiMission) {
   }
 
   if (mission.status === 'APPROVED') {
-    return null
+    return `/mission/status/${mission.id}`
   }
 
   return `/mission/status/${mission.id}`
@@ -105,11 +107,16 @@ function StatCard({
 function RecentMissionCard({
   mission,
   href,
+  isLaunching,
+  onLaunchMission,
 }: {
   mission: ApiMission
   href: string | null
+  isLaunching: boolean
+  onLaunchMission: (mission: ApiMission) => void
 }) {
   const progress = clampPercent((mission.testersCompleted / Math.max(mission.testersRequired, 1)) * 100)
+  const isApproved = mission.status === 'APPROVED'
 
   const content = (
     <>
@@ -141,7 +148,24 @@ function RecentMissionCard({
         </div>
       </div>
 
-      {href ? (
+      {isApproved ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled={isLaunching}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm ${primaryButtonClass} disabled:pointer-events-none disabled:opacity-70`}
+            onClick={() => onLaunchMission(mission)}
+          >
+            {isLaunching ? <SpinnerIcon /> : null}
+            Launch Mission
+          </button>
+          {href ? (
+            <Link href={href} className={`px-4 py-2 text-sm ${outlineButtonClass}`}>
+              VIEW {'->'}
+            </Link>
+          ) : null}
+        </div>
+      ) : href ? (
         <div className="flex items-center gap-1 text-sm font-bold text-primary transition-colors group-hover:text-primary-hover">
           View
           <svg
@@ -159,7 +183,7 @@ function RecentMissionCard({
     </>
   )
 
-  if (!href) {
+  if (!href || isApproved) {
     return <div className="group rounded-card border border-border-subtle bg-surface p-4 sm:p-5">{content}</div>
   }
 
@@ -280,8 +304,10 @@ interface FounderDashboardTabProps {
   coinBalance: number
   isBalanceLoading?: boolean
   loadingMessage?: string
+  actionLoading: { missionId: string; action: string } | null
   onSkeletonClick?: () => void
   onRetry: () => void
+  onLaunchMission: (mission: ApiMission) => void
   onViewAllMissions: () => void
 }
 
@@ -292,8 +318,10 @@ export function FounderDashboardTab({
   coinBalance,
   isBalanceLoading,
   loadingMessage,
+  actionLoading,
   onSkeletonClick,
   onRetry,
+  onLaunchMission,
   onViewAllMissions,
 }: FounderDashboardTabProps) {
   const router = useRouter()
@@ -370,7 +398,13 @@ export function FounderDashboardTab({
     content = (
       <div className="space-y-4">
         {visiblePulseMissions.map((mission) => (
-          <RecentMissionCard key={mission.id} mission={mission} href={getDashboardMissionHref(mission)} />
+          <RecentMissionCard
+            key={mission.id}
+            mission={mission}
+            href={getDashboardMissionHref(mission)}
+            isLaunching={actionLoading?.missionId === mission.id && actionLoading.action === 'launch'}
+            onLaunchMission={onLaunchMission}
+          />
         ))}
       </div>
     )
