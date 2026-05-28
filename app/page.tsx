@@ -33,36 +33,36 @@ const productPillars = [
 const noiseCards = [
   {
     icon: "timer_off",
-    title: "Speed over substance",
-    body: "Volume-based panels reward quick answers. That creates polite noise instead of careful observation."
+    title: "Other founders aren't your users.",
+    body: "Peer review sounds smart. But a B2B SaaS founder reviewing your D2C checkout isn't your customer. They'll tell you what they'd build, not what your users actually feel."
   },
   {
     icon: "person_search",
-    title: "Weak participant fit",
-    body: "Generic audiences miss the nuances of your market. We match by context and domain, not generic availability."
+    title: "More data doesn't mean more clarity.",
+    body: "Survey responses. User interviews. Notion docs full of quotes. And you still don't know what to fix first. The problem isn't volume. It's that no one's telling you what it means."
   },
   {
     icon: "data_exploration",
-    title: "Too much raw feedback",
-    body: "Transcripts alone do not help teams decide. We compress findings into a clear point of view you can act on."
+    title: "Polite feedback is the enemy.",
+    body: "Your co-founder, your investors, your friends — they all want you to win. That makes them terrible testers. You need people with no stake in your success who will just tell you the truth."
   }
 ];
 
 const exampleSignals = [
   {
-    title: "Pricing page clarity",
-    summary: "Early teams found the pricing table quickly, but the plan labels made them self-select out too early.",
-    outcome: "Rename the middle tier and add a one-line fit description."
+    title: "CTA Position",
+    summary: "Every single tester stopped scrolling at the feature grid. Didn't realise the button wasn't visible on mobile.",
+    outcome: "Moved the CTA above the fold"
   },
   {
-    title: "Checkout trust friction",
-    summary: "Users hesitated right before payment because the delivery expectations were still vague.",
-    outcome: "Move delivery timing closer to the primary CTA and restate it near the final action."
+    title: "Feature Adoption",
+    summary: "Every tester skipped the whole section. Nobody even noticed it existed.",
+    outcome: "Killed a feature we'd been building for 6 weeks"
   },
   {
-    title: "Hero message comprehension",
-    summary: "Visitors understood the product category, but not the exact audience, until they reached the second section.",
-    outcome: "Tighten the hero subhead and make the first CTA audience-specific."
+    title: "Hero Messaging",
+    summary: "Testers said the old one felt like a SaaS tool, not a personal product.",
+    outcome: "Changed the hero headline"
   }
 ];
 
@@ -91,35 +91,30 @@ const testerProfileMock = {
 const workflowSteps = [
   {
     number: "01",
-    title: "Define the decision",
-    body: "Describe what you are trying to learn. We help you turn that into a time-boxed mission with one clear objective."
+    title: "Post your question.",
+    body: "Not 'review my product.' One specific thing you need to know right now. Why aren't people clicking the CTA? Is the pricing page killing trust? One question. That's it."
   },
   {
     number: "02",
-    title: "Match the right testers",
-    body: "The system assigns people with relevant context, then screens for clarity and fit before feedback starts coming in."
+    title: "We match real people.",
+    body: "Not other founders. Not bots. People who look like your actual users. They complete a structured mission and get paid for their time. No polite vagueness. Just honest observation."
   },
   {
     number: "03",
-    title: "Review the synthesis",
-    body: "You receive clustered insight, supporting quotes, and a recommendation that points to the next product move."
+    title: "Get a clear next move.",
+    body: "Not a spreadsheet of raw notes. One recommendation, the evidence behind it, and the exact words people used when they got stuck. You read it in 5 minutes. You act on it today."
   }
 ];
 
 const credibilityStats = [
   {
-    value: "400+",
-    label: "missions reviewed",
-    detail: "Across product messaging, pricing, onboarding, and conversion flows."
-  },
-  {
     value: "24h",
-    label: "to a decision-ready readout",
+    label: "average turnaround",
     detail: "Most teams receive a clear synthesis well inside a single workday."
   },
   {
     value: "20+",
-    label: "signal checks per mission",
+    label: "structured checks per mission.",
     detail: "Guardrails reduce shallow prompts, weak matches, and personal-data requests."
   }
 ];
@@ -129,12 +124,11 @@ const pricingPlans = [
     name: "Starter",
     price: "₹149",
     cadence: "per mission",
-    description: "For one fast product question that needs a grounded answer.",
+    description: "3 matched testers, one clear recommendation. Good for a single product question.",
     bullets: [
-      "1 active mission",
       "3 matched testers",
-      "Structured synthesis",
-      "Shareable summary"
+      "One clear recommendation",
+      "Good for a single question"
     ],
     role: "founder" as const,
     mode: "signup" as const,
@@ -144,13 +138,12 @@ const pricingPlans = [
   {
     name: "Growth",
     price: "₹349",
-    cadence: "per mission bundle",
-    description: "For teams validating multiple product moments in the same sprint.",
+    cadence: "per bundle",
+    description: "Up to 3 active missions, priority matching. Best for teams iterating fast.",
     bullets: [
       "Up to 3 active missions",
       "Priority matching",
-      "Deeper synthesis notes",
-      "Mission history"
+      "Best for teams iterating fast"
     ],
     role: "founder" as const,
     mode: "signup" as const,
@@ -159,15 +152,14 @@ const pricingPlans = [
     featured: true
   },
   {
-    name: "Tester Community",
+    name: "Tester",
     price: "₹0",
     cadence: "to join",
-    description: "For specialists who want to contribute high-signal feedback and build reputation.",
+    description: "Get matched to missions, 15-20 min per task, get paid per mission.",
     bullets: [
-      "Profile review",
-      "Mission matching by fit",
-      "Reputation scoring",
-      "Role-based dashboard"
+      "Get matched to missions",
+      "15-20 min per task",
+      "Get paid per mission"
     ],
     role: "tester" as const,
     mode: "signup" as const,
@@ -186,22 +178,23 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 sm:gap-14 lg:grid-cols-2 lg:gap-16">
             <div className="flex flex-col gap-8 sm:gap-10 lg:gap-12">
               <div className="flex flex-col gap-8 lg:gap-9 text-center lg:text-left">
-                <div className="inline-flex items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-primary">Most founders ship blind.</div>
                 <h1 className="text-4xl font-extrabold leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[5.7rem]">
-                  You do not need more feedback.{" "}
-                  <span className="text-primary">You need signal.</span>
+                  Stop asking people who want you to win.
                 </h1>
                 <p className="mx-auto lg:mx-0 max-w-xl text-base sm:text-lg font-medium leading-relaxed text-text-main/60 lg:text-xl">
-                  Solutionizing helps founders validate one product decision at a time,
-                  using matched testers and a synthesis layer that turns loose feedback
-                  into a next move.
+                  Post one product question. We match it to real people who don't know you, don't owe you, and will tell you exactly where they got lost — then we tell you what to do about it.
                 </p>
                 <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] text-text-main/40">
-                  For founders shipping product and testers contributing expertise
+                  Works for any web or mobile product. If someone can open a link, we can test it.
                 </div>
               </div>
 
-              <HeroActionButtons />
+              <div className="flex flex-col gap-4">
+                <HeroActionButtons />
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-text-main/50 text-center lg:text-left">
+                  Starting at ₹149 · No subscription needed
+                </div>
+              </div>
             </div>
 
             <MissionDashboardMockup />
@@ -248,7 +241,7 @@ export default function LandingPage() {
         <section id="methodology" className="border-y border-secondary/15 bg-neutral-card py-24 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
-              <h2 className="mb-6 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Most feedback systems create noise.</h2>
+              <h2 className="mb-6 text-4xl font-black tracking-tight text-text-main lg:text-5xl">The feedback you have right now is probably useless.</h2>
               <p className="text-lg font-medium leading-relaxed text-text-main/60 lg:text-xl">
                 Traditional feedback loops are slow, biased, and bloated with raw input.
                 We reduce that noise before it reaches your team.
@@ -274,11 +267,10 @@ export default function LandingPage() {
             <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl">
                 <div className="text-[0.7rem] font-black uppercase tracking-[0.3em] text-primary">Examples from recent missions</div>
-                <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Proof looks like clearer decisions, not more transcripts.</h2>
+                <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">What a real decision looks like.</h2>
               </div>
               <p className="max-w-xl text-base leading-relaxed text-text-main/60 lg:text-lg">
-                Here is the kind of output teams use after a mission closes: specific
-                friction, a clear interpretation, and a recommendation you can ship.
+                Not more transcripts. Actual next moves.
               </p>
             </div>
 
@@ -302,36 +294,39 @@ export default function LandingPage() {
             <div className="rounded-[3rem] border border-secondary/15 bg-neutral-card p-8 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] sm:p-10 lg:p-16">
               <div className="mx-auto max-w-3xl text-center">
                 <h2 className="mb-6 text-4xl font-black leading-[1.05] tracking-tight text-text-main lg:text-5xl">
-                  Get paid to click buttons and share your honest opinion.
+                  Get paid to break things.
                 </h2>
                 <p className="text-lg font-medium leading-relaxed text-text-main/65 lg:text-xl">
-                  Founders need real people to use their product and answer a few questions. You do that. You earn money. That is the whole job.
+                  Real Indian startups need your honest opinion. Not a polished one. Just a real one.
                 </p>
-              </div>
-
-              <div className="mt-14 grid gap-6 md:grid-cols-3 lg:mt-16">
-                {[
-                  {
-                    title: "No expertise required",
-                    body: "If you use apps and have opinions, you qualify."
-                  },
-                  {
-                    title: "Short missions",
-                    body: "Most missions take 10-15 minutes. Answer questions, get paid."
-                  },
-                  {
-                    title: "Real earnings",
-                    body: "Every completed mission adds to your balance, redeemable for real money."
-                  }
-                ].map((card) => (
-                  <div key={card.title} className="rounded-2xl border border-secondary/20 bg-neutral-bg/50 p-6 sm:p-8">
-                    <h3 className="mb-3 text-xl font-black text-text-main">{card.title}</h3>
-                    <p className="text-base font-medium text-text-main/60">{card.body}</p>
-                  </div>
-                ))}
+                <div className="mt-8 flex flex-col gap-6 text-base text-text-main/70 leading-relaxed max-w-2xl mx-auto">
+                  <p>
+                    Sign up free. Get matched to a mission. Spend 15-20 minutes using a product and sharing what you actually think. Get paid directly to your account.
+                  </p>
+                  <p>
+                    No design degree. No tech background. No experience needed. You just have to use the product like a normal person and say what you honestly think. That's the whole job.
+                  </p>
+                </div>
               </div>
 
               <TesterHeroAction />
+            </div>
+          </div>
+        </section>
+
+        <section id="peer-review" className="border-t border-secondary/15 bg-neutral-card py-24 lg:py-28">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.3em] text-primary mb-3">Why not peer review?</div>
+              <h2 className="mb-6 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Founder feedback is not user feedback.</h2>
+              <div className="flex flex-col gap-6 text-base sm:text-lg font-medium leading-relaxed text-text-main/65 lg:text-xl">
+                <p>
+                  Peer review platforms are free because you pay with your time. You review someone else's product, they review yours. The problem: they're not your user. They're a founder with their own biases and a strong incentive to be nice so you return the favour.
+                </p>
+                <p className="font-semibold text-text-main">
+                  Solutionizing uses real people who get paid to be honest. Closer to actual user signal. Every time.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -356,11 +351,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="mx-auto mb-14 max-w-3xl text-center lg:mb-16">
               <div className="text-[0.7rem] font-black uppercase tracking-[0.3em] text-primary">Pricing</div>
-              <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Start with one mission. Scale when the process works.</h2>
-              <p className="mt-5 text-lg leading-relaxed text-text-main/65 lg:text-xl">
-                The pricing mirrors the product: focused, lightweight, and designed to
-                help you answer one product question without spinning up a full research program.
-              </p>
+              <h2 className="mt-3 text-4xl font-black tracking-tight text-text-main lg:text-5xl">Simple pricing. No fluff.</h2>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
@@ -392,13 +383,10 @@ export default function LandingPage() {
         <section className="light-surface bg-[#f7f4ee] py-28 text-center lg:py-32">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="mb-8 sm:mb-10 text-4xl font-black leading-[0.92] tracking-tighter text-text-main sm:text-6xl lg:text-[6rem]">
-              Ready to make the next product decision
+              You already know something's off.
               <br className="hidden sm:block" />
-              with less guessing?
+              Find out what it actually is.
             </h2>
-            <p className="mx-auto mb-10 sm:mb-12 max-w-3xl text-base sm:text-lg font-medium leading-relaxed text-text-main/50 lg:mb-14 lg:text-xl">
-              Join founders running focused missions and specialists contributing the kind of feedback teams can actually ship from.
-            </p>
 
             <BottomActionButtons />
 
@@ -431,7 +419,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <p className="text-center text-xs sm:text-sm font-bold text-text-main/50">&copy; {new Date().getFullYear()} Solutionizing Research Lab. Built for signal.</p>
+          <p className="text-center text-xs sm:text-sm font-bold text-text-main/50">Solutionizing · Built for Indian founders · Real testers · Real signal</p>
         </div>
       </footer>
     </div>

@@ -10,7 +10,7 @@ export function HeroActionButtons() {
       <div className="flex flex-col gap-3">
         <span className="pl-1 text-[11px] font-black uppercase tracking-widest text-text-main/60">For founders -&gt;</span>
         <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="w-full sm:w-auto text-center rounded-2xl border-b-4 border-orange-800 bg-primary px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
-          Launch your mission
+          Get your first mission done
         </AuthActionLink>
       </div>
 
@@ -28,7 +28,7 @@ export function TesterHeroAction() {
   return (
     <div className="mt-12 flex justify-center lg:mt-16">
       <AuthActionLink authedHref="/dashboard/tester" role="tester" mode="signup" publicHref="/tester" className="w-full sm:w-auto text-center rounded-2xl border-b-4 border-orange-800 bg-primary px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-black text-white shadow-cta-orange transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 lg:px-12 lg:py-6 lg:text-2xl">
-        Apply as a tester
+        Join as a tester — it's free
       </AuthActionLink>
     </div>
   );
@@ -46,7 +46,7 @@ export function BottomActionButtons() {
   return (
     <div className="flex flex-col items-center justify-center gap-6 sm:flex-row">
       <AuthActionLink authedHref="/dashboard/founder" role="founder" mode="signup" className="w-full rounded-2xl border-b-4 border-orange-800 bg-primary px-12 py-6 text-xl font-black text-white shadow-[0_20px_50px_-10px_rgba(217,119,6,0.4)] transition-all hover:bg-primary-hover active:translate-y-1 active:border-b-0 sm:w-auto">
-        Launch your mission
+        Post your first mission for ₹149
       </AuthActionLink>
       <Link href="/contact" className="w-full rounded-2xl border-[3px] border-text-main bg-transparent px-12 py-6 text-xl font-black text-text-main shadow-xl transition-all hover:bg-text-main hover:text-white sm:w-auto">
         Talk to the team
