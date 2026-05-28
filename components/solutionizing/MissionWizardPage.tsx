@@ -326,11 +326,11 @@ function StepIndicator({ step }: { step: number }) {
           Step {step} <span className="hidden sm:inline">of 4</span>
         </div>
       </div>
-      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-        <div className="h-full rounded-full bg-[#d77a57]" style={{ width: `${(step / 4) * 100}%` }} />
+      <div className="mb-4 h-2 w-full overflow-hidden rounded-full wizard-progress-track">
+        <div className="h-full rounded-full wizard-progress-fill" style={{ width: `${(step / 4) * 100}%` }} />
       </div>
       <div className="flex items-center justify-between text-xs sm:text-sm">
-        <div className={step >= 1 ? 'font-bold text-[#d77a57]' : 'text-[#9b98a8] dark:text-gray-500'}>Brief</div>
+        <div className={step >= 1 ? 'font-bold text-[#d77a57] wizard-active-step' : 'text-[#9b98a8] dark:text-gray-500'}>Brief</div>
         <div className={step >= 2 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Setup</div>
         <div className={step >= 3 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Questions</div>
         <div className={step >= 4 ? 'font-black text-[#1a1625] dark:text-white' : 'text-[#9b98a8] dark:text-gray-500'}>Review</div>
@@ -1193,7 +1193,7 @@ function MissionWizardContent() {
             <button
               type="button"
               disabled={pendingAction !== null || !canReviewChecklistSubmit}
-              className={`flex items-center gap-2 px-8 py-3.5 ${primaryButtonClass}`}
+              className={`flex items-center gap-2 px-10 py-4 text-base ${primaryButtonClass} wizard-submit-btn`}
               onClick={() => void handleSave('submit')}
             >
               {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
@@ -1207,7 +1207,7 @@ function MissionWizardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
+      <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900 dark:wizard-bg">
         <div className="mx-auto max-w-[720px] space-y-6">
           <WizardStepSkeleton step={1} />
         </div>
@@ -1216,7 +1216,7 @@ function MissionWizardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900 dark:wizard-bg">
       <div className="mx-auto max-w-[720px] rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60 transition-all duration-300">
         {showDraftBanner ? (
           <div className="mb-6 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/70 dark:bg-amber-950/40">
@@ -1272,14 +1272,14 @@ function MissionWizardContent() {
         {renderStepNavigation('top')}
 
         {step === 1 ? (
-          <div className="space-y-8">
+          <div className="space-y-8 wizard-step-brief">
             <div data-field-key="title">
               <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[#9b98a8] dark:text-gray-400">GIVE YOUR MISSION A TITLE</label>
               <input
                 value={state.title}
                 onChange={(event) => updateState((current) => ({ ...current, title: event.target.value }))}
                 placeholder="e.g. First impression test for our onboarding flow"
-                className={textFieldClass}
+                className={`${textFieldClass} wizard-input-glow`}
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm text-red-600 dark:text-red-400">{errors.title}</span>
@@ -1295,7 +1295,7 @@ function MissionWizardContent() {
                 onChange={(event) => updateState((current) => ({ ...current, goal: event.target.value }))}
                 placeholder="e.g. I want to know if first-time visitors understand what we do within 10 seconds, and whether the pricing page feels trustworthy."
                 rows={5}
-                className={`${textFieldClass} resize-none`}
+                className={`${textFieldClass} resize-none wizard-input-glow`}
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className={`text-sm ${errors.goal ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-300'}`}>{errors.goal || goalWarning}</span>
@@ -1354,7 +1354,7 @@ function MissionWizardContent() {
                     key={difficulty.value}
                     type="button"
                     onClick={() => updateState((current) => ({ ...current, difficulty: difficulty.value }))}
-                    className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6] dark:bg-[#d77a57]/10' : 'border-2 border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800'}`}
+                    className={`rounded-card p-6 text-left transition-all ${state.difficulty === difficulty.value ? 'border-2 border-[#d77a57] bg-[#fdf8f6] dark:bg-[#d77a57]/10 wizard-difficulty-selected' : 'border-2 border-[#e5e4e0] bg-white dark:border-gray-700 dark:bg-gray-800 wizard-difficulty-unselected'}`}
                     >
                     <div className="mb-2 text-xl font-black text-[#1a1625] dark:text-white">{difficulty.value}</div>
                     <div className="text-sm font-bold text-[#d77a57]">{difficulty.price}</div>
@@ -1368,7 +1368,7 @@ function MissionWizardContent() {
             <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
               <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">ESTIMATED MINUTES</label>
               <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-                <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
+                <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full wizard-slider" />
                 <div className="mt-4 text-center">
                   <div className="text-2xl font-black text-[#1a1625] dark:text-white">{state.estimatedMinutes} minutes</div>
                   <p className="mt-1 text-sm text-[#9b98a8] dark:text-gray-400">Missions must be 2–4 minutes</p>
@@ -1379,7 +1379,7 @@ function MissionWizardContent() {
             <div className="pt-6 border-t border-[#e5e4e0] dark:border-gray-700">
               <label className="mb-6 block text-sm font-black uppercase tracking-wider text-[#6b687a] dark:text-gray-300">NUMBER OF TESTERS</label>
               <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-                <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full accent-[#d77a57]" />
+                <input type="range" min={5} max={50} step={1} value={state.testersRequired} onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))} className="w-full wizard-slider" />
                 <div className="mt-4 text-center text-2xl font-black text-[#1a1625] dark:text-white">{state.testersRequired} testers</div>
               </div>
             </div>
@@ -1604,7 +1604,7 @@ function MissionWizardContent() {
               </div>
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 {questionTemplates.map((template) => (
-                  <div key={template.title} className="rounded-2xl border border-[#ece8e1] bg-[#faf9f7] p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                  <div key={template.title} className="rounded-2xl border border-[#ece8e1] bg-[#faf9f7] p-4 dark:border-gray-700 dark:bg-gray-900/60 wizard-template-card">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-black text-[#1a1625] dark:text-white">{template.title}</p>
@@ -1677,9 +1677,11 @@ function MissionWizardContent() {
 
         {step === 4 ? (
           <div className="space-y-6">
-            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <div className="mb-2 text-sm font-bold text-[#d77a57]">TITLE</div>
-              <div className="text-xl font-black text-[#1a1625] dark:text-white">{state.title}</div>
+            <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
+              <div className="wizard-review-header">
+                <div className="mb-2 text-sm font-bold text-[#d77a57]">TITLE</div>
+                <div className="text-xl font-black text-[#1a1625] dark:text-white">{state.title}</div>
+              </div>
             </div>
             <div className="rounded-card border border-[#e5e4e0] bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
               <div className="mb-2 text-sm font-bold text-[#d77a57]">GOAL</div>
@@ -1776,14 +1778,14 @@ export function MissionWizardPage() {
 
 function MissionWizardPageLoading() {
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900">
+    <div className="min-h-screen bg-[#faf9f7] p-4 sm:p-8 dark:bg-gray-900 dark:wizard-bg">
       <div className="mx-auto max-w-[720px] rounded-panel bg-[#faf9f7] p-5 sm:p-12 dark:bg-gray-900/60">
         <div className="mb-8">
           <div className="mb-4 inline-flex rounded-full bg-[#d77a57]/10 px-4 py-1 text-sm font-bold text-[#d77a57]">
             Step 1 of 4
           </div>
-          <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-            <div className="h-full w-1/4 rounded-full bg-[#d77a57]" />
+          <div className="mb-4 h-2 w-full overflow-hidden rounded-full wizard-progress-track">
+            <div className="h-full w-1/4 rounded-full wizard-progress-fill" />
           </div>
           <div className="flex items-center justify-between text-sm">
             <div className="font-bold text-[#d77a57]">Brief</div>

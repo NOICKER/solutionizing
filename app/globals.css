@@ -106,3 +106,190 @@ body {
   @apply rounded-panel bg-gradient-to-br from-panel-dark to-panel-dark-soft text-white shadow-card;
 }
 
+/* ──────────────────────────────────────────────
+   Mission Wizard Visual Enhancements
+   ────────────────────────────────────────────── */
+
+/* Overall: Subtle radial gradient background */
+.wizard-bg {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, #1a1f35 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 20%, rgba(249, 124, 90, 0.03) 0%, transparent 60%),
+    #141417;
+}
+
+/* Progress bar: glowing orange fill */
+.wizard-progress-track {
+  position: relative;
+  background: #25252A;
+}
+
+.wizard-progress-fill {
+  background: linear-gradient(90deg, #F97C5A 0%, #FF6A4D 100%);
+  box-shadow:
+    0 0 8px rgba(249, 124, 90, 0.5),
+    0 0 20px rgba(249, 124, 90, 0.25);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step 1: Background texture icon (target / crosshair) */
+.wizard-step-brief {
+  position: relative;
+  overflow: hidden;
+}
+
+.wizard-step-brief::before {
+  content: "🎯";
+  position: absolute;
+  top: -20px;
+  right: -10px;
+  font-size: 180px;
+  opacity: 0.05;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(1);
+  z-index: 0;
+}
+
+.wizard-step-brief > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Step 1: Input focus orange inner glow */
+.wizard-input-glow:focus {
+  border-color: #F97C5A;
+  box-shadow:
+    inset 0 0 12px rgba(249, 124, 90, 0.15),
+    0 0 0 3px rgba(249, 124, 90, 0.12);
+}
+
+/* Step 2: Difficulty card — selected state */
+.wizard-difficulty-selected {
+  border-color: #F97C5A !important;
+  background: rgba(249, 124, 90, 0.08) !important;
+  box-shadow:
+    0 0 16px rgba(249, 124, 90, 0.2),
+    0 0 40px rgba(249, 124, 90, 0.08),
+    inset 0 0 20px rgba(249, 124, 90, 0.05);
+}
+
+/* Step 2: Difficulty card — unselected state */
+.wizard-difficulty-unselected {
+  opacity: 0.55;
+  border-color: #2E2F3A !important;
+  background: #1C1C21 !important;
+  transition: all 0.25s ease;
+}
+
+.wizard-difficulty-unselected:hover {
+  opacity: 0.8;
+  border-color: #3E3F4A !important;
+}
+
+/* Step 2: Slider styling */
+.wizard-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F97C5A, #FF6A4D);
+  outline: none;
+  cursor: pointer;
+}
+
+.wizard-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #25252A;
+}
+
+.wizard-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #F97C5A;
+  border: 3px solid #1C1C21;
+  cursor: pointer;
+  margin-top: -7px;
+  box-shadow:
+    0 0 10px rgba(249, 124, 90, 0.5),
+    0 0 24px rgba(249, 124, 90, 0.2);
+  transition: box-shadow 0.2s ease;
+}
+
+.wizard-slider::-webkit-slider-thumb:hover {
+  box-shadow:
+    0 0 14px rgba(249, 124, 90, 0.7),
+    0 0 30px rgba(249, 124, 90, 0.3);
+}
+
+.wizard-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #25252A;
+  border: none;
+}
+
+.wizard-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #F97C5A;
+  border: 3px solid #1C1C21;
+  cursor: pointer;
+  box-shadow:
+    0 0 10px rgba(249, 124, 90, 0.5),
+    0 0 24px rgba(249, 124, 90, 0.2);
+}
+
+.wizard-slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F97C5A, #FF6A4D);
+}
+
+/* Step 3: Template card hover */
+.wizard-template-card {
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.wizard-template-card:hover {
+  transform: scale(1.02);
+  background: rgba(249, 124, 90, 0.06) !important;
+  border-color: rgba(249, 124, 90, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(249, 124, 90, 0.1);
+}
+
+/* Step 4: Review header gradient */
+.wizard-review-header {
+  background: linear-gradient(135deg, rgba(249, 124, 90, 0.15) 0%, rgba(228, 93, 67, 0.08) 50%, transparent 100%);
+  border-bottom: 1px solid rgba(249, 124, 90, 0.15);
+  padding: 1.5rem;
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Step 4: Submit button glow */
+.wizard-submit-btn {
+  box-shadow:
+    0 0 16px rgba(249, 124, 90, 0.4),
+    0 0 40px rgba(249, 124, 90, 0.15);
+  transition: all 0.25s ease;
+}
+
+.wizard-submit-btn:hover:not(:disabled) {
+  box-shadow:
+    0 0 20px rgba(249, 124, 90, 0.55),
+    0 0 50px rgba(249, 124, 90, 0.2);
+  transform: scale(1.03);
+}
+
+/* Orange glow tint behind active step indicator */
+.wizard-active-step {
+  text-shadow: 0 0 12px rgba(249, 124, 90, 0.4);
+}
+
