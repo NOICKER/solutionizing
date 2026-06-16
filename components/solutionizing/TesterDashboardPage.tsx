@@ -431,7 +431,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         </div>
       </aside>
 
-      <main className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 py-20 md:ml-[260px] md:w-[calc(100%-260px)] md:px-12 md:py-10">
+      <main className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 pb-24 pt-20 md:ml-[260px] md:w-[calc(100%-260px)] md:px-12 md:py-10 md:pb-10">
         <style>{`
           @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
         `}</style>
@@ -459,7 +459,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] md:hidden">
+      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] md:!hidden">
         {testerNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id

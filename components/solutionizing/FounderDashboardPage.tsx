@@ -602,18 +602,10 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
       </aside>
 
       <main
-        className="founder-main-canvas md:pb-0"
-        style={{ marginLeft: '260px', minHeight: '100vh', background: 'var(--bg)', padding: '2.5rem 3rem', width: 'calc(100% - 260px)' }}
+        className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 pb-24 pt-20 md:ml-[260px] md:w-[calc(100%-260px)] md:px-12 md:py-10 md:pb-10"
       >
         <style>{`
           @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
-          @media (max-width: 768px) {
-            .founder-main-canvas {
-              margin-left: 0 !important;
-              width: 100% !important;
-              padding: 5rem 1.5rem 6rem !important;
-            }
-          }
         `}</style>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
@@ -695,22 +687,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
         </div>
       </main>
 
-      <nav
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          height: '56px',
-          background: 'var(--dark)',
-          borderTop: '1px solid rgba(250, 247, 242, 0.08)',
-          zIndex: 9999,
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-        }}
-        className="md:hidden"
-      >
+      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] md:!hidden">
         {founderNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
