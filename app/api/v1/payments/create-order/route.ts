@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         amount,
         currency: 'INR',
-        receipt: `mission_${user.id}_${Date.now()}`,
+        receipt: `m_${user.id.substring(0, 8)}_${Date.now()}`,
       }),
     })
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       const errorBody = await razorpayResponse.text()
       console.error('Razorpay order creation failed:', razorpayResponse.status, errorBody)
       return apiError(
-        'Failed to create payment order. Please try again.',
+        `Failed to create payment order. Please try again. ${errorBody}`,
         'PAYMENT_ORDER_FAILED',
         500
       )
