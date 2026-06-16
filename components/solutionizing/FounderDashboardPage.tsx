@@ -38,15 +38,10 @@ type ChecklistStep = {
 }
 
 function GetStartedChecklist({
-  coinBalance,
   missionsCount,
-  onBuyCoins,
 }: {
-  coinBalance: number
   missionsCount: number
-  onBuyCoins: () => void
 }) {
-  const step1Complete = coinBalance > 0
   const step2Complete = missionsCount > 0
 
   const steps: ChecklistStep[] = [
@@ -56,13 +51,6 @@ function GetStartedChecklist({
       complete: true,
       locked: false,
       action: null,
-    },
-    {
-      label: 'buy coins',
-      sub: step1Complete ? 'coins purchased' : 'get coins to fund your first mission',
-      complete: step1Complete,
-      locked: false,
-      action: !step1Complete ? { label: 'buy coins ->', onClick: onBuyCoins } : null,
     },
     {
       label: 'post your first mission',
@@ -181,7 +169,6 @@ function GetStartedChecklist({
 const founderNavItems = [
   { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: LayoutDashboard },
   { id: 'missions', label: 'Missions', mobileLabel: 'Missions', icon: ClipboardList },
-  { id: 'wallets', label: 'Wallets & Coins', mobileLabel: 'Wallets', icon: Wallet },
   { id: 'settings', label: 'Settings', mobileLabel: 'Settings', icon: Settings },
   { id: 'support', label: 'Support', mobileLabel: 'Support', icon: HelpCircle },
 ] as const
@@ -676,7 +663,6 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
             <h1 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.6rem', color: 'var(--ink)', fontWeight: 400 }}>
               {activeTab === 'dashboard' ? `good to see you, ${userName.split(' ')[0]}.` :
                activeTab === 'missions' ? 'your missions.' :
-               activeTab === 'wallets' ? 'wallet & coins.' :
                activeTab === 'settings' ? 'account settings.' :
                'how can we help?'}
             </h1>
@@ -709,9 +695,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
           {activeTab === 'dashboard' ? (
             missions.length === 0 && !isLoading ? (
               <GetStartedChecklist
-                coinBalance={coinBalance}
                 missionsCount={missions.length}
-                onBuyCoins={() => setActiveTab('wallets')}
               />
             ) : (
               <FounderDashboardTab
@@ -740,18 +724,6 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
               onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
               onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
               onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
-            />
-          ) : activeTab === 'wallets' ? (
-            <FounderWalletsTab
-              coinBalance={coinBalance}
-              purchaseLoadingPackId={purchaseLoadingPackId}
-              purchaseResult={purchaseResult}
-              onPurchase={(packId) => void handlePurchase(packId)}
-              onResetPurchaseResult={() => setPurchaseResult(null)}
-              onGoToMissions={() => {
-                setPurchaseResult(null)
-                setActiveTab('missions')
-              }}
             />
           ) : activeTab === 'support' ? (
             <SupportPage role="FOUNDER" />

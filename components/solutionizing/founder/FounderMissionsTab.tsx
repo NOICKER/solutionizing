@@ -331,6 +331,10 @@ export function FounderMissionsTab({
       id="missions-section"
       className="rounded-[1.9rem] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-5 animate-[tabEnter_0.22s_ease_forwards]"
     >
+      <div className="mb-6 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4">
+        <p className="text-sm font-semibold text-[var(--ink)]">Pricing update: Missions now cost ₹80 per tester slot directly. Coin packs are disabled for now while we simplify the payment flow.</p>
+      </div>
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">MISSION CONTROL</div>

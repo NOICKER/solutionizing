@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
       return badRequest('testersRequired must be an integer between 1 and 3')
     }
 
-    // ₹100 per tester, converted to paise (₹1 = 100 paise)
-    const amount = testersRequired * 100 * 100
+    // ₹80 per tester, converted to paise (₹1 = 100 paise)
+    const amount = testersRequired * 80 * 100
 
     const keyId = process.env.RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET

@@ -588,6 +588,8 @@ function MissionWizardContent() {
  const [assetPreviewUrls, setAssetPreviewUrls] = useState<Record<number, string>>({})
  const [uploadingAssetIndex, setUploadingAssetIndex] = useState<number | null>(null)
  const [isLoading, setIsLoading] = useState(true)
+ const [showBillModal, setShowBillModal] = useState(false)
+ const [pendingMissionPayload, setPendingMissionPayload] = useState<any>(null)
  const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
  const [submitError, setSubmitError] = useState('')
  const dirtyRef = useRef(false)
@@ -972,7 +974,42 @@ function MissionWizardContent() {
         return
       }
 
-      // If action === 'submit' we trigger the Razorpay flow
+      setPendingMissionPayload(payload)
+      setShowBillModal(true)
+      setPendingAction(null)
+
+    } catch (error: any) {
+      if (isApiClientError(error)) {
+        if (error.status === 400) {
+          if (
+            error.code === 'DOMAIN_NOT_ALLOWED' ||
+            error.code === 'CONTENT_POLICY_VIOLATION' ||
+            error.code === 'URL_UNREACHABLE'
+          ) {
+            setSubmitError(getSafetyErrorMessage(error.code))
+          } else {
+            setSubmitError(getValidationMessage(error.details) ?? error.message)
+          }
+        } else if (error.code === 'NETWORK_ERROR') {
+          setSubmitError('Check your internet connection')
+        } else {
+          setSubmitError('Something went wrong. Try again.')
+        }
+      } else {
+        setSubmitError(error.message || 'Something went wrong. Try again.')
+      }
+      setPendingAction(null)
+    }
+  }
+
+  async function handleConfirmPayment() {
+    if (!pendingMissionPayload) return
+    const payload = pendingMissionPayload
+    setShowBillModal(false)
+    setPendingAction('submit')
+    setSubmitError('')
+
+    try {
       const isRazorpayLoaded = await loadRazorpay()
       if (!isRazorpayLoaded) {
         setSubmitError('Failed to load payment gateway. Please check your internet connection.')
@@ -1056,25 +1093,7 @@ function MissionWizardContent() {
       rzp.open()
 
     } catch (error: any) {
-      if (isApiClientError(error)) {
-        if (error.status === 400) {
-          if (
-            error.code === 'DOMAIN_NOT_ALLOWED' ||
-            error.code === 'CONTENT_POLICY_VIOLATION' ||
-            error.code === 'URL_UNREACHABLE'
-          ) {
-            setSubmitError(getSafetyErrorMessage(error.code))
-          } else {
-            setSubmitError(getValidationMessage(error.details) ?? error.message)
-          }
-        } else if (error.code === 'NETWORK_ERROR') {
-          setSubmitError('Check your internet connection')
-        } else {
-          setSubmitError('Something went wrong. Try again.')
-        }
-      } else {
-        setSubmitError(error.message || 'Something went wrong. Try again.')
-      }
+      setSubmitError(error.message || 'Something went wrong. Try again.')
       setPendingAction(null)
     }
   }
@@ -1777,13 +1796,13 @@ function MissionWizardContent() {
               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-[var(--ink)]/50">PAYMENT SUMMARY</div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[var(--cream)]">
-                  <span>₹100 × {state.testersRequired} testers</span>
-                  <span className="font-bold">₹{100 * state.testersRequired}</span>
+                  <span>₹80 × {state.testersRequired} testers</span>
+                  <span className="font-bold">₹{80 * state.testersRequired}</span>
                 </div>
                 <div className="my-3 border-t border-white/20" />
                 <div className="flex items-center justify-between text-[var(--cream)]">
                   <span className="text-xl font-bold">TOTAL</span>
-                  <span className="text-xl font-bold">₹{100 * state.testersRequired}</span>
+                  <span className="text-xl font-bold">₹{80 * state.testersRequired}</span>
                 </div>
               </div>
             </div>
@@ -1796,6 +1815,45 @@ function MissionWizardContent() {
  {renderStepNavigation('bottom')}
  </div>
 
+ {showBillModal && pendingMissionPayload && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h2 className="text-xl font-bold font-[family-name:var(--font-fraunces)] italic text-[var(--ink)] mb-4">Order Summary</h2>
+        <p className="font-semibold text-[var(--ink)] mb-4">{pendingMissionPayload.title || 'Untitled Mission'}</p>
+        
+        <div className="flex justify-between items-center text-sm text-[var(--ink-soft)] mb-2">
+          <span>Tester Slots ({pendingMissionPayload.testersRequired} × ₹80)</span>
+          <span>₹{pendingMissionPayload.testersRequired * 80}</span>
+        </div>
+        
+        <div className="my-4 border-t border-[var(--border)]" />
+        
+        <div className="flex justify-between items-center text-lg font-bold text-[var(--ink)] mb-6">
+          <span>Total</span>
+          <span>₹{pendingMissionPayload.testersRequired * 80}</span>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setShowBillModal(false)
+              setPendingAction(null)
+            }}
+            className="flex-1 rounded-full border border-[var(--border)] py-2 text-sm font-semibold text-[var(--ink)] hover:bg-[var(--cream)] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirmPayment}
+            disabled={pendingAction === 'submit'}
+            className="flex-1 rounded-full bg-[var(--electric)] py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {pendingAction === 'submit' ? 'Processing...' : 'CONFIRM & PAY'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
  </div>
  )
 }
