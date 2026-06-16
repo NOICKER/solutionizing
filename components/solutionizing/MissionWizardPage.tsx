@@ -383,27 +383,6 @@ function getSafetyErrorMessage(code: string) {
  return 'Something looks off. Check your URL and mission details.'
 }
 
-function StepIndicator({ step }: { step: number }) {
- return (
- <div className="mb-8">
- <div className="mb-4 flex items-center justify-between">
- <div className="inline-flex rounded-full bg-[var(--electric)]/10 px-4 py-1.5 text-xs sm:text-sm font-bold text-[var(--electric)]">
- Step {step} <span className="hidden sm:inline">of 4</span>
- </div>
- </div>
- <div className="mb-4 h-2 w-full overflow-hidden rounded-full w-full h-1.5 rounded-full bg-[var(--border)]">
- <div className="h-full rounded-full h-1.5 rounded-full bg-[var(--electric)] transition-all duration-500" style={{ width: `${(step / 4) * 100}%` }} />
- </div>
- <div className="flex items-center justify-between text-xs sm:text-sm">
- <div className={step >= 1 ? 'font-bold text-[var(--electric)] text-[var(--electric)] font-bold' : 'text-[var(--ink-soft)] '}>Brief</div>
- <div className={step >= 2 ? 'font-bold text-[var(--ink)] ' : 'text-[var(--ink-soft)] '}>Setup</div>
- <div className={step >= 3 ? 'font-bold text-[var(--ink)] ' : 'text-[var(--ink-soft)] '}>Questions</div>
- <div className={step >= 4 ? 'font-bold text-[var(--ink)] ' : 'text-[var(--ink-soft)] '}>Review</div>
- </div>
- </div>
- )
-}
-
 function toFrontendMission(mission: ApiMissionDetail): WizardState {
  return {
  title: mission.title,
@@ -577,7 +556,7 @@ function MissionWizardContent() {
  const legacyEditMissionId = editParam && editParam !== 'true' ? editParam : null
  const editMissionId = missionIdParam ?? legacyEditMissionId
  const isEditMode = editParam === 'true' ? Boolean(missionIdParam) : Boolean(editMissionId)
- const [step, setStep] = useState(1)
+ const [activeStage, setActiveStage] = useState<'brief' | 'setup' | 'questions' | 'review'>('brief')
  const [state, setState] = useState<WizardState>(initialState)
  const [showDraftBanner, setShowDraftBanner] = useState(false)
  const [showRejectedBanner, setShowRejectedBanner] = useState(false)
@@ -695,26 +674,9 @@ function MissionWizardContent() {
  return () => window.removeEventListener('beforeunload', onBeforeUnload)
  }, [refreshFlagKey])
 
- useEffect(() => {
- if (typeof window !== 'undefined') {
- if (!window.history.state || typeof window.history.state.step === 'undefined') {
- window.history.replaceState({ step: 1 }, '')
- } else {
- setStep(window.history.state.step)
- }
- }
- }, [])
+ 
 
- useEffect(() => {
- if (typeof window === 'undefined') return
- const handlePopState = (event: PopStateEvent) => {
- if (event.state && typeof event.state.step === 'number') {
- setStep(event.state.step)
- }
- }
- window.addEventListener('popstate', handlePopState)
- return () => window.removeEventListener('popstate', handlePopState)
- }, [])
+ 
 
  const updateState = useCallback((updater: (current: WizardState) => WizardState) => {
  dirtyRef.current = true
@@ -725,30 +687,7 @@ function MissionWizardContent() {
  })
  }, [draftStorageKey])
 
- function handleNext() {
- const nextState = step === 2 ? prepareAssetsForValidation(state) : state
-
- if (step === 2 && JSON.stringify(nextState.assets) !== JSON.stringify(state.assets)) {
- updateState(() => nextState)
- }
-
- const nextErrors = validateStep(step, nextState)
- setErrors(nextErrors)
-
- const firstError = Object.keys(nextErrors)[0]
- if (firstError) {
- scrollToField(firstError === 'assets' ? 'asset-0' : firstError)
- return
- }
-
- const nextStep = Math.min(4, step + 1)
- if (nextStep !== step) {
- if (typeof window !== 'undefined') {
- window.history.pushState({ step: nextStep }, '')
- }
- setStep(nextStep)
- }
- }
+ 
 
  function handleGoalBlur() {
  const containsEmail = /[^\s@]+@[^\s@]+\.[^\s@]+/.test(state.goal)
@@ -914,6 +853,12 @@ function MissionWizardContent() {
  await handleAssetFileSelected(index, pastedImage)
  }
 
+  function getStageForFieldKey(fieldKey: string): 'brief' | 'setup' | 'questions' | 'review' {
+    if (fieldKey === 'title' || fieldKey === 'goal') return 'brief'
+    if (fieldKey === 'assets' || fieldKey.startsWith('asset-')) return 'setup'
+    return 'questions'
+  }
+
   async function handleSave(action: 'draft' | 'submit') {
     setSubmitError('')
     const preparedState = prepareAssetsForValidation(state)
@@ -926,11 +871,8 @@ function MissionWizardContent() {
     const firstErrorKey = Object.keys(validationErrors)[0]
     if (firstErrorKey) {
       setErrors(validationErrors)
-      const targetStep = getStepForFieldKey(firstErrorKey)
-      if (typeof window !== 'undefined') {
-        window.history.pushState({ step: targetStep }, '')
-      }
-      setStep(targetStep)
+      const targetStage = getStageForFieldKey(firstErrorKey)
+      setActiveStage(targetStage)
       window.setTimeout(() => scrollToField(firstErrorKey === 'assets' ? 'asset-0' : firstErrorKey), 0)
       return
     }
@@ -1171,17 +1113,7 @@ function MissionWizardContent() {
  [state.questions]
  )
 
- function handleBack() {
- if (step === 1) {
- return
- }
-
- if (typeof window !== 'undefined') {
- window.history.back()
- } else {
- setStep((current) => current - 1)
- }
- }
+ 
 
 
 
