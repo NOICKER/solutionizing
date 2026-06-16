@@ -1293,8 +1293,8 @@ function MissionWizardContent() {
  }
 
  return (
- <div className="min-h-screen bg-[var(--bg)] pb-12">
- <div className="mx-auto max-w-2xl px-4 sm:px-6 md:px-8 transition-all duration-300 pt-6">
+ <div className="min-h-screen xl:h-screen xl:overflow-hidden bg-[var(--bg)] pb-12 xl:pb-0 flex flex-col font-['Satoshi'] selection:bg-[var(--electric)] selection:text-white">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 pt-6 xl:pt-10 transition-all duration-300 h-full flex flex-col">
  {showDraftBanner ? (
  <div className="mb-6 flex items-center justify-between rounded-xl border border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.06)] p-4 ">
  <span className="text-sm font-semibold text-[#92400e] ">You have an unsaved draft. Continue where you left off?</span>
@@ -1331,20 +1331,18 @@ function MissionWizardContent() {
  </div>
  </div>
  ) : null}
- <StepIndicator step={step} />
+ 
 
- <div className="mb-8 inline-flex rounded-full bg-[var(--electric)]/10 px-4 py-2 text-sm font-bold text-[var(--electric)]">
- {state.difficulty}
- </div>
+ 
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 h-full xl:h-[calc(100vh-120px)] items-start mt-6 flex-1">
 
- <h2 className="mb-8 text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] ">
- {step === 1 ? 'Mission Brief' : step === 2 ? 'Mission Setup' : step === 3 ? 'Questions' : 'Review'}
- </h2>
-
- {renderStepNavigation('top')}
-
- {step === 1 ? (
- <div className="space-y-8 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4">
+        {/* Column 1: Brief & Setup (3/12) */}
+        <div className="xl:col-span-3 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">1. Brief & Setup</h2>
+            <div className="inline-flex rounded-full bg-[var(--electric)]/10 px-3 py-1 text-xs font-bold text-[var(--electric)] uppercase">{state.difficulty}</div>
+          </div>
+<div className="space-y-8 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4">
  <div data-field-key="title">
  <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)] ">GIVE YOUR MISSION A TITLE</label>
  <input
@@ -1392,10 +1390,8 @@ function MissionWizardContent() {
  </div>
  </div>
  </div>
- ) : null}
 
- {step === 2 ? (
- <div className="space-y-8">
+<div className="space-y-8">
  <div className="pt-6">
  <label className="mb-6 block text-sm font-bold uppercase tracking-wider text-[var(--ink-soft)] ">DIFFICULTY</label>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1647,10 +1643,12 @@ function MissionWizardContent() {
  {state.assets.length < 3 ? <button type="button" className="text-sm font-semibold text-[var(--electric)] hover:underline cursor-none" onClick={() => updateState((current) => ({ ...current, assets: [...current.assets, { type: 'LINK', url: '', label: '' }] }))}>+ Add another asset</button> : null}
  </div>
  </div>
- ) : null}
+        </div>
 
- {step === 3 ? (
- <div className="space-y-6">
+        {/* Column 2: Assets & Questions (5/12) */}
+        <div className="xl:col-span-5 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
+          <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">2. Assets & Questions</h2>
+<div className="space-y-6">
  <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
  <div className="flex flex-wrap items-end justify-between gap-3">
  <div>
@@ -1748,10 +1746,12 @@ function MissionWizardContent() {
 
  {state.questions.length < 6 ? <button type="button" className={`px-6 py-3 ${primaryButtonClass} cursor-none`} onClick={() => updateState((current) => ({ ...current, questions: [...current.questions, { text: '', type: 'TEXT_SHORT', required: true, order: current.questions.length }] }))}>+ ADD QUESTION</button> : null}
  </div>
- ) : null}
+        </div>
 
- {step === 4 ? (
- <div className="space-y-6">
+        {/* Column 3: Review & Launch (4/12) */}
+        <div className="xl:col-span-4 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
+          <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">3. Review & Launch</h2>
+<div className="space-y-6">
  <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 overflow-hidden">
  <div className="wizard-review-header">
  <div className="mb-2 text-sm font-bold text-[var(--electric)]">TITLE</div>
@@ -1811,12 +1811,32 @@ function MissionWizardContent() {
  {reviewQuestions}
  {submitError ? <p className="text-sm text-[#c0392b] ">{submitError}</p> : null}
  </div>
- ) : null}
+          <div className="mt-4 flex flex-col sm:flex-row flex-wrap items-center justify-end gap-3 w-full pb-10">
+            <button
+              type="button"
+              disabled={pendingAction !== null}
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 ${outlineButtonClass} cursor-none`}
+              onClick={() => void handleSave('draft')}
+            >
+              {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
+              {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
+            </button>
+            <button
+              type="button"
+              disabled={pendingAction !== null || !canReviewChecklistSubmit}
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-4 text-base ${primaryButtonClass} rounded-[12px] bg-[var(--electric)] text-[var(--cream)] font-semibold transition-opacity hover:opacity-90 cursor-none`}
+              onClick={() => void handleSave('submit')}
+            >
+              {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
+              PAY & LAUNCH MISSION
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
- {renderStepNavigation('bottom')}
- </div>
 
- {showBillModal && pendingMissionPayload && (
+{showBillModal && pendingMissionPayload && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <h2 className="text-xl font-bold font-[family-name:var(--font-fraunces)] italic text-[var(--ink)] mb-4">Order Summary</h2>
