@@ -1025,7 +1025,7 @@ function MissionWizardContent() {
       
       if (!orderRes.ok) {
         const errorData = await orderRes.json()
-        throw new Error(errorData.meta?.message || 'Failed to create payment order')
+        throw new Error(errorData.error?.message || 'Failed to create payment order')
       }
       
       const orderData = await orderRes.json()
@@ -1054,7 +1054,7 @@ function MissionWizardContent() {
             
             if (!verifyRes.ok) {
               const errorData = await verifyRes.json()
-              throw new Error(errorData.meta?.message || 'Payment verification failed')
+              throw new Error(errorData.error?.message || 'Payment verification failed')
             }
             
             if (!isEditMode) {
