@@ -97,7 +97,7 @@ export default function TermsPage() {
         <p>
           We may update these terms from time to time. Continued use of Solutionizing after an update means you accept the
           updated terms. For questions or legal notices, contact{" "}
-          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
+          <a href="mailto:hello@solutionizing.com" className="font-semibold text-[var(--electric)] hover:opacity-80 cursor-none">
             hello@solutionizing.com
           </a>
           .

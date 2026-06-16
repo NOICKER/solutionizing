@@ -48,7 +48,7 @@ export default function RefundPage() {
         <p>
           Any dispute relating to a coin purchase, refund, wallet adjustment, mission cancellation credit, or withdrawal
           must be raised within 7 days of the relevant transaction by emailing{" "}
-          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
+          <a href="mailto:hello@solutionizing.com" className="font-semibold text-[var(--electric)] hover:opacity-80 cursor-none">
             hello@solutionizing.com
           </a>
           .

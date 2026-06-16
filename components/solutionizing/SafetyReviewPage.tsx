@@ -5,15 +5,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { ApiMissionDetail } from '@/types/api'
-import { MissionStatusBadge, NotFoundPanel, primaryButtonClass } from '@/components/solutionizing/ui'
+import { MissionStatusBadge, NotFoundPanel } from '@/components/solutionizing/ui'
 
 function SafetyReviewPageSkeleton() {
-  const skeletonBar = 'animate-pulse rounded-full bg-[#e8e1da] dark:bg-gray-700'
-  const skeletonBlock = 'animate-pulse rounded-3xl bg-[#f1ebe5] dark:bg-gray-800'
+  const skeletonBar = 'animate-pulse rounded-full bg-[var(--cream)]'
+  const skeletonBlock = 'animate-pulse rounded-[1.25rem] bg-[var(--cream)]'
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8 dark:bg-gray-900">
-      <div className="mx-auto max-w-2xl rounded-panel bg-[#faf9f7] p-12 dark:bg-gray-900/60">
+    <div className="min-h-screen bg-[var(--bg)] p-8">
+      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--cream)] p-6 sm:p-8 w-full max-w-lg mx-auto">
         <div className={`mb-8 h-5 w-40 ${skeletonBar}`} />
         <div className="mb-8 flex justify-center">
           <div className={`h-20 w-20 rounded-full ${skeletonBlock}`} />
@@ -73,15 +73,15 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] p-8">
-      <div className="mx-auto max-w-2xl rounded-panel bg-[#faf9f7] p-12">
-        <Link href="/dashboard/founder" className="mb-8 inline-block font-semibold text-[#6b687a] transition-colors hover:text-[#1a1625]">
+    <div className="min-h-screen bg-[var(--bg)] p-8">
+      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--cream)] p-6 sm:p-8 w-full max-w-lg mx-auto">
+        <Link href="/dashboard/founder" className="mb-8 inline-block font-['Satoshi'] font-semibold text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)] cursor-none">
           ← Back to dashboard
         </Link>
 
         <div className="mb-6 flex justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(192,57,43,0.1)] text-[#c0392b]">
+            <svg className="w-10 h-10 text-current" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
@@ -90,27 +90,27 @@ export function SafetyReviewPage({ missionId }: { missionId: string }) {
         <div className="mb-4 flex justify-center">
           <MissionStatusBadge status={mission.status} />
         </div>
-        <h1 className="mb-2 text-center text-3xl font-black text-[#1a1625]">Mission Rejected</h1>
-        <p className="mb-8 text-center text-lg text-[#6b687a]">{mission.title}</p>
+        <h1 className="mb-2 text-center font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl">Mission Rejected</h1>
+        <p className="mb-8 text-center text-lg font-['Satoshi'] text-[var(--ink-soft)]">{mission.title}</p>
 
-        <div className="mb-8 rounded-card border border-red-200 bg-red-50 p-8">
-          <h2 className="mb-3 text-lg font-black text-red-900">Feedback from our team</h2>
-          <p className="text-sm font-semibold text-red-900">Rejection reason: {mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs updates before it can be reviewed again.'}</p>
+        <div className="mb-8 rounded-[12px] border border-[rgba(192,57,43,0.2)] bg-[rgba(192,57,43,0.05)] p-8">
+          <h2 className="mb-3 text-lg font-['Satoshi'] font-bold text-[#c0392b]">Feedback from our team</h2>
+          <p className="text-sm font-['Satoshi'] font-medium text-[#c0392b]/80">Rejection reason: {mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs updates before it can be reviewed again.'}</p>
         </div>
 
-        <div className="mb-8 rounded-card border border-blue-200 bg-blue-50 p-6">
-          <h3 className="mb-2 text-sm font-bold text-blue-900">What to do next</h3>
-          <p className="text-sm text-blue-700">
+        <div className="mb-8 rounded-[12px] border border-[var(--electric)]/20 bg-[var(--electric)]/5 p-6">
+          <h3 className="mb-2 text-sm font-['Satoshi'] font-bold text-[var(--electric)]">What to do next</h3>
+          <p className="text-sm font-['Satoshi'] text-[var(--electric)]/80">
             Review the feedback above, edit your mission to fix the issues, then resubmit for review.
           </p>
         </div>
 
         <div className="space-y-3">
-          <Link href={`/mission/wizard?edit=true&missionId=${mission.id}`} className={`block w-full py-3.5 text-center ${primaryButtonClass}`}>
+          <Link href={`/mission/wizard?edit=true&missionId=${mission.id}`} className="block text-center bg-[var(--electric)] text-[var(--cream)] rounded-xl px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 cursor-none w-full">
             EDIT MISSION →
           </Link>
           <div className="text-center">
-            <Link href="/dashboard/founder" className="font-semibold text-[#6b687a] transition-colors hover:text-[#1a1625]">
+            <Link href="/dashboard/founder" className="inline-block w-full border border-[var(--border-strong)] text-[var(--ink-soft)] rounded-xl px-6 py-3 text-sm font-semibold bg-transparent hover:border-[var(--electric)] hover:text-[var(--electric)] cursor-none">
               Back to dashboard
             </Link>
           </div>

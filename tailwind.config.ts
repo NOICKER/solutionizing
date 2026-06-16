@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Dark mode is NOT a Tailwind concern in the new design.
+  // Dark surfaces are controlled via CSS variables and body.is-dark class.
   darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,55 +11,58 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#F97C5A",
-        secondary: "#25252A",
-        "neutral-bg": "#141417",
-        "neutral-card": "#1C1C21",
-        "tester-terracotta": "#F97C5A",
-        "tester-terracotta-dark": "#FF6A4D",
-        "tester-sage": "#3F3F46",
-        "tester-sage-soft": "#27272A",
-        "tester-cream": "#A1A1AA",
-        "tester-beige": "#3F3F46",
-        "tester-apricot": "#F97C5A",
-        "tester-ink": "#2D2A26",
-        "tester-muted": "#A1A1AA",
-        "surface-white": "rgb(var(--color-surface-white) / <alpha-value>)",
-        "surface-warm": "#1C1C21",
-        "text-main": "rgb(var(--color-text-main) / <alpha-value>)",
-        background: "#141417",
-        surface: "#1C1C21",
-        "surface-elevated": "#25252A",
-        "primary-hover": "#FF6A4D",
-        accent: "#25252A",
-        "text-muted": "#A1A1AA",
-        "border-subtle": "#2E2F3A",
-        "panel-dark": "#1C1C21",
-        "panel-dark-soft": "#25252A"
+        // Primary design tokens
+        bg:            "#e8e0d4",
+        "bg-light":    "#f0e8dc",
+        cream:         "#faf7f2",
+        ink:           "#1c1008",
+        "ink-soft":    "#6b5c4a",
+        electric:      "#ff6b1a",
+        "electric-dim":"rgba(255, 107, 26, 0.10)",
+        "electric-mid":"rgba(255, 107, 26, 0.25)",
+        dark:          "#1c1008",
+        "dark-surface":"#2a1e12",
+
+        // Semantic aliases (used in components)
+        primary:       "#ff6b1a",
+        "primary-hover":"#e55f12",
+        background:    "#e8e0d4",
+        surface:       "#f0e8dc",
+        "surface-elevated": "#faf7f2",
+        "text-main":   "#1c1008",
+        "text-muted":  "#6b5c4a",
+        "border-subtle":"rgba(28, 16, 8, 0.12)",
+        "border-strong":"rgba(28, 16, 8, 0.25)",
+
+        // Dark surface tokens
+        "panel-dark":      "#1c1008",
+        "panel-dark-soft": "#2a1e12",
+        "neutral-bg":      "#e8e0d4",
+        "neutral-card":    "#f0e8dc",
       },
       fontFamily: {
-        display: ["var(--font-manrope)", "sans-serif"]
+        sans:    ["Satoshi", "sans-serif"],
+        display: ["Fraunces", "serif"],
+        mono:    ["DM Mono", "monospace"],
       },
       boxShadow: {
-        card: "0 18px 40px rgba(45, 42, 38, 0.1)",
-        "card-soft": "0 10px 30px rgba(45, 42, 38, 0.07)",
-        "soft-xl": "0 20px 40px -15px rgba(0, 0, 0, 0.1)",
-        "cta-orange": "0 10px 30px -5px rgba(217, 119, 6, 0.25)",
-        "tester-soft": "0 16px 40px rgba(45, 42, 38, 0.08)",
-        "tester-modal": "0 20px 50px -12px rgba(217, 119, 87, 0.18)"
+        card:       "0 4px 24px rgba(28, 16, 8, 0.08)",
+        "card-soft":"0 2px 12px rgba(28, 16, 8, 0.05)",
+        "electric": "0 8px 24px rgba(255, 107, 26, 0.25)",
       },
       borderRadius: {
-        xl: "1.5rem",
-        "2xl": "2rem",
-        card: "1.5rem",
-        panel: "2rem",
-        lg: "1rem",
-        DEFAULT: "0.5rem",
-        pill: "999px"
-      }
-    }
+        pill: "999px",
+        card: "1.25rem",
+        panel:"1.75rem",
+        lg:   "1rem",
+        DEFAULT:"0.5rem",
+      },
+      transitionTimingFunction: {
+        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;

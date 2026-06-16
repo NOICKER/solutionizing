@@ -19,7 +19,6 @@ import {
 const UpdateTesterProfileSchema = z.object({
   displayName: z.string().trim().min(2).max(50).optional(),
   notifyNewMission: z.boolean().optional(),
-  darkMode: z.boolean().optional(),
   expertiseTags: z.array(z.string()).max(10).optional(),
   preferredDevice: z.enum(['desktop', 'mobile', 'both']).optional(),
   payoutDetails: z.string().trim().min(1).max(500).optional(),
@@ -44,7 +43,6 @@ export async function GET(request: Request) {
         reputationScore: true,
         reputationTier: true,
         notifyNewMission: true,
-        darkMode: true,
         onboardingCompleted: true,
         expertiseTags: true,
         preferredDevice: true,
@@ -95,7 +93,6 @@ export async function PATCH(request: Request) {
     if (
       body.displayName === undefined
       && body.notifyNewMission === undefined
-      && body.darkMode === undefined
       && body.expertiseTags === undefined
       && body.preferredDevice === undefined
       && body.payoutDetails === undefined
@@ -109,7 +106,6 @@ export async function PATCH(request: Request) {
       data: {
         ...(body.displayName !== undefined ? { displayName: body.displayName } : {}),
         ...(body.notifyNewMission !== undefined ? { notifyNewMission: body.notifyNewMission } : {}),
-        ...(body.darkMode !== undefined ? { darkMode: body.darkMode } : {}),
         ...(body.onboardingCompleted !== undefined
           ? { onboardingCompleted: body.onboardingCompleted }
           : {}),
@@ -123,7 +119,6 @@ export async function PATCH(request: Request) {
         reputationScore: true,
         reputationTier: true,
         notifyNewMission: true,
-        darkMode: true,
         onboardingCompleted: true,
         expertiseTags: true,
         preferredDevice: true,

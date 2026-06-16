@@ -16,13 +16,13 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
       <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
         <TesterBrand />
         <div className="flex items-center gap-3 text-sm font-bold text-tester-muted">
-          <Link href="/contact" className="hidden transition-colors hover:text-tester-terracotta sm:inline-flex">
+          <Link href="/contact" className="hidden transition-colors hover:text-tester-terracotta sm:inline-flex cursor-none">
             Help Center
           </Link>
           {showSignIn ? (
             <Link
               href="/auth?mode=signin&role=tester&next=%2Fdashboard%2Ftester"
-              className="rounded-full border border-tester-beige bg-white px-5 py-2.5 text-tester-ink shadow-sm transition-colors hover:bg-tester-beige/40"
+              className="rounded-full border border-tester-beige bg-white px-5 py-2.5 text-tester-ink shadow-sm transition-colors hover:bg-tester-beige/40 cursor-none"
             >
               Sign In
             </Link>
@@ -31,7 +31,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
       </nav>
 
       <section className="mx-auto flex max-w-6xl flex-col items-center px-6 pb-20 pt-6 text-center lg:px-8">
-        <div className="inline-flex items-center gap-2 rounded-full bg-tester-sage/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-tester-sage">
+        <div className="inline-flex items-center gap-2 rounded-full bg-tester-sage/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-tester-sage">
           <span className="material-symbols-outlined text-sm">handshake</span>
           Tester onboarding
         </div>
@@ -70,7 +70,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
               <span className="material-symbols-outlined text-lg">verified</span>
             </div>
             <div>
-              <div className="text-xs font-black uppercase tracking-[0.18em] text-tester-ink">No competition</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-tester-ink">No competition</div>
               <div className="text-[11px] text-tester-muted">A mission is reserved for you.</div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
             </AuthActionLink>
             <a
               href="#matching-details"
-              className="inline-flex rounded-full border border-tester-beige bg-white px-8 py-4 text-base font-bold text-tester-sage transition-colors hover:bg-tester-beige/40"
+              className="inline-flex rounded-full border border-tester-beige bg-white px-8 py-4 text-base font-bold text-tester-sage transition-colors hover:bg-tester-beige/40 cursor-none"
             >
               Learn More
             </a>
@@ -125,7 +125,7 @@ export function TesterOnboarding({ showSignIn = true }: Readonly<TesterOnboardin
           Matching details anchor
         </div>
 
-        <footer className="mt-20 text-xs font-black uppercase tracking-[0.22em] text-tester-muted/70">
+        <footer className="mt-20 text-xs font-bold uppercase tracking-[0.22em] text-tester-muted/70">
           Solutionizing 2024
         </footer>
       </section>

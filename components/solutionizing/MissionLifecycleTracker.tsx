@@ -91,13 +91,13 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
     <section className="overflow-hidden rounded-panel border border-border-subtle bg-surface p-5 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-white">Mission lifecycle</h2>
+          <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">Mission lifecycle</h2>
           <p className="mt-1 text-sm font-medium text-text-muted">
             Track the founder workflow from draft through completion.
           </p>
         </div>
 
-        <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-black ${statusToneMap[mission.status]}`}>
+        <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-bold ${statusToneMap[mission.status]}`}>
           {formatMissionStatus(mission.status)}
         </span>
       </div>
@@ -105,7 +105,7 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
       <div className="mt-6">
         <div className="h-2 overflow-hidden rounded-full bg-surface-elevated">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary via-primary-hover to-emerald-400 transition-[width] duration-700"
+            className="h-full rounded-full bg-[var(--electric)] transition-[width] duration-700"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -123,7 +123,7 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
               return (
                 <div key={stage.status} className={`rounded-2xl border p-4 ${tone.card}`}>
                   <div className="mb-4 flex items-center justify-between gap-2">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black ${tone.marker}`}>
+                    <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${tone.marker}`}>
                       {state === 'complete' ? 'OK' : index + 1}
                     </span>
                     <span className={`rounded-full border px-2.5 py-1 text-[0.7rem] font-bold ${tone.pill}`}>
@@ -131,7 +131,7 @@ export function MissionLifecycleTracker({ mission }: { mission: MissionLifecycle
                     </span>
                   </div>
 
-                  <div className="text-sm font-black text-white">{stage.label}</div>
+                  <div className="text-sm font-bold text-[var(--ink)]">{stage.label}</div>
                   <p className="mt-2 min-h-10 text-xs font-medium leading-5 text-text-muted">
                     {getTimestampLabel(mission, stage)}
                   </p>

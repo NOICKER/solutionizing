@@ -41,45 +41,48 @@ const stagger = {
 }
 
 function MissionInsightsPageSkeleton() {
-  const skeletonBar = 'animate-pulse rounded-full bg-surface-elevated'
-  const skeletonBlock = 'animate-pulse rounded-panel bg-surface-elevated'
+  const skeletonBar = 'animate-pulse rounded-full bg-[var(--border)]'
+  const skeletonBlock = 'animate-pulse rounded-[1.25rem] bg-[var(--bg-light)]'
 
   return (
-    <div className="min-h-screen overflow-hidden bg-background pb-24 pt-8 text-text-main sm:pt-12">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+    <div className="min-h-screen overflow-hidden bg-[var(--bg)] pb-24 pt-[60px] text-[var(--ink)] sm:pt-[80px]">
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-[56px] items-center border-b border-[var(--border)] bg-[var(--bg)]/90 px-4 backdrop-blur-md sm:px-6">
+        <div className={`h-6 w-32 ${skeletonBar}`} />
+      </div>
+      <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 mt-6">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className={`h-10 w-44 ${skeletonBar}`} />
           <div className={`h-6 w-32 ${skeletonBar}`} />
         </div>
 
-        <section className="rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-12">
+        <section className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-8 sm:p-12">
           <div className={`mb-6 h-8 w-36 ${skeletonBar}`} />
           <div className={`h-14 w-full max-w-3xl rounded-[2rem] ${skeletonBar}`} />
           <div className={`mt-6 h-6 w-full max-w-2xl ${skeletonBar}`} />
         </section>
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)]">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)] gap-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
+            <div key={index} className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-6">
               <div className={`h-4 w-28 ${skeletonBar}`} />
               <div className={`mt-5 h-10 w-24 ${skeletonBar}`} />
               <div className={`mt-4 h-4 w-32 ${skeletonBar}`} />
             </div>
           ))}
-          <div className="rounded-panel bg-gradient-to-br from-primary to-primary-hover p-8">
+          <div className="rounded-[1.25rem] bg-[var(--electric)] p-8">
             <div className={`h-4 w-28 bg-white/20 rounded-full animate-pulse`} />
             <div className={`mt-6 h-28 rounded-[2rem] bg-white/15 animate-pulse`} />
             <div className={`mt-8 h-4 w-36 bg-white/20 rounded-full animate-pulse`} />
           </div>
         </div>
 
-        <section className="mt-8 rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
+        <section className="mt-8 rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-8">
           <div className={`h-8 w-40 ${skeletonBar}`} />
           <div className={`mt-6 h-40 ${skeletonBlock}`} />
         </section>
 
-        <section className="mt-12 rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
-          <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
+        <section className="mt-12 rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)]">
+          <div className="border-b border-[var(--border)] bg-[var(--bg-light)] px-8 py-6">
             <div className={`h-8 w-48 ${skeletonBar}`} />
           </div>
           <div className="space-y-6 p-8">
@@ -159,31 +162,31 @@ function SummaryStatCard({
     <motion.div 
       variants={fadeInUp}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="group relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] transition-all hover:border-primary/30 hover:bg-surface-elevated"
+      className="group relative overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-6 transition-all hover:border-[var(--electric-mid)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)]"
     >
-      <div className="absolute -right-6 -top-6 rounded-full bg-surface-elevated p-8 transition-transform group-hover:scale-110">
-        <Icon className="h-8 w-8 text-primary/45" />
+      <div className="absolute -right-6 -top-6 rounded-full bg-[var(--bg-light)] p-8 transition-transform group-hover:scale-110">
+        <Icon className="h-8 w-8 text-[var(--electric)]/45" />
       </div>
 
       <div className="relative mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
-          <Icon className="h-4 w-4 text-primary" />
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
+          <Icon className="h-4 w-4 text-[var(--electric)]" />
           {label}
         </div>
         {chip && (
-          <div className="rounded-full bg-emerald-900/40 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-emerald-300">
+          <div className="rounded-full bg-[rgba(74,197,128,0.12)] px-2.5 py-0.5 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[#1e7a47]">
             {chip}
           </div>
         )}
       </div>
 
       <div className="relative mb-2 flex items-baseline gap-2">
-        <div className="text-4xl font-extrabold tracking-tight text-white">
+        <div className="text-4xl font-extrabold tracking-tight text-[var(--ink)]">
           {value}
         </div>
       </div>
 
-      {footer && <div className="relative mt-4 border-t border-border-subtle pt-4">{footer}</div>}
+      {footer && <div className="relative mt-4 border-t border-[var(--border)] pt-4">{footer}</div>}
     </motion.div>
   )
 }
@@ -195,18 +198,18 @@ function TextResponseCard({ index, response }: { index: number; response: string
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -2 }}
-      className="group relative rounded-[1.5rem] border border-border-subtle bg-surface p-5 shadow-sm transition-all hover:border-primary/30 hover:bg-surface-elevated"
+      className="group relative rounded-[14px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5 transition-all cursor-none"
     >
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--electric-dim)] text-[var(--electric)]">
           <MessageCircle size={18} />
         </div>
         <div>
-          <div className="text-sm font-bold text-white">Tester {index + 1}</div>
-          <div className="text-xs font-medium text-text-muted">Anonymous response</div>
+          <div className="text-sm font-bold text-[var(--ink)]">Tester {index + 1}</div>
+          <div className="text-xs font-medium text-[var(--ink-soft)]">Anonymous response</div>
         </div>
       </div>
-      <p className="text-sm leading-relaxed text-text-muted">{response}</p>
+      <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{response}</p>
     </motion.div>
   )
 }
@@ -232,7 +235,7 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsExpanded(true)}
-            className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[1.5rem] border-2 border-dashed border-border-subtle bg-surface text-primary transition-colors hover:border-primary/40 hover:bg-surface-elevated"
+            className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-[1.25rem] border-2 border-dashed border-[var(--border-strong)] bg-[var(--cream)] text-[var(--electric)] transition-colors hover:border-[var(--electric-mid)] cursor-none"
           >
             <MessageSquare className="h-6 w-6 opacity-50" />
             <span className="text-sm font-bold tracking-wide">View {remainingCount} more</span>
@@ -250,7 +253,7 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
           >
             <button
               onClick={() => setIsExpanded(false)}
-              className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-5 py-2 text-sm font-semibold text-text-muted transition-colors hover:text-white"
+              className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-5 py-2 text-sm font-semibold text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)] cursor-none"
             >
               Show less <ChevronUp size={16} />
             </button>
@@ -264,14 +267,14 @@ function TextResponsesPreview({ questionId, responses }: { questionId: string; r
 function RatingBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, { type: 'RATING_1_5' }> }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[200px_1fr] items-center">
-      <div className="flex flex-col items-center justify-center rounded-panel border border-amber-500/20 bg-amber-900/10 p-6 text-center shadow-inner">
-        <div className="text-5xl font-black text-amber-300">
+      <div className="flex flex-col items-center justify-center rounded-[1.25rem] border border-[var(--electric-mid)] bg-[var(--electric-dim)] p-6 text-center">
+        <div className="text-5xl font-[family-name:var(--font-fraunces)] font-bold text-[var(--ink)]">
           {question.averageRating?.toFixed(1) ?? '0.0'}
         </div>
         <div className="mt-3">
           <StarRow value={question.averageRating ?? 0} size={20} />
         </div>
-        <div className="mt-2 text-[0.65rem] font-bold uppercase tracking-wider text-amber-300/70">
+        <div className="mt-2 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
           Average Rating
         </div>
       </div>
@@ -279,19 +282,19 @@ function RatingBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, 
       <div className="space-y-3">
         {question.distribution.map((item, i) => (
           <div key={`${question.questionId}-${item.rating}`} className="group flex items-center gap-4">
-            <div className="flex w-6 shrink-0 items-center justify-end gap-1 text-sm font-bold text-text-muted">
-              {item.rating} <Star size={12} className="fill-amber-400 text-amber-400" />
+            <div className="flex w-6 shrink-0 items-center justify-end gap-1 text-sm font-bold text-[var(--ink-soft)]">
+              {item.rating} <Star size={12} className="fill-[var(--electric)] text-[var(--electric)]" />
             </div>
-            <div className="relative flex-1 h-3 overflow-hidden rounded-full bg-surface-elevated">
+            <div className="relative flex-1 h-3 overflow-hidden rounded-full bg-[var(--border)]">
               <motion.div
                 initial={{ width: 0 }}
                 whileInView={{ width: `${item.percentage}%` }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: 'easeOut', delay: i * 0.1 }}
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+                className="absolute inset-y-0 left-0 rounded-full bg-[var(--electric)]"
               />
             </div>
-            <div className="w-10 shrink-0 text-right text-sm font-bold text-text-muted">
+            <div className="w-10 shrink-0 text-right text-sm font-bold text-[var(--ink-soft)]">
               {item.percentage.toFixed(0)}%
             </div>
           </div>
@@ -315,19 +318,19 @@ function ChoiceBreakdown({ question }: { question: Extract<ApiFeedbackQuestion, 
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4, delay: i * 0.1 }}
-          className="relative overflow-hidden rounded-2xl border border-border-subtle bg-surface p-5 shadow-sm transition-colors hover:border-primary/30 hover:bg-surface-elevated"
+          className="relative overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5 transition-colors cursor-none"
         >
           <div className="relative z-10 flex items-center justify-between mb-3">
-            <span className="truncate pr-4 font-semibold text-white">{item.option}</span>
-            <span className="shrink-0 font-bold text-primary">{item.percentage.toFixed(0)}%</span>
+            <span className="truncate pr-4 font-semibold text-[var(--ink)]">{item.option}</span>
+            <span className="shrink-0 font-bold text-[var(--electric)]">{item.percentage.toFixed(0)}%</span>
           </div>
-          <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: `${item.percentage}%` }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: 'easeOut', delay: 0.2 + (i*0.1) }}
-              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary-hover"
+              className="absolute inset-y-0 left-0 rounded-full bg-[var(--electric)]"
             />
           </div>
         </motion.div>
@@ -434,15 +437,15 @@ function TesterRatingCard({
   return (
     <motion.div
       variants={fadeInUp}
-      className="group relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] transition-all hover:border-primary/30 hover:bg-surface-elevated"
+      className="group relative overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-6 transition-all hover:border-[var(--electric-mid)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)]"
     >
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--electric-dim)] text-[var(--electric)]">
           <Users size={18} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white">Tester {testerIndex + 1} anonymous</h3>
-          <div className="text-xs font-medium text-text-muted">
+          <h3 className="text-sm font-bold text-[var(--ink)]">Tester {testerIndex + 1} anonymous</h3>
+          <div className="text-xs font-medium text-[var(--ink-soft)]">
             Founders rate completed assignments one by one.
           </div>
         </div>
@@ -451,7 +454,7 @@ function TesterRatingCard({
       <div className="space-y-5">
           {/* Star rating */}
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-muted">
+            <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
               Rating
             </label>
             <StarRow value={score} size={24} onChange={setScore} readonly={formDisabled} />
@@ -459,8 +462,8 @@ function TesterRatingCard({
 
           {/* Note */}
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-muted">
-              Note <span className="normal-case font-normal tracking-normal text-text-muted/80">(optional)</span>
+            <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
+              Note <span className="normal-case font-normal tracking-normal text-[var(--ink-soft)]/80">(optional)</span>
             </label>
             <textarea
               value={note}
@@ -468,7 +471,7 @@ function TesterRatingCard({
               disabled={formDisabled}
               rows={3}
               placeholder="Add a note about this tester…"
-              className={`${textFieldClass} resize-none disabled:opacity-60`}
+              className={`${textFieldClass} resize-none disabled:opacity-60 cursor-none`}
             />
           </div>
 
@@ -478,7 +481,7 @@ function TesterRatingCard({
               setFlagError('')
               setFlagOpen(true)
             }}
-            className="text-sm font-semibold text-primary hover:underline"
+            className="text-sm font-semibold text-[var(--electric)] hover:underline cursor-none"
           >
             Flag this tester
           </button>
@@ -487,7 +490,7 @@ function TesterRatingCard({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={score === 0 || submitted || submitting}
-            className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm ${primaryButtonClass}`}
+            className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 text-sm ${primaryButtonClass} cursor-none`}
           >
             {submitting ? (
               <>
@@ -500,12 +503,12 @@ function TesterRatingCard({
             )}
           </button>
 
-          {error ? <p className="text-xs font-semibold text-red-500">{error}</p> : null}
+          {error ? <p className="text-xs font-semibold text-[#c0392b]">{error}</p> : null}
           {submitted && !isAlreadyRated ? (
-            <p className="text-sm font-semibold text-emerald-300">Rating submitted successfully.</p>
+            <p className="text-sm font-semibold text-[#1e7a47]">Rating submitted successfully.</p>
           ) : null}
           {isAlreadyRated ? (
-            <p className="text-sm font-semibold text-text-muted">This tester was already rated.</p>
+            <p className="text-sm font-semibold text-[var(--ink-soft)]">This tester was already rated.</p>
           ) : null}
         </div>
         {flagOpen ? (
@@ -543,14 +546,14 @@ function RateTestersSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
+      className="mt-12 overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)]"
     >
-      <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
-        <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
-          <Star className="text-amber-500" />
+      <div className="border-b border-[var(--border)] bg-[var(--bg-light)] px-8 py-6">
+        <h2 className="flex items-center gap-3 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">
+          <Star className="text-[var(--electric)]" />
           Rate Your Testers
         </h2>
-        <p className="mt-2 text-sm font-medium text-text-muted">
+        <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">
           Share feedback on each tester&apos;s contribution to help the community grow.
         </p>
       </div>
@@ -559,7 +562,7 @@ function RateTestersSection({
         variants={stagger}
         initial="hidden"
         animate="visible"
-        className="grid gap-6 p-8 sm:grid-cols-2 lg:grid-cols-3"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 sm:p-8"
       >
         {assignments.map((assignment, index) => (
           <TesterRatingCard
@@ -670,7 +673,7 @@ function RetestDeltaSection({
       ? currentRun.clarityScore - previousRun.clarityScore
       : null
 
-  let deltaToneClass = 'bg-surface-elevated text-text-muted'
+  let deltaToneClass = 'bg-[var(--bg-light)] text-[var(--ink-soft)]'
   let deltaLabel = 'Baseline run'
 
   if (previousRun) {
@@ -680,7 +683,7 @@ function RetestDeltaSection({
       deltaLabel = 'No change since last run'
     } else {
       deltaToneClass =
-        scoreDelta > 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'
+        scoreDelta > 0 ? "bg-[rgba(74,197,128,0.12)] text-[#1e7a47] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em]" : "bg-[rgba(192,57,43,0.1)] text-[#c0392b] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em]"
       deltaLabel = `${scoreDelta > 0 ? '+' : ''}${scoreDelta.toFixed(1)} since last run`
     }
   }
@@ -706,34 +709,34 @@ function RetestDeltaSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45 }}
-      className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
+      className="mt-12 overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)]"
     >
-      <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
+      <div className="border-b border-[var(--border)] bg-[var(--bg-light)] px-8 py-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
-              <LineChart className="text-primary" />
+            <h2 className="flex items-center gap-3 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">
+              <LineChart className="text-[var(--electric)]" />
               Retest Delta
             </h2>
-            <p className="mt-2 text-sm font-medium text-text-muted">
+            <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">
               Track clarity changes across every related run and launch the next retest from here.
             </p>
           </div>
 
           <div className="flex flex-col items-start gap-3 lg:items-end">
-            <div className={`rounded-full px-4 py-2 text-sm font-black ${deltaToneClass}`}>
+            <div className={`rounded-full px-4 py-2 text-sm font-bold ${deltaToneClass}`}>
               {deltaLabel}
             </div>
             <button
               type="button"
               onClick={() => void handleRunRetest()}
               disabled={isSubmitting}
-              className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+              className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass} cursor-none`}
             >
               {isSubmitting ? <SpinnerIcon /> : null}
               Run Retest
             </button>
-            {submitError ? <p className="text-sm font-medium text-red-400">{submitError}</p> : null}
+            {submitError ? <p className="text-sm font-medium text-[#c0392b]">{submitError}</p> : null}
           </div>
         </div>
       </div>
@@ -741,7 +744,7 @@ function RetestDeltaSection({
       <div className="p-8">
         <div className="overflow-x-auto">
           <div className="relative flex min-w-max items-start gap-5 pb-2">
-            <div className="absolute left-8 right-8 top-5 h-px bg-border-subtle" />
+            <div className="absolute left-8 right-8 top-5 h-px bg-[var(--border)]" />
 
             {timelineRuns.map((run, index) => {
               const isCurrentRun = run.id === mission.id
@@ -750,14 +753,14 @@ function RetestDeltaSection({
                 : `/mission/wizard?edit=${run.id}`
 
               return (
-                <Link key={run.id} href={href} className="relative z-10 flex w-52 shrink-0 flex-col gap-3">
+                <Link key={run.id} href={href} className="relative z-10 flex w-52 shrink-0 flex-col gap-3 cursor-none">
                   <div className="flex items-center gap-3">
                     <div
                       className={`h-4 w-4 rounded-full ring-4 ${
-                        isCurrentRun ? 'bg-primary ring-primary/20' : 'bg-surface-elevated ring-border-subtle'
+                        isCurrentRun ? 'bg-[var(--electric)] ring-[var(--electric-mid)]' : 'bg-[var(--bg-light)] ring-[var(--border)]'
                       }`}
                     />
-                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">
+                    <span className="text-[0.7rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                       Run {index + 1}
                     </span>
                   </div>
@@ -765,28 +768,28 @@ function RetestDeltaSection({
                   <div
                     className={`rounded-2xl border p-5 shadow-sm transition-colors ${
                       isCurrentRun
-                        ? 'border-primary/40 bg-primary/10'
-                        : 'border-border-subtle bg-surface-elevated hover:border-primary/30'
+                        ? 'border-[var(--electric-mid)] bg-[var(--electric-dim)]'
+                        : 'border-[var(--border)] bg-[var(--bg-light)] hover:border-[var(--electric-mid)]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="line-clamp-2 text-sm font-black text-white">{run.title}</div>
+                      <div className="line-clamp-2 text-sm font-bold text-[var(--ink)]">{run.title}</div>
                       {isCurrentRun ? (
-                        <div className="rounded-full bg-primary px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-white">
+                        <div className="rounded-full bg-[var(--electric)] px-2.5 py-1 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--cream)]">
                           Current
                         </div>
                       ) : null}
                     </div>
 
-                    <p className="mt-2 text-xs font-medium text-text-muted">
+                    <p className="mt-2 text-xs font-medium text-[var(--ink-soft)]">
                       {run.completedAt ? format(new Date(run.completedAt), 'MMM d, yyyy') : 'Draft retest'}
                     </p>
 
                     <div className="mt-4">
-                      <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
+                      <div className="text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                         Clarity score
                       </div>
-                      <div className="mt-1 text-2xl font-black text-white">
+                      <div className="mt-1 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">
                         {run.clarityScore === null ? 'Pending' : run.clarityScore.toFixed(1)}
                       </div>
                     </div>
@@ -894,14 +897,14 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
   if (loadError) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-text-main">
-        <div className="w-full max-w-xl rounded-panel border border-red-500/20 bg-red-950/20 p-8 text-center">
-          <h1 className="text-2xl font-black text-white">Unable to load insights</h1>
-          <p className="mt-3 text-sm font-medium text-text-muted">{loadError}</p>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6 py-12 text-[var(--ink)]">
+        <div className="w-full max-w-xl rounded-[1.25rem] border border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] p-8 text-center">
+          <h1 className="text-2xl font-['Fraunces'] italic font-normal text-[var(--ink)]">Unable to load insights</h1>
+          <p className="mt-3 text-sm font-medium text-[var(--ink-soft)]">{loadError}</p>
           <button
             type="button"
             onClick={() => void loadData()}
-            className={`mt-6 px-6 py-3 text-sm ${primaryButtonClass}`}
+            className={`mt-6 px-6 py-3 text-sm ${primaryButtonClass} cursor-none`}
           >
             Retry
           </button>
@@ -916,24 +919,24 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
   if (mission.testersCompleted === 0 || notReady || !feedback) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-text-main">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6 py-12 text-[var(--ink)]">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-xl text-center"
         >
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]">
-            <Clock className="h-10 w-10 text-primary" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-[var(--border)] bg-[var(--bg-light)]">
+            <Clock className="h-10 w-10 text-[var(--electric)]" />
           </div>
-          <h1 className="mb-4 text-3xl font-black tracking-tight text-white">
+          <h1 className="mb-4 text-3xl font-['Fraunces'] italic font-normal tracking-tight text-[var(--ink)]">
             Awaiting Tester Feedback
           </h1>
-          <p className="mb-8 text-lg font-medium text-text-muted">
+          <p className="mb-8 text-lg font-medium text-[var(--ink-soft)]">
             The insights report unlocks automatically as soon as responses start rolling in. Check back soon.
           </p>
           <Link 
             href={`/mission/status/${missionId}`}
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-primary-hover px-8 py-3.5 font-bold text-white transition-all hover:scale-[1.02] hover:shadow-[0_8px_24px_rgba(249,124,90,0.35)]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--electric)] px-8 py-3.5 font-semibold text-[var(--cream)] transition-opacity hover:opacity-90 cursor-none"
           >
             View Mission Status <ArrowRight size={18} />
           </Link>
@@ -953,30 +956,27 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
   const shouldShowRetestDelta = mission.status === 'COMPLETED'
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background pb-24 pt-8 text-text-main sm:pt-12">
-      <div className="relative mx-auto max-w-[1200px] px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    <div className="relative min-h-screen overflow-hidden bg-[var(--bg)] pb-24 pt-[60px] text-[var(--ink)] sm:pt-[80px]">
+      {/* Fixed Top Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-[56px] items-center justify-between border-b border-[var(--border)] bg-[var(--bg)]/90 px-4 backdrop-blur-md sm:px-6">
+        <Link
+          href="/dashboard/founder"
+          className="group flex items-center gap-2 text-sm font-semibold text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)] cursor-none"
         >
-          <Link
-            href="/dashboard/founder"
-            className="group flex items-center gap-2 text-sm font-semibold text-text-muted transition-colors hover:text-white"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-surface-elevated transition-transform group-hover:-translate-x-1">
-              <ArrowLeft size={16} />
-            </div>
-            Back to Dashboard
-          </Link>
-          <Link
-            href={`/mission/status/${missionId}`}
-            className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline underline-offset-4"
-          >
-            Mission Status <ArrowRight size={16} />
-          </Link>
-        </motion.div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-light)] transition-transform group-hover:-translate-x-1">
+            <ArrowLeft size={16} />
+          </div>
+          Back to Dashboard
+        </Link>
+        <Link
+          href={`/mission/status/${missionId}`}
+          className="inline-flex items-center gap-2 text-sm font-bold text-[var(--electric)] transition-colors hover:text-[var(--electric)] hover:underline underline-offset-4 cursor-none"
+        >
+          Mission Status <ArrowRight size={16} />
+        </Link>
+      </div>
 
+      <div className="relative z-10 mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 mt-6">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -990,20 +990,20 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)] sm:p-12"
+          className="relative overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-8 sm:p-12"
         >
-          <div className="pointer-events-none absolute left-0 top-0 h-2 w-full bg-gradient-to-r from-primary to-primary-hover" />
+          <div className="pointer-events-none absolute left-0 top-0 h-2 w-full bg-[var(--electric)]" />
           
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-primary">
-                <Sparkles size={14} className="text-primary" />
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-4 py-1.5 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--electric)]">
+                <Sparkles size={14} className="text-[var(--electric)]" />
                 {formatStatusLabel(mission.status)} Mission report
               </div>
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl/tight">
+              <h1 className="text-4xl font-['Fraunces'] italic font-normal text-[var(--ink)] sm:text-5xl md:text-6xl/tight">
                 {mission.title}
               </h1>
-              <p className="mt-6 max-w-2xl text-lg/relaxed font-medium text-text-muted">
+              <p className="mt-6 max-w-2xl text-lg/relaxed font-medium text-[var(--ink-soft)]">
                 {mission.goal}
               </p>
             </div>
@@ -1013,7 +1013,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 type="button"
                 disabled
                 title="PDF export coming soon"
-                className="inline-flex h-12 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-6 font-bold text-text-muted opacity-80"
+                className="inline-flex items-center justify-center gap-2 border border-[var(--border-strong)] bg-transparent text-[var(--ink)] rounded-xl px-4 py-2 hover:border-[var(--electric)] hover:text-[var(--electric)] transition-colors cursor-none"
               >
                 <Download size={18} />
                 Export PDF
@@ -1026,20 +1026,20 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           variants={stagger}
           initial="hidden"
           animate="visible"
-          className="mt-8 grid gap-6 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)]"
+          className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.5fr)]"
         >
           <SummaryStatCard
             label="Total Testers"
             value={feedback.summary.completedCount.toLocaleString()}
             icon={Users}
             chip="Live Signal"
-            footer={<span className="text-sm font-medium text-text-muted">From {mission.testersCompleted} completed</span>}
+            footer={<span className="text-sm font-medium text-[var(--ink-soft)]">From {mission.testersCompleted} completed</span>}
           />
           <SummaryStatCard
             label="Avg Duration"
             value={formatDuration(feedback.timingMetrics?.avgCompletionSeconds)}
             icon={Clock}
-            footer={<span className="text-sm font-medium text-text-muted">To complete mission</span>}
+            footer={<span className="text-sm font-medium text-[var(--ink-soft)]">To complete mission</span>}
           />
           <SummaryStatCard
             label="Clarity Score"
@@ -1050,18 +1050,18 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
 
           <motion.div 
             variants={fadeInUp}
-            className="group relative overflow-hidden rounded-panel border border-primary/30 bg-gradient-to-br from-primary to-primary-hover p-8 text-white shadow-[0_24px_80px_-56px_rgba(249,124,90,0.9)] xl:p-10"
+            className="group relative overflow-hidden rounded-[1.25rem] border border-[var(--electric-mid)] bg-[var(--electric)] p-8 text-[var(--cream)] xl:p-10"
           >
             <div className="relative z-10 flex h-full flex-col justify-between">
               <div>
-                <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/80">
+                <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--cream)]/80">
                   <Sparkles size={16} /> Key AI Insight
                 </div>
-                <p className="text-xl font-medium leading-relaxed text-white lg:text-2xl">
+                <p className="text-xl font-medium leading-relaxed text-[var(--cream)] lg:text-2xl">
                   &ldquo;{insightQuote}&rdquo;
                 </p>
               </div>
-              <div className="mt-8 border-t border-white/20 pt-6 text-sm font-medium text-white/80">
+              <div className="mt-8 border-t border-white/20 pt-6 text-sm font-medium text-[var(--ink)]/80">
                 Synthesized from full dataset
               </div>
             </div>
@@ -1073,15 +1073,15 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="mt-8 overflow-hidden rounded-panel border border-border-subtle bg-surface p-8 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
+          className="mt-8 overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-8"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
-                <Sparkles className="text-primary" />
+              <h2 className="flex items-center gap-3 text-2xl font-['Fraunces'] italic font-normal text-[var(--ink)]">
+                <Sparkles className="text-[var(--electric)]" />
                 AI Insights
               </h2>
-              <p className="mt-2 text-sm font-medium text-text-muted">
+              <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">
                 AI-powered analysis of your feedback data
               </p>
             </div>
@@ -1090,19 +1090,19 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           {synthesis ? (
             <div className="space-y-6">
               <div>
-                <h3 className="mb-2 text-lg font-bold text-white">Summary</h3>
-                <p className="leading-relaxed text-text-muted">{synthesis.summary}</p>
+                <h3 className="mb-2 text-lg font-['Fraunces'] italic font-normal text-[var(--ink)]">Summary</h3>
+                <p className="leading-relaxed text-[var(--ink-soft)]">{synthesis.summary}</p>
               </div>
 
               <div>
-                <h3 className="mb-2 text-lg font-bold text-white">Recommended Next Action</h3>
-                <p className="text-lg font-semibold text-primary">{synthesis.recommendation}</p>
+                <h3 className="mb-2 text-lg font-['Fraunces'] italic font-normal text-[var(--ink)]">Recommended Next Action</h3>
+                <p className="text-lg font-semibold text-[var(--electric)]">{synthesis.recommendation}</p>
               </div>
 
               {synthesis.frictionPoints.length > 0 && (
                 <div>
-                  <h3 className="mb-2 text-lg font-bold text-white">Key Friction Points</h3>
-                  <ul className="list-inside list-disc space-y-1 text-text-muted">
+                  <h3 className="mb-2 text-lg font-['Fraunces'] italic font-normal text-[var(--ink)]">Key Friction Points</h3>
+                  <ul className="list-inside list-disc space-y-1 text-[var(--ink-soft)]">
                     {synthesis.frictionPoints.map((point, index) => (
                       <li key={index}>{point}</li>
                     ))}
@@ -1111,24 +1111,24 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
               )}
 
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-text-muted">Signal Strength:</span>
+                <span className="text-sm font-medium text-[var(--ink-soft)]">Signal Strength:</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                  synthesis.signalStrength === 'HIGH' ? 'bg-emerald-900/40 text-emerald-300' :
-                  synthesis.signalStrength === 'MEDIUM' ? 'bg-amber-900/40 text-amber-300' :
-                  'bg-red-900/40 text-red-300'
+                  synthesis.signalStrength === 'HIGH' ? "bg-[rgba(74,197,128,0.12)] text-[#1e7a47] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em]" :
+                  synthesis.signalStrength === 'MEDIUM' ? "bg-[rgba(251,191,36,0.12)] text-[#92400e] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em]" :
+                  "bg-[rgba(192,57,43,0.1)] text-[#c0392b] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em]"
                 }`}>
                   {synthesis.signalStrength}
                 </span>
               </div>
             </div>
           ) : synthesisError ? (
-            <div className="rounded-3xl border border-red-500/20 bg-red-950/20 p-6 text-center">
-              <p className="text-sm font-semibold text-red-300">{synthesisError}</p>
+            <div className="rounded-[1.25rem] border border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] p-6 text-center">
+              <p className="text-sm font-semibold text-[#c0392b]">{synthesisError}</p>
               <button
                 type="button"
                 onClick={() => void loadSynthesis()}
                 disabled={synthesisLoading}
-                className={`mt-4 inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+                className={`mt-4 inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass} cursor-none`}
               >
                 {synthesisLoading ? (
                   <>
@@ -1144,7 +1144,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
               <button
                 onClick={() => void loadSynthesis()}
                 disabled={synthesisLoading}
-                className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass}`}
+                className={`inline-flex items-center gap-2 px-6 py-3 text-sm ${primaryButtonClass} cursor-none`}
               >
                 {synthesisLoading ? (
                   <>
@@ -1157,7 +1157,7 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 )}
               </button>
               {synthesisLoading && (
-                <p className="mt-4 text-sm text-text-muted">This may take a few seconds...</p>
+                <p className="mt-4 text-sm text-[var(--ink-soft)]">This may take a few seconds...</p>
               )}
             </div>
           )}
@@ -1167,16 +1167,16 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-12 overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-[0_24px_80px_-56px_rgba(0,0,0,0.9)]"
+          className="mt-12 overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)]"
         >
-          <div className="border-b border-border-subtle bg-surface-elevated px-8 py-6">
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white">
-              <BarChart3 className="text-primary" />
+          <div className="border-b border-[var(--border)] bg-[var(--bg-light)] px-8 py-6">
+            <h2 className="flex items-center gap-3 text-2xl font-['Fraunces'] italic font-normal text-[var(--ink)]">
+              <BarChart3 className="text-[var(--electric)]" />
               Response Analysis
             </h2>
           </div>
 
-          <div className="divide-y divide-border-subtle">
+          <div className="divide-y divide-[var(--border)]">
             {reportQuestions.map((question, idx) => (
               <motion.div
                 key={question.questionId}
@@ -1184,31 +1184,31 @@ export function MissionInsightsPage({ missionId }: { missionId: string }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="grid gap-8 p-8 transition-colors hover:bg-surface-elevated/40 lg:grid-cols-[320px_minmax(0,1fr)] xl:p-12"
+                className="grid gap-8 p-8 transition-colors hover:bg-[var(--bg-light)]/40 lg:grid-cols-[320px_minmax(0,1fr)] xl:p-12"
               >
                 <div>
-                  <div className="mb-4 inline-flex items-center justify-center rounded-xl border border-border-subtle bg-surface-elevated px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-primary">
+                  <div className="mb-4 inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg-light)] px-3 py-1.5 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--electric)]">
                     Question {String(question.order).padStart(2, '0')}
                   </div>
-                  <h3 className="mb-4 text-xl font-bold leading-tight text-white">{question.text}</h3>
-                  <p className="text-sm font-medium leading-relaxed text-text-muted">
+                  <h3 className="mb-4 text-xl font-['Fraunces'] italic font-normal leading-tight text-[var(--ink)]">{question.text}</h3>
+                  <p className="text-sm font-medium leading-relaxed text-[var(--ink-soft)]">
                     {getQuestionMeasureCopy(question)}
                   </p>
                 </div>
 
-                <div className="rounded-panel border border-border-subtle bg-surface-elevated p-6 transition-colors duration-300 hover:border-primary/30 sm:p-8">
+                <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-6 transition-colors duration-300 hover:border-[var(--electric-mid)] sm:p-8">
                   <QuestionBreakdown question={question} />
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-border-subtle bg-surface-elevated px-8 py-6 text-sm font-medium text-text-muted sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-t border-[var(--border)] bg-[var(--bg-light)] px-8 py-6 text-sm font-medium text-[var(--ink-soft)] sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Clock size={16} />
               Last updated: {format(new Date(lastUpdatedAt), 'MMMM d, yyyy \u2014 h:mm a')}
             </div>
-            <div className="flex items-center gap-2 font-semibold text-primary">
+            <div className="flex items-center gap-2 font-semibold text-[var(--electric)]">
               <Target size={16} />
               Model Confidence: {confidenceScore}%
             </div>

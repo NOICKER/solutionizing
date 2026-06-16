@@ -15,7 +15,6 @@ const UpdateFounderProfileSchema = z.object({
   notifyMissionApproved: z.boolean().optional(),
   notifyMissionCompleted: z.boolean().optional(),
   notifyTesterFeedback: z.boolean().optional(),
-  darkMode: z.boolean().optional(),
   onboardingCompleted: z.boolean().optional(),
 })
 
@@ -37,7 +36,6 @@ export async function GET(request: Request) {
         notifyMissionApproved: true,
         notifyMissionCompleted: true,
         notifyTesterFeedback: true,
-        darkMode: true,
         onboardingCompleted: true,
       },
     })
@@ -72,7 +70,6 @@ export async function PATCH(request: Request) {
       && body.notifyMissionApproved === undefined
       && body.notifyMissionCompleted === undefined
       && body.notifyTesterFeedback === undefined
-      && body.darkMode === undefined
       && body.onboardingCompleted === undefined
     ) {
       return badRequest('At least one profile field must be provided')
@@ -96,7 +93,6 @@ export async function PATCH(request: Request) {
         ...(body.notifyTesterFeedback !== undefined
           ? { notifyTesterFeedback: body.notifyTesterFeedback }
           : {}),
-        ...(body.darkMode !== undefined ? { darkMode: body.darkMode } : {}),
         ...(body.onboardingCompleted !== undefined
           ? { onboardingCompleted: body.onboardingCompleted }
           : {}),
@@ -109,7 +105,6 @@ export async function PATCH(request: Request) {
         notifyMissionApproved: true,
         notifyMissionCompleted: true,
         notifyTesterFeedback: true,
-        darkMode: true,
         onboardingCompleted: true,
       },
     })

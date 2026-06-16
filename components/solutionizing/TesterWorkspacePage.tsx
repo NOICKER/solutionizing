@@ -49,9 +49,9 @@ function TimesUpOverlay({
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-500/20">
           <Clock className="h-10 w-10 text-red-400" />
         </div>
-        <h1 className="mb-3 text-3xl font-black text-white">Time&apos;s up!</h1>
+        <h1 className="mb-3 text-3xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">Time&apos;s up!</h1>
         <p className="mb-8 text-base text-gray-400">{message}</p>
-        <button className={`px-10 py-4 text-lg ${primaryButtonClass}`} disabled={isSubmitting} onClick={onReturn}>
+        <button className={`cursor-none px-10 py-4 text-lg ${primaryButtonClass}`} disabled={isSubmitting} onClick={onReturn}>
           {isSubmitting ? 'SUBMITTING...' : 'RETURN TO DASHBOARD'}
         </button>
       </div>
@@ -66,14 +66,14 @@ function OutboundLinkWarning({ url, onContinue, onCancel }: { url: string; onCon
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20">
           <ExternalLink className="h-7 w-7 text-amber-400" />
         </div>
-        <h2 className="mb-2 text-center text-xl font-black text-white">External link</h2>
+        <h2 className="mb-2 text-center text-xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">External link</h2>
         <p className="mb-2 text-center text-sm text-gray-400">You are being redirected to an external product page. This link was provided by the founder.</p>
         <p className="mb-6 break-all rounded-xl bg-gray-800 p-3 text-center text-xs text-gray-300">{url}</p>
         <div className="flex gap-3">
-          <button className="flex-1 rounded-[2rem] border-2 border-gray-700 px-5 py-3 font-black text-white transition-colors hover:bg-gray-800" onClick={onCancel}>
+          <button className="flex-1 rounded-[2rem] border-2 border-[rgba(255,255,255,0.15)] px-5 py-3 font-semibold text-[var(--cream)] hover:bg-[rgba(255,255,255,0.06)] cursor-none" onClick={onCancel}>
             CANCEL
           </button>
-          <button className={`flex-1 px-5 py-3 ${primaryButtonClass}`} onClick={onContinue}>
+          <button className={`cursor-none flex-1 px-5 py-3 ${primaryButtonClass}`} onClick={onContinue}>
             CONTINUE →
           </button>
         </div>
@@ -141,13 +141,13 @@ function getTooShortAnswerIndexes(
   }, [])
 }
 
-const workspacePageClass = 'min-h-screen bg-background px-4 py-4 text-text-main sm:px-6 lg:px-8'
-const workspacePanelClass = 'relative overflow-hidden rounded-panel border border-border-subtle bg-surface shadow-card'
-const workspaceSectionClass = 'rounded-card border border-border-subtle bg-surface-elevated'
-const workspaceEyebrowClass = 'inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted'
-const workspaceBackLinkClass = 'font-semibold text-text-muted transition-colors hover:text-text-main'
-const selectedChoiceClass = 'border-primary/60 bg-primary/12 text-text-main shadow-[0_18px_35px_-24px_rgba(249,124,90,0.55)]'
-const unselectedChoiceClass = 'border-border-subtle bg-surface-elevated text-text-main hover:border-primary/35 hover:bg-surface'
+const workspacePageClass = 'min-h-screen bg-[var(--dark)] px-4 py-4 text-[var(--cream)] sm:px-6 lg:px-8'
+const workspacePanelClass = 'relative overflow-hidden rounded-[1.25rem] border border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
+const workspaceSectionClass = 'rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
+const workspaceEyebrowClass = 'inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.06)] px-3 py-1 text-[0.68rem] font-[\'DM_Mono\'] uppercase tracking-[0.1em] text-[var(--cream)] opacity-60'
+const workspaceBackLinkClass = 'font-semibold text-[var(--cream)] opacity-60 transition-opacity hover:opacity-100 cursor-none'
+const selectedChoiceClass = 'border-[var(--electric)] bg-[var(--electric-dim)] text-[var(--cream)]'
+const unselectedChoiceClass = 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] text-[var(--cream)] hover:border-[var(--electric-mid)]'
 
 function getAssetTypeLabel(type: ApiTesterAssignmentDetail['mission']['assets'][number]['type']) {
   switch (type) {
@@ -238,14 +238,14 @@ function WorkspaceStatusPanel({
     <div className={workspacePageClass}>
       <div className="mx-auto max-w-3xl">
         <div className={`${workspacePanelClass} px-6 py-10 text-center sm:px-10`}>
-          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          
+          
           <div className="relative z-10">
             <div className={`${workspaceEyebrowClass} mb-4`}>
-              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
               Tester workspace
             </div>
-            <h1 className="mb-6 text-3xl font-black text-white sm:text-4xl">{title}</h1>
+            <h1 className="mb-3 text-3xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">{title}</h1>
             <Link href={actionHref} className={`px-8 py-3.5 ${primaryButtonClass}`}>
               {actionLabel}
             </Link>
@@ -257,15 +257,15 @@ function WorkspaceStatusPanel({
 }
 
 function TesterWorkspaceSkeleton() {
-  const skeletonBar = 'animate-pulse rounded-full bg-surface-elevated'
-  const skeletonBlock = 'animate-pulse rounded-3xl bg-background'
+  const skeletonBar = 'animate-pulse rounded-full bg-[rgba(255,255,255,0.04)]'
+  const skeletonBlock = 'animate-pulse rounded-3xl bg-[var(--dark)]'
 
   return (
     <div className={workspacePageClass}>
       <div className="mx-auto max-w-5xl">
         <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
-          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          
+          
           <div className="relative z-10">
           <div className="mb-8 flex flex-col items-center space-y-4 text-center">
             <div className={`h-9 w-40 ${skeletonBar}`} />
@@ -277,7 +277,7 @@ function TesterWorkspaceSkeleton() {
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-card border border-border-subtle bg-surface-elevated p-6 text-center"
+                className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-6 text-center"
               >
                 <div className={`mx-auto h-3 w-20 ${skeletonBar}`} />
                 <div className={`mx-auto mt-4 h-9 w-24 ${skeletonBar}`} />
@@ -286,11 +286,11 @@ function TesterWorkspaceSkeleton() {
             ))}
           </div>
 
-          <div className="mb-8 rounded-card border border-border-subtle bg-surface-elevated p-8">
+          <div className="mb-8 rounded-card border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-8">
             <div className={`h-6 w-52 ${skeletonBar}`} />
             <div className="mt-6 space-y-4">
               {Array.from({ length: 2 }).map((_, index) => (
-                <div key={index} className="flex items-center gap-4 rounded-2xl border border-border-subtle bg-background p-4">
+                <div key={index} className="flex items-center gap-4 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[var(--dark)] p-4">
                   <div className="flex-1 space-y-3">
                     <div className={`h-4 w-36 ${skeletonBar}`} />
                     <div className={`h-4 w-full max-w-lg ${skeletonBar}`} />
@@ -695,68 +695,68 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       <div className={workspacePageClass}>
         <div className="mx-auto max-w-5xl">
           <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
-            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            
+            
             <div className="relative z-10">
           <div className="mb-8 text-center">
             <div className={`${workspaceEyebrowClass} mb-4`}>
-              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
               Mission assigned
             </div>
-            <h1 className="mb-3 text-3xl font-black tracking-tight text-white sm:text-5xl">{assignment.mission.title}</h1>
-            <p className="mx-auto max-w-3xl text-sm leading-7 text-text-muted sm:text-base">{assignment.mission.goal}</p>
+            <h1 className="mb-3 text-3xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)] sm:text-5xl">{assignment.mission.title}</h1>
+            <p className="mx-auto max-w-3xl text-sm leading-7 text-[var(--cream)] opacity-70 sm:text-base">{assignment.mission.goal}</p>
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
             <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
-              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Reward</div>
-              <div className="mb-1 text-3xl font-black text-white">{formatCoins(assignment.mission.coinPerTester)}</div>
-              <div className="text-sm text-text-muted">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
+              <div className="mb-3 text-[0.68rem] font-[\'DM_Mono\'] uppercase tracking-[0.1em] text-[var(--cream)] opacity-50">Reward</div>
+              <div className="mb-1 text-3xl font-[\'Fraunces\'] font-bold text-[var(--cream)]">{formatCoins(assignment.mission.coinPerTester)}</div>
+              <div className="text-sm text-[var(--cream)] opacity-60">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
             </div>
             <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
-              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Estimated time</div>
-              <div className="mb-1 text-3xl font-black text-white">{assignment.mission.estimatedMinutes}</div>
-              <div className="text-sm text-text-muted">minutes</div>
+              <div className="mb-3 text-[0.68rem] font-[\'DM_Mono\'] uppercase tracking-[0.1em] text-[var(--cream)] opacity-50">Estimated time</div>
+              <div className="mb-1 text-3xl font-[\'Fraunces\'] font-bold text-[var(--cream)]">{assignment.mission.estimatedMinutes}</div>
+              <div className="text-sm text-[var(--cream)] opacity-60">minutes</div>
             </div>
             <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
-              <div className="mb-3 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">Expires in</div>
-              <div className="mb-1 text-3xl font-black text-primary">{hoursLeft}</div>
-              <div className="text-sm text-text-muted">hours</div>
+              <div className="mb-3 text-[0.68rem] font-[\'DM_Mono\'] uppercase tracking-[0.1em] text-[var(--cream)] opacity-50">Expires in</div>
+              <div className="mb-1 text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-primary">{hoursLeft}</div>
+              <div className="text-sm text-[var(--cream)] opacity-60">hours</div>
             </div>
           </div>
 
           <div className={`${workspaceSectionClass} mb-8 p-6 sm:p-8`}>
             <div className="mb-6">
               <div className={`${workspaceEyebrowClass} mb-3`}>
-                <BrandMark className="h-3.5 w-3.5 text-primary" />
+                <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
                 Mission inputs
               </div>
-              <h2 className="text-2xl font-black text-white">What you&apos;ll be testing</h2>
-              <p className="mt-2 text-sm text-text-muted">Everything below came directly from the founder. Keep these references nearby while you test.</p>
+              <h2 className="mb-2 text-center text-xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">What you&apos;ll be testing</h2>
+              <p className="mt-2 text-sm text-[var(--cream)] opacity-60">Everything below came directly from the founder. Keep these references nearby while you test.</p>
             </div>
 
             <div className="space-y-4">
               {assignment.mission.assets.map((asset, index) => (
-                <div key={index} className="flex flex-col gap-4 rounded-[1.75rem] border border-border-subtle bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div key={index} className="flex flex-col gap-4 rounded-[1.75rem] border border-[rgba(255,255,255,0.08)] bg-[var(--dark)]/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-primary">
                         {getAssetTypeLabel(asset.type)}
                       </span>
                     </div>
-                    <div className="text-base font-black text-white">{getAssetDisplayLabel(asset)}</div>
-                    <div className={`mt-2 text-sm leading-6 text-text-muted ${asset.type === 'TEXT_DESCRIPTION' ? 'whitespace-pre-wrap break-words' : 'break-all sm:break-normal'}`}>
+                    <div className="text-base font-bold font-[family-name:var(--font-dm-mono)] text-[var(--cream)]">{getAssetDisplayLabel(asset)}</div>
+                    <div className={`mt-2 text-sm leading-6 text-[var(--cream)] opacity-60 ${asset.type === 'TEXT_DESCRIPTION' ? 'whitespace-pre-wrap break-words' : 'break-all sm:break-normal'}`}>
                       {getAssetSupportText(asset)}
                     </div>
                     {asset.type === 'LINK' ? (
-                      <div className="mt-2 text-xs text-text-muted/70">{asset.url}</div>
+                      <div className="mt-2 text-xs text-[var(--cream)] opacity-60/70">{asset.url}</div>
                     ) : null}
                   </div>
                   {asset.type === 'TEXT_DESCRIPTION' ? null : (
                     <button
                       type="button"
                       onClick={() => setOutboundWarningUrl(asset.url)}
-                      className="inline-flex w-full items-center justify-center rounded-[2rem] border border-primary/25 bg-primary/10 px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary/15 sm:w-auto"
+                      className="inline-flex w-full items-center justify-center rounded-[2rem] border border-primary/25 bg-primary/10 px-5 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 sm:w-auto"
                     >
                       {getAssetActionLabel(asset.type)} →
                     </button>
@@ -772,14 +772,14 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           <div className="flex flex-col-reverse items-center justify-between gap-6 sm:flex-row">
             <Link href="/dashboard/tester" className={workspaceBackLinkClass}>← Back to dashboard</Link>
-            <button className={`flex w-full items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
+            <button className={`cursor-none flex w-full items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
               {startLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
               BEGIN MISSION →
             </button>
           </div>
 
           <div className="mt-8 text-center">
-            <button className="text-sm text-text-muted underline transition-colors hover:text-text-main" onClick={() => setReportOpen(true)}>
+            <button className="cursor-none text-sm text-[var(--cream)] opacity-60 underline transition-colors hover:text-[var(--cream)]" onClick={() => setReportOpen(true)}>
               Flag something that feels off
             </button>
           </div>
@@ -827,37 +827,37 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       <div className={workspacePageClass}>
         <div className="mx-auto max-w-4xl">
           <div className={`${workspacePanelClass} p-5 sm:p-6 lg:p-8`}>
-            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            
+            
             <div className="relative z-10">
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-text-muted">Question {currentQuestion + 1} of {questions.length}</span>
+              <span className="text-sm text-[var(--cream)] opacity-60">Question {currentQuestion + 1} of {questions.length}</span>
               {secondsLeft !== null ? (
                 <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${
                   secondsLeft < 300
                     ? 'animate-pulse bg-red-500/15 text-red-300'
-                    : 'bg-surface-elevated text-text-muted'
+                    : 'bg-[rgba(255,255,255,0.04)] text-[var(--cream)] opacity-60'
                 }`}>
                   <Clock className="h-3.5 w-3.5" />
                   {formatTimeLeft(secondsLeft)}
                 </div>
               ) : null}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.04)]">
               <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
             </div>
           </div>
 
           <div className="mb-6">
             <div className={workspaceEyebrowClass}>
-              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
               {assignment.mission.title}
             </div>
           </div>
 
           <div className={`${workspaceSectionClass} mb-6 p-6 sm:p-8`}>
-            <h2 className="mb-6 text-xl font-black text-white sm:text-3xl">{current.text}</h2>
+            <h2 className="mb-2 text-center text-xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">{current.text}</h2>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
               <div>
@@ -879,7 +879,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                   placeholder={current.type === 'TEXT_LONG' ? 'Share your detailed thoughts...' : 'Your answer...'}
                   className={`${textFieldClass} resize-none`}
                 />
-                <div className="mt-2 flex items-center justify-between text-xs text-text-muted">
+                <div className="mt-2 flex items-center justify-between text-xs text-[var(--cream)] opacity-60">
                   <span>{currentTextRule ? `Minimum ${currentTextRule.min} characters` : ''}</span>
                   <span>
                     {currentTextLength} / {currentTextRule?.max} characters
@@ -916,9 +916,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                     }`}
                   >
                     <span className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      answer === option ? 'border-primary bg-primary' : 'border-border-subtle bg-surface'
+                      answer === option ? 'border-primary bg-primary' : 'border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
                     }`}>
-                      {answer === option ? <span className="h-2.5 w-2.5 rounded-full bg-surface" /> : null}
+                      {answer === option ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--dark-surface)]" /> : null}
                     </span>
                     <span className="flex-1 break-words text-base font-semibold leading-6">{option}</span>
                   </button>
@@ -937,7 +937,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                       setCurrentError('')
                     }}
                     className={`rounded-[1.75rem] border-2 p-4 text-lg transition-colors ${
-                      answer === option ? `${selectedChoiceClass} font-black` : `${unselectedChoiceClass} font-semibold`
+                      answer === option ? `${selectedChoiceClass} font-semibold` : `${unselectedChoiceClass} font-semibold`
                     }`}
                   >
                     {option.toUpperCase()}
@@ -951,13 +951,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           <div className="mb-4 flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
             <button className={workspaceBackLinkClass} onClick={() => setCurrentQuestion((value) => Math.max(0, value - 1))}>← Back</button>
-            <button className={`w-full px-8 py-3.5 sm:w-auto ${primaryButtonClass}`} onClick={handleNextQuestion}>
+            <button className={`cursor-none w-full px-8 py-3.5 sm:w-auto ${primaryButtonClass}`} onClick={handleNextQuestion}>
               {currentQuestion === questions.length - 1 ? 'REVIEW ANSWERS →' : 'NEXT →'}
             </button>
           </div>
 
           <div className="text-center">
-            <button className="text-sm text-text-muted underline transition-colors hover:text-text-main" onClick={() => setReportOpen(true)}>
+            <button className="cursor-none text-sm text-[var(--cream)] opacity-60 underline transition-colors hover:text-[var(--cream)]" onClick={() => setReportOpen(true)}>
               Flag something that feels off
             </button>
           </div>
@@ -992,15 +992,15 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
       <div className={workspacePageClass}>
         <div className="mx-auto max-w-5xl">
           <div className={`${workspacePanelClass} p-6 sm:p-8 lg:p-10`}>
-            <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+            
+            
             <div className="relative z-10">
           <div className="mb-8 text-center">
             <div className={`${workspaceEyebrowClass} mb-4`}>
-              <BrandMark className="h-3.5 w-3.5 text-primary" />
+              <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
               Review
             </div>
-            <h1 className="mb-3 text-3xl font-black tracking-tight text-white sm:text-5xl">Review your answers</h1>
+            <h1 className="mb-3 text-3xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)] sm:text-5xl">Review your answers</h1>
           </div>
 
           <div className="mb-8 space-y-4">
@@ -1009,8 +1009,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
                     <div className="mb-2 text-sm font-bold text-primary">QUESTION {index + 1}</div>
-                    <h3 className="mb-3 text-lg font-black text-white">{question.text}</h3>
-                    <p className={`rounded-[1.5rem] border border-border-subtle bg-background/70 p-4 text-sm leading-6 ${answers[index] === undefined || answers[index] === '' ? 'italic text-text-muted' : 'whitespace-pre-wrap break-words text-text-main'}`}>
+                    <h3 className="mb-3 text-lg font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{question.text}</h3>
+                    <p className={`rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[var(--dark)]/70 p-4 text-sm leading-6 ${answers[index] === undefined || answers[index] === '' ? 'italic text-[var(--cream)] opacity-60' : 'whitespace-pre-wrap break-words text-[var(--cream)]'}`}>
                       {getAnswerPreview(answers[index])}
                     </p>
                     {tooShortSet.has(index) ? (
@@ -1019,7 +1019,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
                       </p>
                     ) : null}
                   </div>
-                  <button className="text-sm font-semibold text-primary hover:underline" onClick={() => { setCurrentQuestion(index); setPhase('questions') }}>
+                  <button className="cursor-none text-sm font-semibold text-primary hover:underline" onClick={() => { setCurrentQuestion(index); setPhase('questions') }}>
                     Edit
                   </button>
                 </div>
@@ -1027,10 +1027,10 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ))}
           </div>
 
-          <div className="mb-8 rounded-card border border-primary/25 bg-gradient-to-br from-primary/15 to-surface-elevated p-8">
-            <h3 className="mb-1 text-xl font-black text-white">You&apos;re about to earn</h3>
-            <p className="text-3xl font-black text-primary">
-              {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-text-muted">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
+          <div className="mb-8 rounded-card border border-primary/25 bg-[var(--electric)] p-8">
+            <h3 className="mb-1 text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">You&apos;re about to earn</h3>
+            <p className="text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-primary">
+              {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[var(--cream)] opacity-60">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
             </p>
           </div>
 
@@ -1041,7 +1041,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               ← Previous question
             </button>
             <button
-              className={`flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`}
+              className={`cursor-none flex items-center gap-2 px-12 py-4 text-lg ${primaryButtonClass}`}
               disabled={submitLoading || tooShortIndexes.length > 0}
               onClick={() => void handleSubmitFeedback()}
             >
@@ -1057,7 +1057,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           <div className="mt-4 text-right">
             <button
               type="button"
-              className="text-sm font-semibold text-text-muted underline transition-colors hover:text-text-main"
+              className="cursor-none text-sm font-semibold text-[var(--cream)] opacity-60 underline transition-colors hover:text-[var(--cream)]"
               onClick={() => setReportOpen(true)}
             >
               Flag something that feels off
@@ -1089,36 +1089,36 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     <div className={workspacePageClass}>
       <div className="mx-auto max-w-4xl">
         <div className={`${workspacePanelClass} p-8 text-center sm:p-10 lg:p-12`}>
-          <div className="pointer-events-none absolute -right-16 top-0 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          
+          
           <div className="relative z-10">
-        <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover shadow-[0_20px_45px_-22px_rgba(249,124,90,0.55)]">
-          <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+        <div className="mb-6 inline-flex h-28 w-28 items-center justify-center rounded-full bg-[var(--electric)] shadow-[0_20px_45px_-22px_rgba(249,124,90,0.55)]">
+          <svg className="w-14 h-14 text-[var(--cream)]" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <div className={`${workspaceEyebrowClass} mb-4`}>
-          <BrandMark className="h-3.5 w-3.5 text-primary" />
+          <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
           Mission complete
         </div>
-        <h1 className="mb-3 text-4xl font-black tracking-tight text-white">Mission complete!</h1>
-        <p className="mb-8 text-lg text-text-muted">Thank you for your feedback. Your reward is ready.</p>
+        <h1 className="mb-3 text-4xl font-[family-name:var(--font-fraunces)] italic font-normal tracking-tight text-[var(--cream)]">Mission complete!</h1>
+        <p className="mb-8 text-lg text-[var(--cream)] opacity-60">Thank you for your feedback. Your reward is ready.</p>
 
-        <div className="mx-auto mb-8 max-w-md rounded-card border border-primary/25 bg-gradient-to-br from-primary/15 to-surface-elevated p-8">
-          <div className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-text-muted">You earned</div>
-          <div className="text-4xl font-black text-white">{formatCoins(successState?.coinsEarned ?? 0)} coins</div>
-          <div className="mt-2 text-sm text-text-muted">≈ {formatRupeesFromCoins(successState?.coinsEarned ?? 0)}</div>
+        <div className="mx-auto mb-8 max-w-md rounded-card border border-primary/25 bg-[var(--electric)] p-8">
+          <div className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[var(--cream)] opacity-60">You earned</div>
+          <div className="text-4xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{formatCoins(successState?.coinsEarned ?? 0)} coins</div>
+          <div className="mt-2 text-sm text-[var(--cream)] opacity-60">≈ {formatRupeesFromCoins(successState?.coinsEarned ?? 0)}</div>
         </div>
 
         {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-[1.75rem] border border-primary/25 bg-primary/10 p-6 text-sm font-bold text-primary">You&apos;re now a {successState.newTier} tester!</div> : null}
 
         <div className="mx-auto mb-8 grid max-w-2xl gap-4 md:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-white">{successState?.stats?.totalCompleted ?? 0}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Total missions</div></div>
-          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-white">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Total coins</div></div>
-          <div className="rounded-[1.5rem] border border-border-subtle bg-surface-elevated p-4"><div className="text-2xl font-black text-primary">{successState?.stats?.completionRate ?? 0}%</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-text-muted">Success rate</div></div>
+          <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{successState?.stats?.totalCompleted ?? 0}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Total missions</div></div>
+          <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Total coins</div></div>
+          <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-primary">{successState?.stats?.completionRate ?? 0}%</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Success rate</div></div>
         </div>
 
-        <button className={`mb-4 px-10 py-3.5 ${primaryButtonClass}`} onClick={() => router.push('/dashboard/tester')}>
+        <button className={`cursor-none mb-4 px-10 py-3.5 ${primaryButtonClass}`} onClick={() => router.push('/dashboard/tester')}>
           BACK TO DASHBOARD
         </button>
           </div>

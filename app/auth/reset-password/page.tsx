@@ -157,8 +157,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#faf9f7] flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-card bg-[#faf9f7] p-12">
+    <main className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-card bg-[var(--bg)] p-12">
         {isSuccess ? (
           <div className="text-center">
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
@@ -176,16 +176,16 @@ export default function ResetPasswordPage() {
                 />
               </svg>
             </div>
-            <h1 className="mb-4 text-3xl font-black text-[#1a1625]">Password updated</h1>
-            <p className="mb-3 text-lg text-[#6b687a]">
+            <h1 className="mb-4 text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">Password updated</h1>
+            <p className="mb-3 text-lg text-[var(--ink-soft)]">
               Your password has been reset successfully.
             </p>
-            <p className="mb-8 text-sm text-[#9b98a8]">
+            <p className="mb-8 text-sm text-[var(--ink-soft)]">
               Redirecting to sign in in 3 seconds...
             </p>
             <Link
               href="/auth/login"
-              className={`inline-flex items-center justify-center px-8 py-3.5 text-base ${primaryButtonClass}`}
+              className={`inline-flex items-center justify-center px-8 py-3.5 text-base ${primaryButtonClass} cursor-none`}
             >
               GO TO SIGN IN
             </Link>
@@ -193,16 +193,16 @@ export default function ResetPasswordPage() {
         ) : (
           <>
             <div className="mb-8 text-center">
-              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f] text-white">
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--electric)] text-white">
                 <BrandMark className="h-9 w-9 text-white" />
               </div>
-              <h1 className="mb-2 text-3xl font-black text-[#1a1625]">Reset your password</h1>
-              <p className="text-[#6b687a]">Choose a new password for your account.</p>
+              <h1 className="mb-2 text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">Reset your password</h1>
+              <p className="text-[var(--ink-soft)]">Choose a new password for your account.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#1a1625]">NEW PASSWORD</label>
+                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">NEW PASSWORD</label>
                 <input
                   type="password"
                   value={password}
@@ -211,12 +211,12 @@ export default function ResetPasswordPage() {
                   className={textFieldClass}
                   autoComplete="new-password"
                 />
-                <p className="mt-2 text-xs text-[#9b98a8]">Min 8 chars, 1 uppercase, 1 number</p>
+                <p className="mt-2 text-xs text-[var(--ink-soft)]">Min 8 chars, 1 uppercase, 1 number</p>
                 {passwordError ? <p className="mt-1 text-sm text-red-600">{passwordError}</p> : null}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#1a1625]">CONFIRM PASSWORD</label>
+                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">CONFIRM PASSWORD</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -233,7 +233,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoadingSession || !hasRecoverySession}
-                className={`flex w-full items-center justify-center gap-2 py-3.5 text-base ${primaryButtonClass}`}
+                className={`flex w-full items-center justify-center gap-2 py-3.5 text-base ${primaryButtonClass} cursor-none`}
               >
                 {isSubmitting || isLoadingSession ? <SpinnerIcon className="h-5 w-5" /> : null}
                 {isLoadingSession
@@ -246,12 +246,12 @@ export default function ResetPasswordPage() {
               {formError ? <p className="mt-2 text-sm text-red-600">{formError}</p> : null}
             </form>
 
-            <div className="mt-8 border-t border-[#e5e4e0] pt-6 text-center">
-              <p className="mb-3 text-xs text-[#9b98a8] flex items-center justify-center gap-2">
+            <div className="mt-8 border-t border-[var(--border)] pt-6 text-center">
+              <p className="mb-3 text-xs text-[var(--ink-soft)] flex items-center justify-center gap-2">
                 <span aria-hidden="true">Locked</span>
                 Secure, encrypted password update
               </p>
-              <Link href="/auth/login" className="text-sm font-semibold text-[#6b687a] hover:text-[#1a1625]">
+              <Link href="/auth/login" className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none">
                 {'<-'} Back to sign in
               </Link>
             </div>

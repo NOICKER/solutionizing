@@ -100,7 +100,7 @@ export function FounderMissionsTab({
     content = (
       <EmptyStatePanel
         buttonLabel="INITIALIZE FIRST NODE ->"
-        icon={<ClipboardList className="h-16 w-16 text-text-muted" />}
+        icon={<ClipboardList className="h-16 w-16 text-[var(--ink-soft)]" />}
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
@@ -109,7 +109,7 @@ export function FounderMissionsTab({
       <EmptyStatePanel
         title={`No ${selectedFilterLabel.toLowerCase()} missions`}
         description="Try another filter to see more missions."
-        icon={<ClipboardList className="h-16 w-16 text-text-muted" />}
+        icon={<ClipboardList className="h-16 w-16 text-[var(--ink-soft)]" />}
       />
     )
   } else {
@@ -133,7 +133,7 @@ export function FounderMissionsTab({
           return (
             <div
               key={mission.id}
-              className={`rounded-card border border-border-subtle bg-surface p-4 sm:p-5 ${isCardClickable ? 'cursor-pointer transition-all hover:border-primary/30 hover:bg-surface-elevated' : ''}`}
+              className={`group block transition-all ${isCardClickable ? 'rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5 cursor-none hover:border-[var(--electric)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)] focus:outline-none focus:ring-2 focus:ring-[var(--electric-dim)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]' : 'rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5'}`}
               onClick={isCardClickable ? openMissionCard : undefined}
               onKeyDown={
                 isCardClickable
@@ -150,8 +150,8 @@ export function FounderMissionsTab({
             >
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="mb-1 text-lg font-black text-white">{mission.title}</h3>
-                  {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-text-muted">{mission.goal}</p> : null}
+                  <h3 className="mb-1 text-lg font-semibold text-[var(--ink)] transition-colors group-hover:text-[var(--electric)]">{mission.title}</h3>
+                  {mission.status !== 'PENDING_REVIEW' ? <p className="text-sm text-[var(--ink-soft)]">{mission.goal}</p> : null}
                 </div>
                 <div className="flex flex-wrap items-center sm:justify-end gap-2">
                   <MissionStatusBadge status={mission.status} />
@@ -163,16 +163,14 @@ export function FounderMissionsTab({
               </div>
 
               {mission.status === 'PENDING_REVIEW' ? (
-                <p className="text-sm text-text-muted">Under review — usually within 24 hours</p>
+                <p className="text-sm text-[var(--ink-soft)] mt-4">Under review — usually within 24 hours</p>
               ) : null}
 
               {mission.status === 'APPROVED' ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-text-muted">
-                    Approved and ready to launch. Once you launch, tester assignment begins immediately.
-                  </p>
+                <div className="space-y-4 mt-4">
+                  <p className="text-sm text-[var(--ink-soft)]">Approved and ready to launch. Once you launch, tester assignment begins immediately.</p>
                   <button
-                    className={`flex items-center gap-2 px-6 py-2 text-sm ${primaryButtonClass}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none disabled:opacity-70 transition-opacity hover:opacity-90"
                     disabled={isLaunching}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -186,18 +184,15 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status !== 'PENDING_REVIEW' && mission.status !== 'APPROVED' ? (
-                <div className="mb-4">
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-text-muted">
+                <div className="mb-4 mt-4">
+                  <div className="flex items-center justify-between mb-2 text-sm">
+                    <span className="text-[var(--ink-soft)]">
                       {mission.testersCompleted} of {mission.testersRequired} testers
                     </span>
-                    <span className="font-bold text-white">{Math.round(progress)}%</span>
+                    <span className="font-bold text-[var(--ink)]">{Math.round(progress)}%</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#F97C5A] to-[#E45D43]"
-                      style={{ width: `${progress}%` }}
-                    />
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
+                    <div className="h-full rounded-full bg-[var(--electric)] transition-all duration-500" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               ) : null}
@@ -206,13 +201,13 @@ export function FounderMissionsTab({
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/mission/wizard?edit=true&missionId=${mission.id}`}
-                    className={`px-4 py-2 text-sm ${outlineButtonClass}`}
+                    className="rounded-full border border-[var(--border-strong)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--ink)] cursor-none transition-colors hover:bg-[var(--bg-light)]"
                     onClick={(event) => event.stopPropagation()}
                   >
                     EDIT
                   </Link>
                   <button
-                    className={`flex items-center gap-2 px-6 py-2 text-sm ${primaryButtonClass}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none disabled:opacity-70 transition-opacity hover:opacity-90"
                     disabled={isSubmitting}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -226,16 +221,16 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status === 'ACTIVE' ? (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 mt-4">
                   <Link
                     href={`/mission/status/${mission.id}`}
-                    className={`px-4 py-2 text-sm ${outlineButtonClass}`}
+                    className="rounded-full border border-[var(--border-strong)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--ink)] cursor-none transition-colors hover:bg-[var(--bg-light)]"
                     onClick={(event) => event.stopPropagation()}
                   >
                     VIEW STATUS {'->'}
                   </Link>
                   <button
-                    className={`px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 ${mutedButtonClass}`}
+                    className="rounded-full border border-[var(--border-strong)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--ink)] cursor-none transition-colors hover:bg-[var(--bg-light)]"
                     disabled={isAnyActionLoading}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -245,7 +240,7 @@ export function FounderMissionsTab({
                     PAUSE
                   </button>
                   <button
-                    className="ml-auto text-sm font-semibold text-red-400 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                    className="ml-auto text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.08em] text-[#c0392b] hover:underline disabled:opacity-50 cursor-none"
                     disabled={isAnyActionLoading}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -258,17 +253,17 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status === 'PAUSED' ? (
-                <div className="space-y-3">
+                <div className="space-y-3 mt-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <Link
                       href={`/mission/status/${mission.id}`}
-                      className={`px-4 py-2 text-sm ${outlineButtonClass}`}
+                      className="rounded-full border border-[var(--border-strong)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--ink)] cursor-none transition-colors hover:bg-[var(--bg-light)]"
                       onClick={(event) => event.stopPropagation()}
                     >
                       VIEW STATUS {'->'}
                     </Link>
                     <button
-                      className={`flex items-center gap-2 px-4 py-2 text-sm ${primaryButtonClass}`}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none disabled:opacity-70 transition-opacity hover:opacity-90"
                       disabled={isResuming}
                       onClick={(event) => {
                         event.stopPropagation()
@@ -279,7 +274,7 @@ export function FounderMissionsTab({
                       RESUME
                     </button>
                     <button
-                      className="ml-auto text-sm font-semibold text-red-400 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      className="ml-auto text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.08em] text-[#c0392b] hover:underline disabled:opacity-50 cursor-none"
                       disabled={isAnyActionLoading}
                       onClick={(event) => {
                         event.stopPropagation()
@@ -293,29 +288,29 @@ export function FounderMissionsTab({
               ) : null}
 
               {mission.status === 'COMPLETED' ? (
-                <div className="space-y-3">
+                <div className="space-y-3 mt-4">
                   <Link
                     href={`/mission/insights/${mission.id}`}
-                    className={`inline-flex px-6 py-3 ${primaryButtonClass}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none transition-opacity hover:opacity-90"
                     onClick={(event) => event.stopPropagation()}
                   >
                     VIEW INSIGHTS {'->'}
                   </Link>
                   {mission.completedAt ? (
-                    <p className="text-sm text-text-muted">Completed {format(new Date(mission.completedAt), 'MMM d, yyyy')}</p>
+                    <p className="text-xs font-[family-name:var(--font-dm-mono)] text-[var(--ink-soft)] mt-2">Completed {format(new Date(mission.completedAt), 'MMM d, yyyy')}</p>
                   ) : null}
                 </div>
               ) : null}
 
               {mission.status === 'REJECTED' ? (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-red-900/60 bg-red-950/30 p-4">
-                    <h4 className="mb-1 text-sm font-bold text-red-300">Feedback from our team</h4>
-                    <p className="text-sm text-red-400">{mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
+                <div className="space-y-4 mt-4">
+                  <div className="rounded-[10px] border border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] p-4">
+                    <h4 className="mb-1 text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.08em] text-[#c0392b]">Feedback from our team</h4>
+                    <p className="text-sm text-[var(--ink-soft)]">{mission.rejectionReason ?? mission.reviewNote ?? 'Your mission needs changes before it can go live.'}</p>
                   </div>
                   <Link
                     href={`/mission/wizard?edit=true&missionId=${mission.id}`}
-                    className={`inline-flex px-6 py-3 ${primaryButtonClass}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none transition-opacity hover:opacity-90"
                     onClick={(event) => event.stopPropagation()}
                   >
                     EDIT & RESUBMIT {'->'}
@@ -323,7 +318,7 @@ export function FounderMissionsTab({
                 </div>
               ) : null}
 
-              {cardErrors[mission.id] ? <p className="mt-2 text-sm text-red-600">{cardErrors[mission.id]}</p> : null}
+              {cardErrors[mission.id] ? <p className="mt-2 text-sm text-[#c0392b]">{cardErrors[mission.id]}</p> : null}
             </div>
           )
         })}
@@ -334,20 +329,18 @@ export function FounderMissionsTab({
   return (
     <section
       id="missions-section"
-      className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-5"
+      className="rounded-[1.9rem] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-5 animate-[tabEnter_0.22s_ease_forwards]"
     >
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Control</div>
-          <h2 className="mt-2 text-2xl font-black text-white">Your Missions</h2>
+          <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">MISSION CONTROL</div>
+          <h2 className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] mt-1">your missions.</h2>
         </div>
-        <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
-          + New Mission
-        </Link>
+        <Link href="/mission/wizard" className="inline-flex items-center justify-center rounded-full bg-[var(--electric)] px-5 py-2.5 text-sm font-bold text-[var(--cream)] cursor-none hover:opacity-90 transition-opacity">+ New Mission</Link>
       </div>
 
       {!isLoading && !loadError && missions.length > 0 ? (
-        <div className="mb-5 flex flex-wrap gap-2 rounded-card border border-border-subtle bg-surface-elevated p-2">
+        <div className="mb-5 flex flex-wrap gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--cream)] p-2">
           {missionFilters.map((filter) => {
             const isActive = selectedFilter === filter.id
 
@@ -355,10 +348,10 @@ export function FounderMissionsTab({
               <button
                 key={filter.id}
                 type="button"
-                className={`rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] transition-colors ${
+                className={`cursor-none rounded-full px-4 py-1.5 text-[0.7rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-wide transition-colors ${
                   isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-muted hover:bg-surface hover:text-text-main'
+                    ? 'border border-[var(--electric-mid)] bg-[var(--electric-dim)] text-[var(--electric)]'
+                    : 'border border-transparent text-[var(--ink-soft)] hover:bg-[var(--bg-light)] hover:text-[var(--ink)]'
                 }`}
                 onClick={() => setSelectedFilter(filter.id)}
               >

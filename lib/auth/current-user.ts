@@ -14,13 +14,11 @@ export interface CurrentAppUser {
     id: string
     displayName: string
     companyName: string | null
-    darkMode: boolean
     onboardingCompleted: boolean
   } | null
   testerProfile: {
     id: string
     displayName: string
-    darkMode: boolean
     onboardingCompleted: boolean
     expertiseTags: string[]
     preferredDevice: PreferredDevice | null
@@ -135,7 +133,6 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
           id: true,
           displayName: true,
           companyName: true,
-          darkMode: true,
           onboardingCompleted: true,
         },
       },
@@ -143,7 +140,6 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
         select: {
           id: true,
           displayName: true,
-          darkMode: true,
           onboardingCompleted: true,
           expertiseTags: true,
           preferredDevice: true,

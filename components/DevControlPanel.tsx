@@ -38,7 +38,7 @@ export function DevControlPanel() {
         type="button"
         aria-label={isOpen ? "Hide dev controls" : "Show dev controls"}
         onClick={() => setDevPanelOpen(!isOpen)}
-        className="pointer-events-auto mr-1 inline-flex items-center gap-1 rounded-full border border-border-subtle bg-background/95 px-2 py-1 text-[0.65rem] text-text-muted shadow-card-soft opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="pointer-events-auto mr-1 inline-flex items-center gap-1 rounded-full border border-border-subtle bg-background/95 px-2 py-1 text-[0.65rem] text-text-muted shadow-card-soft opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background cursor-none"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-primary" />
         <span>Dev</span>
@@ -51,7 +51,7 @@ export function DevControlPanel() {
             </div>
             <button
               type="button"
-              className="rounded-full px-2 py-0.5 text-[0.65rem] text-text-muted hover:bg-background"
+              className="rounded-full px-2 py-0.5 text-[0.65rem] text-text-muted hover:bg-background cursor-none"
               onClick={() => setDevPanelOpen(false)}
             >
               Close
@@ -60,7 +60,7 @@ export function DevControlPanel() {
           <div className="space-y-2 text-[0.7rem] text-text-muted">
             <button
               type="button"
-              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem]"
+              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem] cursor-none"
               onClick={triggerNewMissionOffer}
             >
               <span>Trigger new mission offer</span>
@@ -70,7 +70,7 @@ export function DevControlPanel() {
             </button>
             <button
               type="button"
-              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem]"
+              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem] cursor-none"
               onClick={triggerLowDepthDrop}
             >
               <span>Trigger low depth drop</span>
@@ -80,7 +80,7 @@ export function DevControlPanel() {
             </button>
             <button
               type="button"
-              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem]"
+              className="btn-secondary-muted w-full justify-between px-3 py-1.5 text-[0.7rem] cursor-none"
               onClick={() => triggerSafetyFlag(sampleQuestion)}
             >
               <span>Trigger safety flag</span>
@@ -90,7 +90,7 @@ export function DevControlPanel() {
             </button>
             <button
               type="button"
-              className="mt-1 w-full rounded-pill border border-border-subtle bg-background px-3 py-1.5 text-[0.7rem] font-semibold text-text-main shadow-card-soft transition-colors hover:bg-surface"
+              className="mt-1 w-full rounded-pill border border-border-subtle bg-background px-3 py-1.5 text-[0.7rem] font-semibold text-text-main shadow-card-soft transition-colors hover:bg-surface cursor-none"
               onClick={resetAll}
             >
               Reset all demo state

@@ -13,18 +13,18 @@ export function LegalPageLayout({
   children: ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-neutral-bg px-6 py-14">
-      <div className="light-surface mx-auto max-w-3xl rounded-panel border border-secondary/15 bg-white p-8 shadow-card-soft lg:p-10">
-        <Link href="/" className="text-sm font-semibold text-primary hover:underline">
+    <main className="min-h-screen bg-[var(--bg)] px-6 py-14">
+      <div className="mx-auto max-w-3xl rounded-panel border border-[var(--border)] bg-[var(--cream)] p-8 shadow-card-soft lg:p-10">
+        <Link href="/" className="text-sm font-semibold text-[var(--electric)] hover:underline cursor-none">
           Back to home
         </Link>
-        <h1 className="mt-4 text-4xl font-black tracking-tight text-text-main">{title}</h1>
-        <p className="mt-4 text-base leading-relaxed text-text-main/65">{intro}</p>
-        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-text-main/45">
+        <h1 className="mt-4 text-4xl font-[family-name:var(--font-fraunces)] italic font-normal tracking-tight text-[var(--ink)]">{title}</h1>
+        <p className="mt-4 text-base leading-relaxed text-[var(--ink-soft)]">{intro}</p>
+        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
           Last updated: {lastUpdated}
         </p>
 
-        <div className="mt-8 space-y-8 text-base leading-relaxed text-text-main/70">{children}</div>
+        <div className="mt-8 space-y-8 text-base leading-relaxed text-[var(--ink-soft)]">{children}</div>
       </div>
     </main>
   );
@@ -39,7 +39,7 @@ export function LegalSection({
 }) {
   return (
     <section>
-      <h2 className="text-xl font-bold text-text-main">{title}</h2>
+      <h2 className="text-xl font-bold text-[var(--ink)]">{title}</h2>
       <div className="mt-3 space-y-3">{children}</div>
     </section>
   );

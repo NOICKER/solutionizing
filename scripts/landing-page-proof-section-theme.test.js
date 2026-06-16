@@ -17,8 +17,8 @@ const requiredSnippets = [
 
 const forbiddenSnippets = [
   {
-    label: "proof section no longer uses the beige light-surface wrapper",
-    snippet: '        <section className="light-surface bg-[#f7f4ee] py-24 lg:py-28">'
+    label: "proof section no longer uses the old beige wrapper",
+    snippet: '        <section className="bg-[#f7f4ee] py-24 lg:py-28">'
   }
 ];
 

@@ -72,68 +72,56 @@ function SectionCard({
 }) {
   return (
     <section
-      className={`rounded-card border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      className={`rounded-2xl border p-6 ${className}`}
+      style={{ background: 'var(--bg-light)', borderColor: 'var(--border)' }}
     >
       {children}
     </section>
   )
 }
 
-function FaqCard({
-  question,
-  answer,
-  isOpen,
-  onToggle,
-}: {
-  question: string
-  answer: string
-  isOpen: boolean
-  onToggle: () => void
-}) {
+function FaqCard({ question, answer, isOpen, onToggle }: { question: string; answer: string; isOpen: boolean; onToggle: () => void }) {
+  const [isHovered, setIsHovered] = useState(false)
   return (
-    <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] transition-colors hover:border-[#e2d7cd] dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600">
-      <button
+    <div 
+      style={{ 
+        background: 'var(--cream)', 
+        border: `1px solid ${isOpen ? 'var(--electric)' : isHovered ? 'var(--border-strong)' : 'var(--border)'}`, 
+        borderRadius: '10px', 
+        marginBottom: '0.6rem', 
+        transition: 'border-color 0.2s' 
+      }} 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <button className="cursor-none"
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', padding: '0.9rem 1.1rem', background: 'none', border: 'none', cursor: 'none', textAlign: 'left' }}
       >
-        <span className="text-sm font-bold leading-6 text-[#1a1625] dark:text-white">{question}</span>
+        <span style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--ink)' }}>{question}</span>
         <ChevronDown
-          className={`h-5 w-5 text-[#8b8797] transition-transform dark:text-gray-400 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
+          style={{ color: isOpen ? 'var(--electric)' : 'var(--ink-soft)', transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
         />
       </button>
-      {isOpen ? <div className="px-4 pb-4 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{answer}</div> : null}
+      {isOpen ? <div style={{ padding: '0 1.1rem 0.9rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>{answer}</div> : null}
     </div>
   )
 }
 
-function FaqColumn({
-  title,
-  items,
-  activeIndex,
-  onToggle,
-  highlighted,
-}: {
-  title: string
-  items: typeof founderFaqs | typeof testerFaqs
-  activeIndex: number | null
-  onToggle: (index: number) => void
-  highlighted: boolean
-}) {
+function FaqColumn({ title, items, activeIndex, onToggle, highlighted }: { title: string; items: typeof founderFaqs | typeof testerFaqs; activeIndex: number | null; onToggle: (index: number) => void; highlighted: boolean }) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{title}</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+        <h3 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--ink)', fontWeight: 400 }}>{title}</h3>
         {highlighted ? (
-          <span className="rounded-full border border-[#ead2c4] bg-[#fff4ef] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#c4673f]">
-            Recommended
+          <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.1em', background: 'var(--electric-dim)', border: '1px solid var(--electric-mid)', color: 'var(--electric)', borderRadius: '100px', padding: '0.2rem 0.7rem', whiteSpace: 'nowrap' }}>
+            RECOMMENDED
           </span>
         ) : null}
       </div>
-      <div className="space-y-3">
+      <div>
         {items.map((item, index) => (
           <FaqCard
             key={item.question}
@@ -157,12 +145,12 @@ export function SupportPage({ role }: { role: SupportRole }) {
       <SectionCard>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#eee5df] bg-white/85 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#9b98a8]">
-              <span className="h-2 w-2 rounded-full bg-[#d77a57]" />
-              {role === 'FOUNDER' ? 'Founder support' : 'Tester support'}
+            <div style={{ background: 'var(--electric-dim)', border: '1px solid var(--electric-mid)', borderRadius: '100px', padding: '0.25rem 0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--electric)', letterSpacing: '0.1em' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--electric)' }} />
+              {role === 'FOUNDER' ? 'FOUNDER SUPPORT' : 'TESTER SUPPORT'}
             </div>
-            <h2 className="text-3xl font-black text-[#1a1625] dark:text-white sm:text-4xl">Support Center</h2>
-            <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400 sm:text-base">How can we help you today?</p>
+            <h2 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.6rem', color: 'var(--ink)', fontWeight: 400, marginTop: '0.75rem' }}>Support Center</h2>
+            <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>How can we help you today?</p>
           </div>
         </div>
       </SectionCard>
@@ -170,11 +158,11 @@ export function SupportPage({ role }: { role: SupportRole }) {
       <SectionCard>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-black text-[#1a1625] dark:text-white">System Status</h3>
-            <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">Last checked just now</p>
+            <h3 style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--ink)', margin: 0 }}>System Status</h3>
+            <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.82rem', color: 'var(--ink-soft)', margin: '0.2rem 0 0 0' }}>Last checked just now</p>
           </div>
-          <div className="inline-flex items-center gap-3 rounded-full border border-green-100 bg-green-50 px-4 py-2 text-sm font-bold text-green-700">
-            <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+          <div style={{ background: 'rgba(74,197,128,0.1)', border: '1px solid rgba(74,197,128,0.25)', borderRadius: '100px', padding: '0.4rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: '#1e7a47' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1e7a47' }} />
             All systems operational
           </div>
         </div>
@@ -182,10 +170,8 @@ export function SupportPage({ role }: { role: SupportRole }) {
 
       <SectionCard>
         <div className="mb-6">
-          <h3 className="text-lg font-black text-[#1a1625] dark:text-white">Frequently Asked Questions</h3>
-          <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
-            Browse the most common questions for founders and testers in one place.
-          </p>
+          <h3 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.4rem', color: 'var(--ink)', fontWeight: 400, margin: 0 }}>Frequently Asked Questions</h3>
+          <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink-soft)', margin: '0.3rem 0 0 0' }}>Browse the most common questions for founders and testers in one place.</p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
@@ -206,24 +192,20 @@ export function SupportPage({ role }: { role: SupportRole }) {
         </div>
       </SectionCard>
 
-      <SectionCard>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h3 className="text-lg font-black text-[#1a1625] dark:text-white">Still need help?</h3>
-            <p className="mt-2 text-sm text-[#6b687a] dark:text-gray-400">
-              Our team usually responds within one business day.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <a href="mailto:hello@solutionizing.com" className={`px-5 py-3 text-sm ${primaryButtonClass}`}>
-              Email Support
-            </a>
-            <Link href="/contact" className={`px-5 py-3 text-sm ${outlineButtonClass}`}>
-              Visit Contact Page
-            </Link>
-          </div>
+      <section style={{ background: 'var(--dark)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }} className="lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h3 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--cream)', fontWeight: 400, margin: 0 }}>Still need help?</h3>
+          <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'rgba(250,247,242,0.5)', margin: '0.3rem 0 0 0' }}>Our team usually responds within one business day.</p>
         </div>
-      </SectionCard>
+        <div className="flex flex-wrap gap-3">
+          <a href="mailto:hello@solutionizing.com" className={primaryButtonClass} style={{ textDecoration: 'none' }}>
+            Email Support
+          </a>
+          <Link href="/contact" className={outlineButtonClass} style={{ color: 'var(--cream)', borderColor: 'rgba(250,247,242,0.25)', textDecoration: 'none' }}>
+            Visit Contact Page
+          </Link>
+        </div>
+      </section>
     </div>
   )
 }

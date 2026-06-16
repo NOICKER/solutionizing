@@ -3,11 +3,10 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { useAuth } from '@/context/AuthContext'
-import { useTheme } from '@/context/ThemeContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
 
-const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-border-subtle disabled:bg-surface-elevated disabled:text-text-muted disabled:opacity-100`
+const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--bg-light)] disabled:text-[var(--ink-soft)] disabled:opacity-100`
 const transactionDateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',
@@ -39,8 +38,8 @@ interface FounderProfileResponse {
 
 function ComingSoonBadge() {
   return (
-    <span className="inline-flex rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">
-      Coming Soon
+    <span className="inline-flex rounded-full border border-[var(--border-strong)] bg-[var(--bg-light)] px-3 py-1 text-[0.65rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.18em] text-[var(--ink-soft)]">
+      COMING SOON
     </span>
   )
 }
@@ -59,13 +58,14 @@ function SettingsSectionCard({
   children: ReactNode
 }) {
   return (
-    <section
-      className={`rounded-card border border-border-subtle bg-surface p-6 ${className}`}
-    >
+    <section className={`rounded-[14px] border border-[var(--border)] bg-[var(--bg-light)] p-6 ${className}`}>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black text-white">{title}</h3>
-          <p className="mt-2 max-w-2xl text-sm text-text-muted">{description}</p>
+          <div className="flex flex-col">
+            <h3 className="text-lg font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] mb-1 mt-0">{title}</h3>
+            <div className="w-8 h-[3px] rounded-full bg-[var(--electric)] mt-1" />
+          </div>
+          <p className="text-sm text-[var(--ink-soft)] max-w-[36rem] m-0">{description}</p>
         </div>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
@@ -88,35 +88,21 @@ function SettingsField({
   return (
     <label className="block space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">{label}</span>
+        <span className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.15em] text-[var(--ink-soft)]">{label}</span>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
       {children}
-      {hint ? <span className="block text-sm text-text-muted">{hint}</span> : null}
+      {hint ? <span className="block text-sm text-[var(--ink-soft)]">{hint}</span> : null}
     </label>
   )
 }
 
-function NotificationToggleRow({
-  title,
-  description,
-  checked,
-  disabled = false,
-  onToggle,
-  ariaLabel,
-}: {
-  title: string
-  description: string
-  checked: boolean
-  disabled?: boolean
-  onToggle: () => void
-  ariaLabel?: string
-}) {
+function NotificationToggleRow({ title, description, checked, disabled = false, onToggle, ariaLabel }: { title: string; description: string; checked: boolean; disabled?: boolean; onToggle: () => void; ariaLabel?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-card border border-border-subtle bg-surface-elevated px-4 py-4">
+    <div className="rounded-[10px] border border-[var(--border)] bg-[var(--cream)] px-4 py-4 flex items-center justify-between gap-4">
       <div>
-        <div className="text-sm font-bold text-white">{title}</div>
-        <div className="mt-1 text-sm text-text-muted">{description}</div>
+        <div className="text-sm font-semibold text-[var(--ink)]">{title}</div>
+        <div className="mt-1 text-sm text-[var(--ink-soft)]">{description}</div>
       </div>
       <button
         type="button"
@@ -124,16 +110,16 @@ function NotificationToggleRow({
         disabled={disabled}
         aria-pressed={checked}
         aria-label={ariaLabel ?? `Toggle ${title} notifications`}
-        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border px-1 transition-colors ${
-          checked
-            ? 'border-primary bg-primary/30'
-            : 'border-border-subtle bg-surface'
-        } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
+        className={`cursor-none flex items-center p-0 transition-[background,border-color] duration-200 rounded-full h-6 w-11 ${checked ? 'border border-[var(--electric)] bg-[var(--electric-dim)]' : 'border border-[var(--border-strong)] bg-[var(--bg-light)]'}`}
+        style={{ opacity: disabled ? 0.6 : 1 }}
       >
         <span
-          className={`h-5 w-5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform ${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          }`}
+          style={{
+            height: '16px', width: '16px', borderRadius: '50%',
+            background: checked ? 'var(--electric)' : 'var(--ink-soft)',
+            transition: 'transform 0.2s, background 0.2s',
+            transform: checked ? 'translateX(20px)' : 'translateX(2px)'
+          }}
         />
       </button>
     </div>
@@ -152,7 +138,6 @@ export function FounderSettingsTab({
   onOpenDeleteModal,
 }: FounderSettingsTabProps) {
   const { user } = useAuth()
-  const { darkMode, toggleDarkMode } = useTheme()
   const [displayName, setDisplayName] = useState(user?.founderProfile?.displayName ?? userName)
   const [companyName, setCompanyName] = useState('')
   const [defaultDifficulty, setDefaultDifficulty] = useState<FounderDifficulty>('MEDIUM')
@@ -447,45 +432,40 @@ export function FounderSettingsTab({
   }
 
   return (
-    <section className="rounded-[1.9rem] border border-border-subtle bg-surface p-4 sm:p-6">
-      <div className="mb-8">
-        <h2 className="text-2xl font-black text-white">Account Settings</h2>
-        <p className="mt-2 max-w-2xl text-sm text-text-muted">
-          Manage your founder profile, mission defaults, billing, and notifications from one place.
-        </p>
-      </div>
+    <div className="animate-[tabEnter_0.22s_ease_forwards]" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+      
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <SettingsSectionCard title="Profile" description="Update the public details attached to your founder account.">
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <SettingsField label="Display Name">
-              <input
+              <input className="cursor-none"
                 type="text"
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
                 disabled={isLoadingProfile || isSavingProfile}
-                className={isLoadingProfile || isSavingProfile ? settingsFieldClass : textFieldClass}
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: (isLoadingProfile || isSavingProfile || isSavingMissionDefaults || !hasLoadedProfile || false) ? 0.5 : 1 }}
               />
             </SettingsField>
             <SettingsField
               label="Company Name"
               hint="Update the company name attached to your founder account."
             >
-              <input
+              <input className="cursor-none"
                 type="text"
                 value={companyName}
                 placeholder="Enter your company name"
                 onChange={(event) => setCompanyName(event.target.value)}
                 disabled={isLoadingProfile || isSavingProfile}
-                className={isLoadingProfile || isSavingProfile ? settingsFieldClass : textFieldClass}
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: (isLoadingProfile || isSavingProfile || isSavingMissionDefaults || !hasLoadedProfile || false) ? 0.5 : 1 }}
               />
             </SettingsField>
             {profileError ? <p className="text-sm text-red-400">{profileError}</p> : null}
-            <button
+            <button className="cursor-none"
               type="button"
               onClick={handleSaveProfile}
               disabled={isLoadingProfile || isSavingProfile}
-              className={`px-5 py-3 text-sm ${primaryButtonClass}`}
+              style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.6rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', cursor: 'none', opacity: (isLoadingProfile || isSavingProfile || isSavingMissionDefaults || !hasLoadedProfile) ? 0.6 : 1 }}
             >
               {isSavingProfile ? 'Saving Changes...' : isLoadingProfile ? 'Loading Profile...' : 'Save Changes'}
             </button>
@@ -496,25 +476,25 @@ export function FounderSettingsTab({
           title="Account Security"
           description="Monitor account access and prepare upcoming security controls."
         >
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <SettingsField label="Email Address" hint="To change your email contact support.">
-              <input type="email" value={founderEmail} readOnly className={textFieldClass} />
+              <input className="cursor-none" type="email" value={founderEmail} readOnly style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }} />
             </SettingsField>
             <SettingsField label="Last Login" comingSoon>
-              <input
+              <input className="cursor-none"
                 type="text"
                 value="Last login details will appear here."
                 readOnly
                 disabled
-                className={settingsFieldClass}
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: 0.5 }}
               />
             </SettingsField>
-            <div className="space-y-2">
-              <button
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button className="cursor-none"
                 type="button"
                 onClick={handleChangePassword}
                 disabled={!founderEmail || isSendingResetLink}
-                className={`px-5 py-3 text-sm ${outlineButtonClass}`}
+                style={{ background: 'transparent', border: '1px solid var(--border-strong)', color: 'var(--ink)', borderRadius: '100px', padding: '0.5rem 1.1rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.82rem', cursor: 'none', opacity: (!founderEmail || isSendingResetLink) ? 0.6 : 1 }}
               >
                 {isSendingResetLink ? 'Sending Reset Link...' : 'Change Password'}
               </button>
@@ -530,13 +510,13 @@ export function FounderSettingsTab({
           title="Mission Defaults"
           description="Choose the defaults that should be pre-filled when you start a new mission."
         >
-          <div className="space-y-5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <SettingsField label="Default Difficulty">
-              <select
+              <select className="cursor-none"
                 value={defaultDifficulty}
                 onChange={(event) => setDefaultDifficulty(event.target.value as FounderDifficulty)}
                 disabled={isLoadingProfile || isSavingMissionDefaults || !hasLoadedProfile}
-                className={isLoadingProfile || isSavingMissionDefaults || !hasLoadedProfile ? settingsFieldClass : textFieldClass}
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: (isLoadingProfile || isSavingProfile || isSavingMissionDefaults || !hasLoadedProfile || false) ? 0.5 : 1 }}
               >
                 <option value="EASY">Easy</option>
                 <option value="MEDIUM">Medium</option>
@@ -544,21 +524,21 @@ export function FounderSettingsTab({
               </select>
             </SettingsField>
             <SettingsField label="Default Number Of Testers" hint="Choose how many testers should be pre-filled by default.">
-              <div className="rounded-card border border-border-subtle bg-surface-elevated p-4">
-                <div className="mb-3 flex items-center justify-between text-sm">
-                  <span className="font-bold text-white">{defaultTestersRequired} testers</span>
-                  <span className="text-text-muted">5 to 50</span>
+              <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '8px', padding: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{defaultTestersRequired} testers</span>
+                  <span style={{ color: 'var(--ink-soft)' }}>5 to 50</span>
                 </div>
-                <input
+                <input className="cursor-none"
                   type="range"
                   min="5"
                   max="50"
                   value={defaultTestersRequired}
                   onChange={(event) => setDefaultTestersRequired(Number(event.target.value))}
                   disabled={isLoadingProfile || isSavingMissionDefaults || !hasLoadedProfile}
-                  className="w-full accent-primary"
+                  style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }}
                 />
-                <div className="mt-3 flex justify-between text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--ink-soft)', letterSpacing: '0.14em' }}>
                   <span>Lean</span>
                   <span>Balanced</span>
                   <span>Broad</span>
@@ -566,11 +546,11 @@ export function FounderSettingsTab({
               </div>
             </SettingsField>
             {missionDefaultsError ? <p className="text-sm text-red-400">{missionDefaultsError}</p> : null}
-            <button
+            <button className="cursor-none"
               type="button"
               onClick={handleSaveMissionDefaults}
               disabled={isLoadingProfile || isSavingMissionDefaults || !hasLoadedProfile}
-              className={`px-5 py-3 text-sm ${primaryButtonClass}`}
+              style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.6rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', cursor: 'none', opacity: (isLoadingProfile || isSavingProfile || isSavingMissionDefaults || !hasLoadedProfile) ? 0.6 : 1 }}
             >
               {isSavingMissionDefaults ? 'Saving Defaults...' : isLoadingProfile ? 'Loading Defaults...' : 'Save Defaults'}
             </button>
@@ -581,9 +561,9 @@ export function FounderSettingsTab({
           title="Billing"
           description="Review coin purchases and future billing activity for your founder account."
         >
-          <div className="rounded-[1.75rem] border border-dashed border-border-subtle bg-surface-elevated p-6">
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-text-muted">Coin Purchase History</div>
-            <div className="mt-4 rounded-card border border-border-subtle bg-surface">
+          <div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', letterSpacing: '0.1em' }}>COIN PURCHASE HISTORY</div>
+            <div style={{ background: 'var(--bg)', borderRadius: '10px', overflow: 'hidden' }}>
               {isLoadingTransactions ? (
                 <div className="px-4 py-8 text-center text-sm text-text-muted">Loading purchase history...</div>
               ) : transactionsError ? (
@@ -593,20 +573,15 @@ export function FounderSettingsTab({
                   Your purchase history will appear here
                 </div>
               ) : (
-                <ul className="divide-y divide-border-subtle">
+                <ul>
                   {transactions.map((transaction) => (
-                    <li
-                      key={transaction.id}
-                      className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-                    >
+                    <li key={transaction.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink)' }}>
                       <div>
-                        <div className="text-sm font-bold text-white">{transaction.description}</div>
-                        <div className="mt-1 text-sm text-text-muted">
-                          {transactionDateFormatter.format(new Date(transaction.createdAt))}
-                        </div>
+                        <div>{transaction.description}</div>
+                        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--ink-soft)' }}>{transactionDateFormatter.format(new Date(transaction.createdAt))}</div>
                       </div>
                       <div
-                        className={`text-sm font-bold ${transaction.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                        style={{ color: transaction.amount >= 0 ? 'var(--electric)' : 'var(--ink-soft)', fontWeight: transaction.amount >= 0 ? 600 : 400 }}
                       >
                         {transaction.amount >= 0 ? '+' : '-'}
                         {formatCoins(Math.abs(transaction.amount))} coins
@@ -623,14 +598,7 @@ export function FounderSettingsTab({
           title="Notifications"
           description="Control the founder alerts you want to receive as missions move forward."
         >
-          <div className="space-y-3">
-            <NotificationToggleRow
-              title="Dark Mode"
-              description="Switch between light and dark interface"
-              checked={darkMode}
-              onToggle={toggleDarkMode}
-              ariaLabel="Toggle dark mode"
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {notificationError ? <p className="text-sm text-red-400">{notificationError}</p> : null}
             <NotificationToggleRow
               title="Mission approved"
@@ -659,16 +627,16 @@ export function FounderSettingsTab({
         <SettingsSectionCard
           title="Danger Zone"
           description="Once you delete your account, there is no going back. Please be certain."
-          className="border-red-900/60 bg-red-950/20 xl:col-span-2"
+          className="border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] xl:col-span-2"
         >
           <button
             onClick={onOpenDeleteModal}
-            className="rounded-xl bg-red-700 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-600"
+            className="text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[#c0392b] underline underline-offset-4 transition-opacity hover:opacity-70 cursor-none"
           >
             DELETE ACCOUNT
           </button>
         </SettingsSectionCard>
       </div>
-    </section>
+    </div>
   )
 }

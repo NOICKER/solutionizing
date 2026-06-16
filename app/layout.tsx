@@ -1,21 +1,33 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Fraunces, DM_Mono } from 'next/font/google';
 import "./globals.css";
+import ConditionalCursor from "@/components/solutionizing/ConditionalCursor";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppStateProvider } from "@/context/AppStateContext";
 import { Toaster } from "@/components/ui/sonner";
 import PostHogProvider from "@/providers/PostHogProvider";
 import { CookieConsent } from "@/components/solutionizing/CookieConsent";
-import { AppThemeBoundary } from "@/components/AppThemeBoundary";
 import FeedbackWidget from "@/components/feedback/FeedbackWidget";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope"
-});
+import { DevToolbar } from "@/components/dev/DevToolbar";
 
 const materialSymbolsHref =
   "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-fraunces',
+  display: 'swap',
+});
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-dm-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Solutionizing | Signal Over Noise",
@@ -28,33 +40,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`dark ${fraunces.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preload" href={materialSymbolsHref} as="style" />
-        <link id="material-symbols-stylesheet" rel="stylesheet" href={materialSymbolsHref} media="print" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "const link=document.getElementById('material-symbols-stylesheet');if(link){link.addEventListener('load',function(){this.media='all';});}",
-          }}
-        />
-        <noscript>
-          <link rel="stylesheet" href={materialSymbolsHref} />
-        </noscript>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Mono:ital,wght@0,400;0,500&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${manrope.variable} min-h-screen bg-neutral-bg text-text-main dark:bg-gray-900 dark:text-white`}>
+      <body className="min-h-screen bg-bg text-ink">
+        <ConditionalCursor />
         <PostHogProvider>
           <AuthProvider>
-            <AppThemeBoundary>
-              <AppStateProvider>
-                {children}
-                <CookieConsent />
-                <FeedbackWidget />
-                <Toaster />
-              </AppStateProvider>
-            </AppThemeBoundary>
+            <AppStateProvider>
+              {children}
+              <CookieConsent />
+              <FeedbackWidget />
+              <Toaster />
+              {process.env.NODE_ENV === 'development' && <DevToolbar />}
+            </AppStateProvider>
           </AuthProvider>
         </PostHogProvider>
       </body>

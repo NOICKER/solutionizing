@@ -14,12 +14,12 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
       <nav className="mx-auto flex max-w-7xl items-center justify-between py-4">
         <TesterBrand />
         <div className="flex items-center gap-3 text-sm font-bold text-tester-muted">
-          <a href="/terms" className="transition-colors hover:text-tester-terracotta">
+          <a href="/terms" className="transition-colors hover:text-tester-terracotta cursor-none">
             Review Policies
           </a>
           <a
             href="/dashboard/founder"
-            className="rounded-full border border-tester-beige bg-white px-5 py-2.5 shadow-sm transition-colors hover:bg-tester-beige/40"
+            className="rounded-full border border-tester-beige bg-white px-5 py-2.5 shadow-sm transition-colors hover:bg-tester-beige/40 cursor-none"
           >
             Dashboard
           </a>
@@ -27,7 +27,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
       </nav>
 
       <section className="mx-auto max-w-5xl pb-16 pt-8 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-tester-terracotta">
+        <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-tester-terracotta">
           <span className="material-symbols-outlined text-sm">shield_with_heart</span>
           Safety review feedback
         </div>
@@ -54,10 +54,10 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
             </div>
             <div className="mt-6 rounded-card border-l-4 border-tester-terracotta bg-[#fbf2eb] p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-tester-terracotta">
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-tester-terracotta">
                   Question #4
                 </span>
-                <span className="rounded-full bg-tester-terracotta/10 px-3 py-1 text-[11px] font-black text-tester-terracotta">
+                <span className="rounded-full bg-tester-terracotta/10 px-3 py-1 text-[11px] font-bold text-tester-terracotta">
                   Flagged for contact info request
                 </span>
               </div>
@@ -75,20 +75,20 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               <div className="space-y-5 text-sm leading-relaxed text-tester-muted">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tester-sage/20 font-black text-tester-sage">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tester-sage/20 font-bold text-tester-sage">
                     1
                   </div>
                   <p>Remove requests for personal emails, phone numbers, or home addresses.</p>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tester-sage/20 font-black text-tester-sage">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tester-sage/20 font-bold text-tester-sage">
                     2
                   </div>
                   <p>Use the built-in Reward Center to distribute discounts anonymously instead.</p>
                 </div>
               </div>
               <div className="rounded-card border border-white bg-white p-6 shadow-sm">
-                <div className="text-xs font-black uppercase tracking-[0.18em] text-tester-sage">
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-tester-sage">
                   Try this instead
                 </div>
                 <p className="mt-4 text-sm italic leading-relaxed text-tester-muted">
@@ -102,13 +102,13 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <a
             href="/mission/wizard"
-            className="rounded-full bg-tester-terracotta px-8 py-4 text-base font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5"
+            className="rounded-full bg-tester-terracotta px-8 py-4 text-base font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5 cursor-none"
           >
             Update and Resubmit Mission
           </a>
           <a
             href="/contact"
-            className="rounded-full border border-tester-beige bg-white px-8 py-4 text-base font-bold text-tester-sage transition-colors hover:bg-tester-beige/35"
+            className="rounded-full border border-tester-beige bg-white px-8 py-4 text-base font-bold text-tester-sage transition-colors hover:bg-tester-beige/35 cursor-none"
           >
             Talk to a Human
           </a>
@@ -116,7 +116,7 @@ export function MissionSafetyReview({ className }: Readonly<MissionSafetyReviewP
 
         <p className="mt-4 text-xs font-medium text-tester-muted">Typical re-review time: under 2 hours</p>
 
-        <footer className="mt-20 border-t border-tester-beige pt-8 text-xs font-black uppercase tracking-[0.2em] text-tester-muted/70">
+        <footer className="mt-20 border-t border-tester-beige pt-8 text-xs font-bold uppercase tracking-[0.2em] text-tester-muted/70">
           Solutionizing 2024
         </footer>
       </section>

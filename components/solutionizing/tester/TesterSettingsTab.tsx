@@ -4,7 +4,6 @@ import { Landmark, Monitor, QrCode, Smartphone, TabletSmartphone } from 'lucide-
 import { ReactNode, startTransition, useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { useAuth } from '@/context/AuthContext'
-import { useTheme } from '@/context/ThemeContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import {
   getInitialPayoutDetails,
@@ -28,7 +27,7 @@ import {
   type PreferredDevice,
 } from '@/components/solutionizing/tester/profileOptions'
 
-const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-[#ece6df] disabled:bg-[#f6f1ec] disabled:text-[#8a8693] disabled:opacity-100 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-400`
+const settingsFieldClass = `${textFieldClass} disabled:cursor-none disabled:border-[var(--border)] disabled:bg-[var(--bg-light)] disabled:text-[var(--ink-soft)] disabled:opacity-100`
 type TesterReputationTier = 'NEWCOMER' | 'RELIABLE' | 'TRUSTED' | 'ELITE'
 
 interface TesterProfileResponse {
@@ -53,8 +52,8 @@ type PayoutTouchedState = Partial<Record<PayoutField, boolean>>
 
 function ComingSoonBadge() {
   return (
-    <span className="inline-flex rounded-full border border-[#ddd7d0] bg-[#f5f2ee] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#7f7986] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-      Coming Soon
+    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.1em', color: 'var(--ink-soft)', background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '100px', padding: '0.2rem 0.7rem', whiteSpace: 'nowrap' }}>
+      COMING SOON
     </span>
   )
 }
@@ -74,12 +73,15 @@ function SettingsSectionCard({
 }) {
   return (
     <section
-      className={`rounded-card border border-[#ece6df] bg-white/95 p-6 shadow-[0_20px_50px_-40px_rgba(26,22,37,0.22)] dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      className={`rounded-[1.25rem] border border-[var(--border)] bg-[var(--bg-light)] p-6 ${className}`}
     >
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black text-[#1a1625] dark:text-white">{title}</h3>
-          <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">{description}</p>
+          <div className="flex flex-col">
+            <h3 className="font-[family-name:var(--font-fraunces)] italic font-normal text-lg text-[var(--ink)]">{title}</h3>
+            <div className="w-8 h-[3px] rounded-full bg-[var(--electric)] mt-1" />
+          </div>
+          <p className="mt-2 max-w-2xl text-sm text-[var(--ink-soft)]">{description}</p>
         </div>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
@@ -102,52 +104,45 @@ function SettingsField({
   return (
     <label className="block space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400">{label}</span>
+        <span className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">{label}</span>
         {comingSoon ? <ComingSoonBadge /> : null}
       </div>
       {children}
-      {hint ? <span className="block text-sm text-[#8c8897] dark:text-gray-400">{hint}</span> : null}
+      {hint ? <span className="block text-sm text-[var(--ink-soft)]">{hint}</span> : null}
     </label>
   )
 }
 
-function NotificationToggleRow({
-  title,
-  description,
-  checked,
-  disabled = false,
-  onToggle,
-  ariaLabel,
-}: {
-  title: string
-  description: string
-  checked: boolean
-  disabled?: boolean
-  onToggle: () => void
-  ariaLabel?: string
-}) {
+function NotificationToggleRow({ title, description, checked, disabled = false, onToggle, ariaLabel }: { title: string; description: string; checked: boolean; disabled?: boolean; onToggle: () => void; ariaLabel?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-card border border-[#efe8e1] bg-[#fffdfa] p-3.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-4">
+    <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.9rem 1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
       <div>
-        <div className="text-sm font-bold text-[#1a1625] dark:text-white">{title}</div>
-        <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">{description}</div>
+        <div style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.9rem', color: 'var(--ink)' }}>{title}</div>
+        <div style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.82rem', color: 'var(--ink-soft)', marginTop: '0.2rem' }}>{description}</div>
       </div>
-      <button
+      <button className="cursor-none"
         type="button"
         onClick={onToggle}
         disabled={disabled}
         aria-pressed={checked}
-        aria-label={ariaLabel ?? `Toggle ${title}`}
-        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border px-1 transition-colors ${
-          checked
-            ? 'border-[#d77a57] bg-[#f2c8b6]'
-            : 'border-[#e2dbd4] bg-[#efe9e2] dark:border-gray-600 dark:bg-gray-700'
-        } ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
+        aria-label={ariaLabel ?? `Toggle ${title} notifications`}
+        style={{
+          padding: 0,
+          display: 'flex', alignItems: 'center',
+          height: '24px', width: '44px', borderRadius: '100px', 
+          border: checked ? '1px solid var(--electric)' : '1px solid var(--border-strong)', 
+          background: checked ? 'rgba(255,107,26,0.15)' : 'var(--bg)', 
+          cursor: 'none', transition: 'background 0.2s, border-color 0.2s',
+          opacity: disabled ? 0.6 : 1
+        }}
       >
         <span
-          className={`h-5 w-5 rounded-full bg-white shadow-[0_6px_16px_-12px_rgba(26,22,37,0.55)] transition-transform ${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          }`}
+          style={{
+            height: '16px', width: '16px', borderRadius: '50%', 
+            background: checked ? 'var(--electric)' : 'var(--ink-soft)', 
+            transition: 'transform 0.2s, background 0.2s', 
+            transform: checked ? 'translateX(20px)' : 'translateX(2px)'
+          }}
         />
       </button>
     </div>
@@ -178,7 +173,6 @@ export function TesterSettingsTab({
   onOpenDeleteModal,
 }: TesterSettingsTabProps) {
   const { user, refetch } = useAuth()
-  const { darkMode, toggleDarkMode } = useTheme()
   const [displayName, setDisplayName] = useState(user?.testerProfile?.displayName ?? initialDisplayName)
   const [coinBalance, setCoinBalance] = useState(user?.testerProfile?.coinBalance ?? 0)
   const [reputationScore, setReputationScore] = useState(user?.testerProfile?.reputationScore ?? 50)
@@ -508,26 +502,26 @@ export function TesterSettingsTab({
   }
 
   return (
-    <section className="rounded-[1.9rem] border border-[#ece6df] bg-white/80 p-4 shadow-[0_24px_60px_-46px_rgba(26,22,37,0.26)] dark:border-gray-700 dark:bg-gray-800/90 sm:p-6">
-      <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="animate-[tabEnter_0.22s_ease_forwards]" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+      <div style={{ display: 'none' }}>
         <div>
-          <h2 className="text-2xl font-black text-[#1a1625] dark:text-white">Account Settings</h2>
-          <p className="mt-2 max-w-2xl text-sm text-[#6b687a] dark:text-gray-400">
+          <h2 className="font-[family-name:var(--font-fraunces)] text-2xl font-bold text-[var(--ink)]">Account Settings</h2>
+          <p className="mt-2 max-w-2xl text-sm text-[var(--ink-soft)]">
             Tune your tester profile, mission alerts, and device preferences from one place.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
-            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Coin Balance</div>
-            <div className="mt-1 text-base font-black text-[#1a1625] dark:text-white sm:mt-2 sm:text-lg">{formatCoins(coinBalance)} coins</div>
+          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">Coin Balance</div>
+            <div className="mt-1 font-[family-name:var(--font-fraunces)] text-base font-bold text-[var(--ink)] sm:mt-2 sm:text-lg">{formatCoins(coinBalance)} coins</div>
           </div>
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
-            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Reputation</div>
-            <div className="mt-1 text-base font-black text-[#1a1625] dark:text-white sm:mt-2 sm:text-lg">{reputationScore.toFixed(1)}</div>
+          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">Reputation</div>
+            <div className="mt-1 font-[family-name:var(--font-fraunces)] text-base font-bold text-[var(--ink)] sm:mt-2 sm:text-lg">{reputationScore.toFixed(1)}</div>
           </div>
-          <div className="rounded-card border border-[#efe8e1] bg-[#fffdfa] px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60 sm:px-4 sm:py-3">
-            <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#9b98a8] dark:text-gray-400 sm:text-[0.7rem]">Tier</div>
+          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] px-3 py-2.5 sm:px-4 sm:py-3">
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">Tier</div>
             <div className="mt-1 sm:mt-2">
               <ReputationTierBadge tier={reputationTier} />
             </div>
@@ -536,36 +530,34 @@ export function TesterSettingsTab({
       </div>
 
       {profileLoadError ? (
-        <div className="mb-6 rounded-2xl border border-[#f1d3c7] bg-[#fff7f3] px-4 py-3 text-sm text-[#c4673f] dark:border-red-900/70 dark:bg-red-950/30">
+        <div className="mb-6 rounded-[12px] border border-[var(--border-strong)] bg-[var(--bg-light)] px-4 py-3 text-sm text-[#c0392b]">
           {profileLoadError}
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <SettingsSectionCard
           title="Profile"
           description="Update the display name founders see when you complete missions and share feedback."
         >
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <SettingsField label="Display Name" hint="Use the name you want attached to your tester profile.">
-              <input
+              <input className="cursor-none"
                 type="text"
                 value={displayName}
                 minLength={2}
                 maxLength={50}
                 onChange={(event) => setDisplayName(event.target.value)}
                 disabled={isLoadingProfile || isSavingProfile || !hasLoadedProfile}
-                className={
-                  isLoadingProfile || isSavingProfile || !hasLoadedProfile ? settingsFieldClass : textFieldClass
-                }
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: (isLoadingProfile || isSavingProfile || !hasLoadedProfile || false) ? 0.5 : 1 }}
               />
             </SettingsField>
-            {profileError ? <p className="text-sm text-[#c4673f]">{profileError}</p> : null}
-            <button
+            {profileError ? <p className="text-sm text-[#c0392b]">{profileError}</p> : null}
+            <button className="cursor-none"
               type="button"
               onClick={() => void handleSaveProfile()}
               disabled={isLoadingProfile || isSavingProfile || !hasLoadedProfile}
-              className={`w-full px-5 py-3 text-sm sm:w-auto ${primaryButtonClass}`}
+              style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.6rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', cursor: 'none', opacity: (isLoadingProfile || isSavingProfile || !hasLoadedProfile) ? 0.6 : 1 }}
             >
               {isSavingProfile ? 'Saving Changes...' : isLoadingProfile ? 'Loading Profile...' : 'Save Changes'}
             </button>
@@ -576,30 +568,30 @@ export function TesterSettingsTab({
           title="Account Security"
           description="Monitor account access and trigger a password reset whenever you need one."
         >
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <SettingsField label="Email Address" hint="To change your email contact support.">
-              <input type="email" value={testerEmail} readOnly className={textFieldClass} />
+              <input className="cursor-none" type="email" value={testerEmail} readOnly style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }} />
             </SettingsField>
             <SettingsField label="Last Login" comingSoon>
-              <input
+              <input className="cursor-none"
                 type="text"
                 value="Last login details will appear here."
                 readOnly
                 disabled
-                className={settingsFieldClass}
+                style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s', opacity: 0.5 }}
               />
             </SettingsField>
-            <div className="space-y-2">
-              <button
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button className="cursor-none"
                 type="button"
                 onClick={() => void handleChangePassword()}
                 disabled={!testerEmail || isSendingResetLink}
-                className={`w-full px-5 py-3 text-sm sm:w-auto ${outlineButtonClass}`}
+                style={{ background: 'transparent', border: '1px solid var(--border-strong)', color: 'var(--ink)', borderRadius: '100px', padding: '0.5rem 1.1rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.82rem', cursor: 'none', opacity: (!testerEmail || isSendingResetLink) ? 0.6 : 1 }}
               >
                 {isSendingResetLink ? 'Sending Reset Link...' : 'Change Password'}
               </button>
-              {passwordResetMessage ? <p className="text-sm text-[#2f7a4b]">{passwordResetMessage}</p> : null}
-              {passwordResetError ? <p className="text-sm text-[#c4673f]">{passwordResetError}</p> : null}
+              {passwordResetMessage ? <p className="text-sm text-[#1e7a47]">{passwordResetMessage}</p> : null}
+              {passwordResetError ? <p className="text-sm text-[#c0392b]">{passwordResetError}</p> : null}
             </div>
           </div>
         </SettingsSectionCard>
@@ -608,41 +600,42 @@ export function TesterSettingsTab({
           title="Device Profile"
           description="Choose the setup you use most often so new missions can be matched to the right context."
         >
-          <div className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
               {preferredDeviceOptions.map((option) => {
                 const active = preferredDevice === option.value
 
                 return (
-                  <button
+                  <button className="cursor-none"
                     key={option.value}
                     type="button"
                     onClick={() => void handlePreferredDeviceSelect(option.value)}
                     disabled={isLoadingProfile || isSavingDevice || !hasLoadedProfile}
                     aria-pressed={active}
-                    className={`rounded-2xl border px-4 py-4 text-left transition-all ${
-                      active
-                        ? 'border-[#d77a57] bg-[#fff4ef] shadow-[0_20px_40px_-34px_rgba(215,122,87,0.7)] dark:bg-[#d77a57]/10'
-                        : 'border-[#efe8e1] bg-[#fffdfa] hover:border-[#dfcfc2] hover:bg-white dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600 dark:hover:bg-gray-800'
-                    } ${isLoadingProfile || isSavingDevice || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
+                    style={{
+                      borderRadius: '12px', border: active ? '2px solid var(--electric)' : '1px solid var(--border-strong)',
+                      background: active ? 'rgba(255,107,26,0.05)' : 'var(--bg-light)', padding: '1.2rem', textAlign: 'left',
+                      cursor: 'none', transition: 'border-color 0.2s, background 0.2s',
+                      opacity: (isLoadingProfile || isSavingDevice || !hasLoadedProfile) ? 0.6 : 1
+                    }}
                   >
                     {(() => {
-                      const iconClass = `mb-4 h-6 w-6 ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
-                      if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
-                      if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
-                      return <TabletSmartphone className={iconClass} />
+                      const iconClass = active ? "var(--electric)" : "var(--ink-soft)"; const iconStyle = { marginBottom: '1rem', width: '24px', height: '24px', color: iconClass }
+                      if (option.glyphName === 'Monitor') return <Monitor style={iconStyle} />
+                      if (option.glyphName === 'Smartphone') return <Smartphone style={iconStyle} />
+                      return <TabletSmartphone style={iconStyle} />
                     })()}
-                    <div className="text-sm font-black text-[#1a1625] dark:text-white">{option.label}</div>
-                    <div className="mt-2 text-sm leading-6 text-[#6b687a] dark:text-gray-400">{option.description}</div>
+                    <div style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>{option.label}</div>
+                    <div style={{ marginTop: '0.4rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)' }}>{option.description}</div>
                   </button>
                 )
               })}
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#8c8897] dark:text-gray-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--ink-soft)]">
               <span>Your selection saves automatically.</span>
-              {isSavingDevice ? <span className="font-semibold text-[#d77a57]">Saving...</span> : null}
+              {isSavingDevice ? <span className="font-semibold text-[var(--electric)]">Saving...</span> : null}
             </div>
-            {deviceError ? <p className="text-sm text-[#c4673f]">{deviceError}</p> : null}
+            {deviceError ? <p className="text-sm text-[#c0392b]">{deviceError}</p> : null}
           </div>
         </SettingsSectionCard>
 
@@ -650,34 +643,36 @@ export function TesterSettingsTab({
           title="Expertise Tags"
           description="Highlight the kinds of products and spaces where your feedback is strongest."
         >
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {expertiseTagOptions.map((tag) => {
                 const active = expertiseTags.includes(tag)
 
                 return (
-                  <button
+                  <button className="cursor-none"
                     key={tag}
                     type="button"
                     onClick={() => void handleExpertiseTagToggle(tag)}
                     disabled={isLoadingProfile || isSavingExpertise || !hasLoadedProfile}
                     aria-pressed={active}
-                    className={`rounded-2xl border px-3 py-2.5 text-left text-xs font-bold transition-all sm:px-4 sm:py-3 sm:text-sm ${
-                      active
-                        ? 'border-[#d77a57] bg-[#fff4ef] text-[#a85034] dark:bg-[#d77a57]/10'
-                        : 'border-[#efe8e1] bg-[#fffdfa] text-[#6b687a] hover:border-[#dfcfc2] hover:text-[#1a1625] dark:border-gray-700 dark:bg-gray-900/60 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white'
-                    } ${isLoadingProfile || isSavingExpertise || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
+                    style={{
+                      borderRadius: '100px', border: active ? '1px solid var(--electric)' : '1px solid var(--border-strong)',
+                      background: active ? 'rgba(255,107,26,0.1)' : 'var(--bg-light)', padding: '0.6rem 1rem', textAlign: 'left',
+                      fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.85rem', color: active ? 'var(--electric)' : 'var(--ink)',
+                      cursor: 'none', transition: 'border-color 0.2s, background 0.2s',
+                      opacity: (isLoadingProfile || isSavingExpertise || !hasLoadedProfile) ? 0.6 : 1
+                    }}
                   >
                     {tag}
                   </button>
                 )
               })}
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#8c8897] dark:text-gray-400">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--ink-soft)]">
               <span>{expertiseTags.length}/10 tags selected. Changes save immediately.</span>
-              {isSavingExpertise ? <span className="font-semibold text-[#d77a57]">Saving...</span> : null}
+              {isSavingExpertise ? <span className="font-semibold text-[var(--electric)]">Saving...</span> : null}
             </div>
-            {expertiseError ? <p className="text-sm text-[#c4673f]">{expertiseError}</p> : null}
+            {expertiseError ? <p className="text-sm text-[#c0392b]">{expertiseError}</p> : null}
           </div>
         </SettingsSectionCard>
 
@@ -685,34 +680,35 @@ export function TesterSettingsTab({
           title="Payout Details"
           description="Choose how you want to receive payouts so withdrawals can be processed without extra setup."
         >
-          <div className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
               {(['UPI', 'BANK_TRANSFER'] as const).map((method) => {
                 const active = payoutMethod === method
 
                 return (
-                  <button
+                  <button className="cursor-none"
                     key={method}
                     type="button"
                     onClick={() => handlePayoutMethodChange(method)}
                     disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
                     aria-pressed={active}
-                    className={`rounded-2xl border px-4 py-4 text-left transition-all ${
-                      active
-                        ? 'border-[#d77a57] bg-[#fff4ef] shadow-[0_20px_40px_-34px_rgba(215,122,87,0.7)] dark:bg-[#d77a57]/10'
-                        : 'border-[#efe8e1] bg-[#fffdfa] hover:border-[#dfcfc2] hover:bg-white dark:border-gray-700 dark:bg-gray-900/60 dark:hover:border-gray-600 dark:hover:bg-gray-800'
-                    } ${isLoadingProfile || isSavingPayout || !hasLoadedProfile ? 'cursor-not-allowed opacity-70' : ''}`}
+                    style={{
+                      borderRadius: '12px', border: active ? '2px solid var(--electric)' : '1px solid var(--border-strong)',
+                      background: active ? 'rgba(255,107,26,0.05)' : 'var(--bg-light)', padding: '1.2rem', textAlign: 'left',
+                      cursor: 'none', transition: 'border-color 0.2s, background 0.2s',
+                      opacity: (isLoadingProfile || isSavingPayout || !hasLoadedProfile) ? 0.6 : 1
+                    }}
                   >
                     <div className="flex items-center gap-3">
                       {(() => {
-                        const iconClass = `h-5 w-5 ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
-                        return method === 'UPI' ? <QrCode className={iconClass} /> : <Landmark className={iconClass} />
+                        const iconClass = active ? "var(--electric)" : "var(--ink-soft)"; const iconStyle = { width: '24px', height: '24px', color: iconClass }
+                        return method === 'UPI' ? <QrCode style={iconStyle} /> : <Landmark style={iconStyle} />
                       })()}
                       <div>
-                        <div className="text-sm font-black text-[#1a1625] dark:text-white">
+                        <div style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>
                           {method === 'UPI' ? 'UPI' : 'Bank Transfer'}
                         </div>
-                        <div className="mt-1 text-sm text-[#6b687a] dark:text-gray-400">
+                        <div style={{ marginTop: '0.2rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)' }}>
                           {method === 'UPI'
                             ? 'Use your UPI ID for fast payouts.'
                             : 'Provide your bank account details for direct transfers.'}
@@ -729,17 +725,17 @@ export function TesterSettingsTab({
                 label="UPI ID"
                 hint="Format: name@bank. This is validated before it can be saved."
               >
-                <input
+                <input className="cursor-none"
                   type="text"
                   value={upiId}
                   onChange={(event) => handlePayoutFieldChange('upiId', event.target.value)}
                   placeholder="yourname@bank"
                   autoComplete="off"
                   disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                  className={textFieldClass}
+                  style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }}
                 />
                 {getVisiblePayoutFieldError('upiId') ? (
-                  <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('upiId')}</p>
+                  <p className="text-sm text-[#c0392b]">{getVisiblePayoutFieldError('upiId')}</p>
                 ) : null}
               </SettingsField>
             ) : (
@@ -748,17 +744,17 @@ export function TesterSettingsTab({
                   label="Account Holder Name"
                   hint="Enter the full account holder name exactly as registered with your bank."
                 >
-                  <input
+                  <input className="cursor-none"
                     type="text"
                     value={accountHolderName}
                     onChange={(event) => handlePayoutFieldChange('accountHolderName', event.target.value)}
                     placeholder="Aarav Sharma"
                     autoComplete="name"
                     disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                    className={textFieldClass}
+                    style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }}
                   />
                   {getVisiblePayoutFieldError('accountHolderName') ? (
-                    <p className="text-sm text-[#c4673f]">
+                    <p className="text-sm text-[#c0392b]">
                       {getVisiblePayoutFieldError('accountHolderName')}
                     </p>
                   ) : null}
@@ -766,7 +762,7 @@ export function TesterSettingsTab({
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <SettingsField label="Account Number" hint="Only digits are allowed, between 9 and 18 characters.">
-                    <input
+                    <input className="cursor-none"
                       type="text"
                       inputMode="numeric"
                       value={accountNumber}
@@ -774,25 +770,25 @@ export function TesterSettingsTab({
                       placeholder="123456789012"
                       autoComplete="off"
                       disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                      className={textFieldClass}
+                      style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }}
                     />
                     {getVisiblePayoutFieldError('accountNumber') ? (
-                      <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('accountNumber')}</p>
+                      <p className="text-sm text-[#c0392b]">{getVisiblePayoutFieldError('accountNumber')}</p>
                     ) : null}
                   </SettingsField>
 
                   <SettingsField label="IFSC Code" hint="Example: HDFC0123456">
-                    <input
+                    <input className="cursor-none"
                       type="text"
                       value={ifscCode}
                       onChange={(event) => handlePayoutFieldChange('ifscCode', event.target.value)}
                       placeholder="HDFC0123456"
                       autoComplete="off"
                       disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                      className={textFieldClass}
+                      style={{ background: 'var(--bg-light)', border: '1.5px solid var(--border)', borderRadius: '8px', padding: '0.7rem 1rem', fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: 'var(--ink)', outline: 'none', width: '100%', cursor: 'none', transition: 'border-color 0.2s' }}
                     />
                     {getVisiblePayoutFieldError('ifscCode') ? (
-                      <p className="text-sm text-[#c4673f]">{getVisiblePayoutFieldError('ifscCode')}</p>
+                      <p className="text-sm text-[#c0392b]">{getVisiblePayoutFieldError('ifscCode')}</p>
                     ) : null}
                   </SettingsField>
                 </div>
@@ -800,19 +796,19 @@ export function TesterSettingsTab({
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-[#8c8897] dark:text-gray-400">
+              <p className="text-sm text-[var(--ink-soft)]">
                 Your payout details are saved securely and used when withdrawals are processed.
               </p>
-              <button
+              <button className="cursor-none"
                 type="button"
                 onClick={() => void handleSavePayout()}
                 disabled={isLoadingProfile || isSavingPayout || !hasLoadedProfile}
-                className={`w-full px-5 py-3 text-sm sm:w-auto ${primaryButtonClass}`}
+                style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.6rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.9rem', cursor: 'none', opacity: (isLoadingProfile || isSavingProfile || !hasLoadedProfile) ? 0.6 : 1 }}
               >
                 {isSavingPayout ? 'Saving Payout Details...' : 'Save Payout Details'}
               </button>
             </div>
-            {payoutError ? <p className="text-sm text-[#c4673f]">{payoutError}</p> : null}
+            {payoutError ? <p className="text-sm text-[#c0392b]">{payoutError}</p> : null}
           </div>
         </SettingsSectionCard>
 
@@ -820,15 +816,8 @@ export function TesterSettingsTab({
           title="Notifications"
           description="Stay in the loop when new tester missions land that match your profile."
         >
-          <div className="space-y-3">
-            <NotificationToggleRow
-              title="Dark Mode"
-              description="Switch between light and dark interface"
-              checked={darkMode}
-              onToggle={toggleDarkMode}
-              ariaLabel="Toggle dark mode"
-            />
-            {notificationError ? <p className="text-sm text-[#c4673f]">{notificationError}</p> : null}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {notificationError ? <p className="text-sm text-[#c0392b]">{notificationError}</p> : null}
             <NotificationToggleRow
               title="New mission notifications"
               description="Receive an alert when a fresh mission is available for testers."
@@ -837,24 +826,19 @@ export function TesterSettingsTab({
               onToggle={() => void handleNotificationToggle()}
             />
             {isSavingNotification ? (
-              <p className="text-sm font-semibold text-[#d77a57]">Saving your notification preference...</p>
+              <p className="text-sm font-semibold text-[var(--electric)]">Saving your notification preference...</p>
             ) : null}
           </div>
         </SettingsSectionCard>
 
-        <SettingsSectionCard
-          title="Danger Zone"
-          description="Once you delete your account, there is no going back. Please be certain."
-          className="border-red-100 bg-red-50/50 dark:border-red-900/70 dark:bg-red-950/30 xl:col-span-2"
-        >
-          <button
-            onClick={onOpenDeleteModal}
-            className="w-full rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-red-700 sm:w-auto"
-          >
-            DELETE ACCOUNT
-          </button>
-        </SettingsSectionCard>
+        <div style={{ background: 'rgba(192, 57, 43, 0.04)', border: '1px solid rgba(192, 57, 43, 0.18)', borderRadius: '10px', padding: '1.2rem 1.4rem', marginTop: '1.5rem', gridColumn: '1 / -1' }}>
+    <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: '#c0392b', letterSpacing: '0.12em' }}>DANGER ZONE</div>
+    <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)', margin: '0.5rem 0 0.75rem' }}>Once you delete your account, there is no going back. Please be certain.</p>
+    <button className="cursor-none" onClick={onOpenDeleteModal} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: '#c0392b', background: 'none', border: 'none', cursor: 'none', textDecoration: 'underline' }}>
+      DELETE ACCOUNT
+    </button>
+  </div>
       </div>
-    </section>
+    </div>
   )
 }

@@ -19,7 +19,7 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
         <div className="bg-gradient-to-r from-tester-apricot/10 via-transparent to-tester-sage/10 px-8 py-8 sm:px-10 sm:py-10 lg:px-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-tester-terracotta">
+              <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-tester-terracotta">
                 <span className="material-symbols-outlined text-sm">trending_up</span>
                 Growth opportunity
               </div>
@@ -34,10 +34,10 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
 
             <div className="w-full max-w-[260px] rounded-card border border-tester-beige bg-white p-5 shadow-tester-soft">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-[0.18em] text-tester-muted">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-tester-muted">
                   Reputation
                 </span>
-                <span className="text-xs font-black text-amber-600">-{delta.toFixed(1)} pts</span>
+                <span className="text-xs font-bold text-amber-600">-{delta.toFixed(1)} pts</span>
               </div>
               <div className="mt-5 flex items-end gap-2">
                 <span className={`${testerDisplayFont.className} text-5xl font-extrabold leading-none text-tester-sage`}>
@@ -62,7 +62,7 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
 
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             <section className="rounded-[1.75rem] border-2 border-dashed border-tester-beige bg-[#fbf7f1] p-6">
-              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-tester-muted">
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-tester-muted">
                 <span className="material-symbols-outlined text-sm">sentiment_neutral</span>
                 Low depth
               </div>
@@ -78,7 +78,7 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
               <div className="absolute -right-3 -top-3 flex h-9 w-9 items-center justify-center rounded-full bg-tester-sage text-white shadow-lg">
                 <span className="material-symbols-outlined text-sm">check</span>
               </div>
-              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-tester-sage">
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-tester-sage">
                 <span className="material-symbols-outlined text-sm">stars</span>
                 Great insight
               </div>
@@ -99,14 +99,14 @@ export function ReputationModal({ className }: Readonly<ReputationModalProps>) {
               <button
                 type="button"
                 onClick={() => resolveReputationResubmission(true)}
-                className="rounded-full bg-tester-sage px-8 py-4 text-base font-extrabold text-white shadow-[0_18px_35px_rgba(74,124,117,0.25)] transition-all hover:-translate-y-0.5 hover:bg-[#3f6d67]"
+                className="rounded-full bg-tester-sage px-8 py-4 text-base font-extrabold text-white shadow-[0_18px_35px_rgba(74,124,117,0.25)] transition-all hover:-translate-y-0.5 hover:bg-[#3f6d67] cursor-none"
               >
                 Got it, I&apos;ll be more detailed
               </button>
               <button
                 type="button"
                 onClick={() => resolveReputationResubmission(false)}
-                className="rounded-full px-6 py-4 text-base font-bold text-tester-muted transition-colors hover:text-tester-ink"
+                className="rounded-full px-6 py-4 text-base font-bold text-tester-muted transition-colors hover:text-tester-ink cursor-none"
               >
                 View Reputation Guide
               </button>

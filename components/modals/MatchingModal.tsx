@@ -45,7 +45,7 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
             <button
               type="button"
               onClick={passOnMissionOffer}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-tester-muted transition-colors hover:bg-tester-cream hover:text-tester-ink"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-tester-muted transition-colors hover:bg-tester-cream hover:text-tester-ink cursor-none"
               aria-label="Close mission offer"
             >
               <span className="material-symbols-outlined">close</span>
@@ -53,18 +53,18 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-tester-terracotta">
+            <div className="inline-flex items-center gap-2 rounded-full bg-tester-terracotta/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-tester-terracotta">
               <span className="material-symbols-outlined text-sm">schedule</span>
               3 minutes
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-tester-sage/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-tester-sage">
+            <div className="inline-flex items-center gap-2 rounded-full bg-tester-sage/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-tester-sage">
               <span className="material-symbols-outlined text-sm">verified</span>
               Founder verified
             </div>
           </div>
 
           <div className="mt-7 rounded-[1.6rem] border border-tester-sage/10 bg-tester-sage-soft px-6 py-6">
-            <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-tester-sage">
+            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-tester-sage">
               <span className="material-symbols-outlined text-base">psychology</span>
               Why you were matched
             </div>
@@ -99,7 +99,7 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
                 acceptMissionOffer();
                 router.push("/tester/workspace");
               }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tester-terracotta px-6 py-4 text-lg font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tester-terracotta px-6 py-4 text-lg font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5 cursor-none"
             >
               Accept Mission
               <span className="material-symbols-outlined">arrow_forward</span>
@@ -109,12 +109,12 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
               <button
                 type="button"
                 onClick={passOnMissionOffer}
-                className="text-sm font-extrabold text-tester-muted transition-colors hover:text-tester-sage"
+                className="text-sm font-extrabold text-tester-muted transition-colors hover:text-tester-sage cursor-none"
               >
                 Pass for now
               </button>
               <div className="inline-flex items-center gap-2 text-sm text-tester-muted">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-tester-apricot bg-white text-xs font-black text-tester-terracotta">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-tester-apricot bg-white text-xs font-bold text-tester-terracotta">
                   {countdownLabel}
                 </div>
                 <span>Soft-lock active</span>
@@ -123,7 +123,7 @@ export function MatchingModal({ className }: Readonly<MatchingModalProps>) {
           </div>
         </div>
 
-        <div className="border-t border-tester-beige bg-tester-cream/60 px-8 py-4 text-center text-[11px] font-black uppercase tracking-[0.18em] text-tester-muted sm:px-10">
+        <div className="border-t border-tester-beige bg-tester-cream/60 px-8 py-4 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-tester-muted sm:px-10">
           Explainability and trust over random assignment
         </div>
       </div>

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { preferredDeviceOptions, type PreferredDevice } from '@/components/solutionizing/tester/profileOptions'
-import { testerBodyFont, testerDisplayFont } from '@/components/tester/testerTheme'
+import { testerBodyFont } from '@/components/tester/testerTheme'
 import { BrandMark } from '@/components/solutionizing/ui'
 
 interface VerifyTesterResponse {
@@ -58,60 +58,60 @@ export function TesterVerificationPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-[#faf9f7] ${testerBodyFont.className} p-8`}>
+    <div className={`min-h-screen bg-[var(--bg)] ${testerBodyFont.className} p-8`}>
       <div className="mx-auto max-w-4xl">
         <div className="mb-12 flex items-center justify-center">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d77a57] to-[#c4673f]">
-              <BrandMark className="h-7 w-7 text-white" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--electric-dim)] text-[var(--electric)]">
+              <BrandMark className="h-7 w-7 text-[var(--electric)]" />
             </div>
             <div>
-              <div className="mb-1 text-xs text-[#9b98a8]">SOLUTIONIZING</div>
-              <div className={`${testerDisplayFont.className} text-2xl font-black text-[#1a1625]`}>
+              <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">SOLUTIONIZING</div>
+              <div className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl">
                 Tester Verification
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-panel border border-[#e5e4e0] bg-white p-10 text-center shadow-sm">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-            {successMessage ? <ShieldCheck className="h-10 w-10" /> : <ShieldCheck className="h-10 w-10" />}
+        <div className="rounded-[16px] border border-[var(--border)] bg-[var(--cream)] p-6 sm:p-8 w-full max-w-md mx-auto text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--electric-dim)] text-[var(--electric)]">
+            <ShieldCheck className="h-10 w-10" />
           </div>
 
-          <h1 className={`${testerDisplayFont.className} mb-4 text-3xl font-black text-[#1a1625]`}>
+          <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl mb-4">
             {successMessage ? 'Device Verified' : 'Verify Your Device'}
           </h1>
-          <p className="mx-auto mb-8 max-w-md text-lg text-[#6b687a]">
+          <p className="mx-auto mb-8 max-w-md text-lg text-[var(--ink-soft)]">
             {successMessage
               ? successMessage
               : 'Device verification ensures founders receive accurate technical feedback from confirmed environments.'}
           </p>
 
           {successMessage ? (
-            <div className="mx-auto max-w-lg rounded-2xl border border-green-200 bg-green-50 p-6 text-left">
-              <p className="text-sm font-semibold text-green-800">
+            <div className="mx-auto max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--bg-light)] p-6 text-left">
+              <p className="text-sm font-semibold text-[var(--electric)]">
                 Your preferred device has been saved and your tester profile is ready for the dashboard.
               </p>
             </div>
           ) : (
             <div className="space-y-8">
-              <div className="mx-auto max-w-lg rounded-2xl bg-[#f8f9fc] p-6 text-left">
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#9b98a8]">
+              <div className="mx-auto max-w-lg rounded-[16px] bg-[var(--bg-light)] p-6 text-left">
+                <h3 className="mb-4 font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                   Verification Steps
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                    <span className="font-medium text-[#1a1625]">Account created & verified</span>
+                    <CheckCircle2 className="h-6 w-6 text-[var(--electric)]" />
+                    <span className="font-medium text-[var(--ink)]">Account created & verified</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <CircleDot className="h-6 w-6 text-[#d77a57]" />
-                    <span className="font-medium text-[#1a1625]">Choose the device you use for testing</span>
+                    <CircleDot className="h-6 w-6 text-[var(--electric)]" />
+                    <span className="font-medium text-[var(--ink)]">Choose the device you use for testing</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <Circle className="h-6 w-6 text-[#d77a57]" />
-                    <span className="font-medium text-[#1a1625]">Confirm your environment details</span>
+                    <Circle className="h-6 w-6 text-[var(--electric)]" />
+                    <span className="font-medium text-[var(--ink)]">Confirm your environment details</span>
                   </li>
                 </ul>
               </div>
@@ -126,41 +126,41 @@ export function TesterVerificationPage() {
                       type="button"
                       onClick={() => setSelectedDevice(option.value)}
                       aria-pressed={active}
-                      className={`rounded-2xl border px-5 py-5 text-left transition-all ${
+                      className={`rounded-2xl border px-5 py-5 text-left transition-all cursor-none ${
                         active
-                          ? 'border-[#d77a57] bg-[#fff4ef] shadow-[0_20px_40px_-34px_rgba(215,122,87,0.7)]'
-                          : 'border-[#e5e4e0] bg-white hover:border-[#dfcfc2] hover:bg-[#fffdfa]'
+                          ? 'border-[var(--electric)] bg-[var(--bg-light)] shadow-sm'
+                          : 'border-[var(--border)] bg-[var(--cream)] hover:border-[var(--electric)] hover:bg-[var(--bg-light)]'
                       }`}
                     >
                       {(() => {
-                        const iconClass = `h-6 w-6 mb-4 transition-colors ${active ? 'text-[#d77a57]' : 'text-[#8b8797]'}`
+                        const iconClass = `h-6 w-6 mb-4 transition-colors ${active ? 'text-[var(--electric)]' : 'text-[var(--ink-soft)]'}`
                         if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
                         if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
                         return <TabletSmartphone className={iconClass} />
                       })()}
-                      <div className="text-sm font-black text-[#1a1625]">{option.label}</div>
-                      <div className="mt-2 text-sm leading-6 text-[#6b687a]">{option.description}</div>
+                      <div className="text-sm font-bold text-[var(--ink)]">{option.label}</div>
+                      <div className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">{option.description}</div>
                     </button>
                   )
                 })}
               </div>
 
-              {error ? (
-                <div className="mx-auto max-w-lg rounded-2xl border border-[#f1d3c7] bg-[#fff7f3] px-4 py-3 text-left text-sm text-[#c4673f]">
+              {error && (
+                <div className="mx-auto max-w-lg rounded-2xl border border-[var(--border)] bg-[rgba(192,57,43,0.1)] px-4 py-3 text-left text-sm text-[#c0392b]">
                   {error}
                 </div>
-              ) : null}
+              )}
 
               <div className="flex flex-col items-center gap-4">
                 <button
                   type="button"
                   onClick={() => void handleVerify()}
                   disabled={isSubmitting}
-                  className="rounded-full bg-blue-600 px-8 py-3.5 text-sm font-black text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="bg-[var(--electric)] text-[var(--cream)] rounded-xl px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 cursor-none w-full disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isSubmitting ? 'Verifying Device...' : 'Confirm Device'}
                 </button>
-                <p className="max-w-sm text-center text-xs text-[#9b98a8]">
+                <p className="max-w-sm text-center text-xs text-[var(--ink-soft)]">
                   We save your preferred test device and basic browser information to improve mission matching.
                 </p>
               </div>
@@ -170,7 +170,7 @@ export function TesterVerificationPage() {
           <div className="mt-8">
             <Link
               href="/dashboard/tester"
-              className="inline-flex rounded-full border-2 border-[#e5e4e0] bg-white px-8 py-3 text-sm font-bold text-[#1a1625] transition-all hover:bg-[#f3f3f5]"
+              className="inline-flex justify-center border border-[var(--border-strong)] text-[var(--ink-soft)] rounded-xl px-6 py-3 text-sm font-semibold bg-transparent hover:border-[var(--electric)] hover:text-[var(--electric)] cursor-none w-full sm:w-auto"
             >
               BACK TO DASHBOARD
             </Link>

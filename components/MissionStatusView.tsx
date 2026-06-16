@@ -21,7 +21,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
           <div className="rounded-full bg-white px-4 py-2">Founder Dashboard</div>
           <a
             href="/dashboard/founder"
-            className="rounded-full border border-tester-beige bg-white px-5 py-2.5 shadow-sm transition-colors hover:bg-tester-beige/35"
+            className="rounded-full border border-tester-beige bg-white px-5 py-2.5 shadow-sm transition-colors hover:bg-tester-beige/35 cursor-none"
           >
             Logout
           </a>
@@ -40,7 +40,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
           <section className="rounded-panel border border-white bg-white p-8 shadow-tester-soft">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="text-xs font-black uppercase tracking-[0.18em] text-tester-muted">
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-tester-muted">
                   Current matching
                 </div>
                 <div className="mt-4 flex items-end gap-2">
@@ -52,11 +52,11 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
               </div>
               <div className="grid gap-3 rounded-[1.25rem] bg-[#f5f1e8] p-4 text-right sm:grid-cols-2">
                 <div>
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-tester-muted">Time elapsed</div>
+                  <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-tester-muted">Time elapsed</div>
                   <div className="mt-1 text-xl font-extrabold text-tester-ink">{founderMissionStatus.elapsed}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-tester-muted">Avg. match speed</div>
+                  <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-tester-muted">Avg. match speed</div>
                   <div className="mt-1 text-xl font-extrabold text-tester-ink">{founderMissionStatus.avgSpeed}</div>
                 </div>
               </div>
@@ -84,7 +84,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
                   />
                 ))}
               </div>
-              <div className="mt-3 flex justify-between text-[11px] font-black uppercase tracking-[0.18em] text-tester-muted">
+              <div className="mt-3 flex justify-between text-[11px] font-bold uppercase tracking-[0.18em] text-tester-muted">
                 <span>Launch</span>
                 <span>Now</span>
               </div>
@@ -118,7 +118,7 @@ export function MissionStatusView({ className }: Readonly<MissionStatusViewProps
             </ul>
             <a
               href="/mission/wizard"
-              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-tester-terracotta px-6 py-4 text-base font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-tester-terracotta px-6 py-4 text-base font-extrabold text-white shadow-tester-modal transition-all hover:bg-tester-terracotta-dark hover:-translate-y-0.5 cursor-none"
             >
               <span className="material-symbols-outlined text-sm">edit_note</span>
               Clarity Review

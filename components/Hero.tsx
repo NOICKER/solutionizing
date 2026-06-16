@@ -16,10 +16,10 @@ export function Hero() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link href="/dashboard/founder" className="btn-primary">
+            <Link href="/dashboard/founder" className="btn-primary cursor-none">
               Launch your mission
             </Link>
-            <Link href="#workflow" className="btn-secondary-muted">
+            <Link href="#workflow" className="btn-secondary-muted cursor-none">
               See how it works
             </Link>
           </div>

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { SpinnerIcon, textFieldClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon } from '@/components/solutionizing/ui'
 import {
   OnboardingShell,
   OnboardingStepIcon,
@@ -70,35 +70,38 @@ function getRequestErrorMessage(error: unknown) {
   return 'Something went wrong. Please try again.'
 }
 
+const inputClass =
+  'w-full rounded-[8px] border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-[var(--ink)] placeholder:text-[var(--ink-soft)] focus:border-[var(--electric)] focus:outline-none focus:ring-1 focus:ring-[var(--electric-dim)] cursor-none'
+
 function BankingDetailsStepSkeleton() {
   return (
     <div className="animate-pulse space-y-8">
       <div className="max-w-2xl space-y-3">
-        <div className="h-5 w-32 rounded-full bg-surface-elevated" />
-        <div className="h-10 w-full max-w-xl rounded-3xl bg-surface-elevated" />
-        <div className="h-5 w-full max-w-2xl rounded-full bg-surface-elevated" />
+        <div className="h-5 w-32 rounded-full bg-[var(--cream)]" />
+        <div className="h-10 w-full max-w-xl rounded-3xl bg-[var(--cream)]" />
+        <div className="h-5 w-full max-w-2xl rounded-full bg-[var(--cream)]" />
       </div>
 
-      <div className="rounded-[1.75rem] border border-border-subtle bg-surface p-6">
+      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-light)] p-6">
         <div className="space-y-4">
-          <div className="h-4 w-40 rounded-full bg-border-subtle" />
-          <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="h-4 w-40 rounded-full bg-[var(--border)]" />
+          <div className="h-14 rounded-[12px] bg-[var(--border)]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-3">
-              <div className="h-4 w-32 rounded-full bg-border-subtle" />
-              <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
+              <div className="h-4 w-32 rounded-full bg-[var(--border)]" />
+              <div className="h-14 rounded-[12px] bg-[var(--border)]" />
             </div>
             <div className="space-y-3">
-              <div className="h-4 w-24 rounded-full bg-border-subtle" />
-              <div className="h-14 rounded-[1.5rem] bg-border-subtle" />
+              <div className="h-4 w-24 rounded-full bg-[var(--border)]" />
+              <div className="h-14 rounded-[12px] bg-[var(--border)]" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[1.75rem] border border-border-subtle bg-surface p-5">
-        <div className="h-4 w-full max-w-xl rounded-full bg-border-subtle" />
-        <div className="mt-3 h-4 w-full max-w-lg rounded-full bg-border-subtle" />
+      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-light)] p-5">
+        <div className="h-4 w-full max-w-xl rounded-full bg-[var(--border)]" />
+        <div className="mt-3 h-4 w-full max-w-lg rounded-full bg-[var(--border)]" />
       </div>
     </div>
   )
@@ -255,7 +258,7 @@ export function TesterOnboarding({
   }
 
   const footer = (
-    <div className="mt-8 flex flex-col-reverse gap-3 border-t border-border-subtle pt-6 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-6 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
       <button
         type="button"
         onClick={() => {
@@ -290,7 +293,7 @@ export function TesterOnboarding({
                 setStep(5)
               }}
               disabled={isSavingBankDetails}
-              className="px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:text-text-main"
+              className="px-4 py-3 font-[family-name:var(--font-dm-mono)] text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)] cursor-none"
             >
               Continue without bank details
             </button>
@@ -319,19 +322,19 @@ export function TesterOnboarding({
     <OnboardingShell step={step} totalSteps={5}>
       {step === 1 ? (
         <div className="space-y-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.2em] text-primary">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--electric-dim)] px-4 py-2 text-[0.72rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--electric)]">
             <ShieldCheck className="h-4 w-4" />
             Tester setup
           </div>
           <div className="space-y-4">
-            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-5xl">
+            <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl sm:text-5xl">
               Welcome to Solutionizing{initialDisplayName.trim() ? `, ${initialDisplayName.trim()}` : ''}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--ink-soft)]">
               Test real products, give real feedback, and earn coins you can withdraw as cash.
             </p>
           </div>
-          {errorMessage ? <p className="text-sm text-red-500">{errorMessage}</p> : null}
+          {errorMessage ? <p className="text-sm text-[#c0392b]">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button
               type="button"
@@ -349,8 +352,8 @@ export function TesterOnboarding({
       {step === 2 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Here&apos;s how it works</h1>
-            <p className="mt-3 text-lg leading-8 text-text-muted">
+            <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl sm:text-4xl">Here&apos;s how it works</h1>
+            <p className="mt-3 text-lg leading-8 text-[var(--ink-soft)]">
               The platform is built to get you into the right missions quickly and reward strong feedback.
             </p>
           </div>
@@ -359,26 +362,26 @@ export function TesterOnboarding({
             {testerHowItWorks.map((item, index) => (
               <div
                 key={item.title}
-                className="flex gap-4 rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-4 sm:p-5"
+                className="flex gap-4 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5"
               >
                 <div className="flex flex-col items-center gap-3">
                   <OnboardingStepIcon icon={item.icon} />
                   {index < testerHowItWorks.length - 1 ? (
-                    <div className="h-full w-px bg-border-subtle" />
+                    <div className="h-full w-px bg-[var(--border)]" />
                   ) : null}
                 </div>
                 <div className="pt-1">
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.2em] text-text-muted">
+                  <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                     Step {index + 1}
                   </div>
-                  <h2 className="mt-2 text-xl font-black text-text-main">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-text-muted">{item.description}</p>
+                  <h2 className="mt-2 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-xl">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-7 text-[var(--ink-soft)]">{item.description}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-[#c0392b]">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -386,8 +389,8 @@ export function TesterOnboarding({
       {step === 3 ? (
         <div>
           <div className="max-w-2xl">
-            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Set up your tester profile</h1>
-            <p className="mt-3 text-lg leading-8 text-text-muted">
+            <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl sm:text-4xl">Set up your tester profile</h1>
+            <p className="mt-3 text-lg leading-8 text-[var(--ink-soft)]">
               Pick the spaces where your feedback is strongest and tell us the devices you use most.
             </p>
           </div>
@@ -395,15 +398,15 @@ export function TesterOnboarding({
           <div className="mt-8 grid gap-8">
             <section className="space-y-4">
               <div>
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
+                <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                   Expertise Tags
                 </div>
-                <p className="mt-2 text-sm text-text-muted">
+                <p className="mt-2 text-sm text-[var(--ink-soft)]">
                   Highlight the kinds of products and spaces where your feedback is strongest.
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 xl:grid-cols-3">
                 {expertiseTagOptions.map((tag) => {
                   const active = expertiseTags.includes(tag)
 
@@ -413,10 +416,10 @@ export function TesterOnboarding({
                       type="button"
                       onClick={() => handleExpertiseToggle(tag)}
                       aria-pressed={active}
-                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all ${
+                      className={`rounded-full border px-4 py-3 text-left text-sm font-bold transition-all cursor-none ${
                         active
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border-subtle bg-surface text-text-muted hover:border-border hover:text-text-main'
+                          ? 'border-[var(--electric)] bg-[var(--electric-dim)] text-[var(--electric)]'
+                          : 'border-[var(--border)] bg-[var(--cream)] text-[var(--ink-soft)] hover:border-[var(--electric)] hover:text-[var(--ink)]'
                       }`}
                     >
                       {tag}
@@ -425,20 +428,20 @@ export function TesterOnboarding({
                 })}
               </div>
 
-              <div className="text-sm text-text-muted">{expertiseTags.length}/10 tags selected.</div>
+              <div className="text-sm text-[var(--ink-soft)]">{expertiseTags.length}/10 tags selected.</div>
             </section>
 
             <section className="space-y-4">
               <div>
-                <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
+                <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                   Device Profile
                 </div>
-                <p className="mt-2 text-sm text-text-muted">
+                <p className="mt-2 text-sm text-[var(--ink-soft)]">
                   Choose the setup you use most often so new missions can be matched to the right context.
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-3">
                 {preferredDeviceOptions.map((option) => {
                   const active = preferredDevice === option.value
 
@@ -451,21 +454,21 @@ export function TesterOnboarding({
                         setPreferredDevice(option.value)
                       }}
                       aria-pressed={active}
-                      className={`rounded-2xl border px-4 py-4 text-left transition-all ${
+                      className={`rounded-[12px] border px-4 py-4 text-left transition-all cursor-none ${
                         active
-                          ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/20'
-                          : 'border-border-subtle bg-surface hover:border-border hover:bg-surface-elevated'
+                          ? 'border-[var(--electric)] bg-[var(--electric-dim)]'
+                          : 'border-[var(--border)] bg-[var(--cream)] hover:border-[var(--electric)]'
                       }`}
                     >
                       {(() => {
-                        const iconClass = `h-7 w-7 transition-colors ${active ? 'text-primary' : 'text-text-muted'}`
+                        const iconClass = `h-7 w-7 transition-colors ${active ? 'text-[var(--electric)]' : 'text-[var(--ink-soft)]'}`
                         if (option.glyphName === 'Monitor') return <Monitor className={iconClass} />
                         if (option.glyphName === 'Smartphone') return <Smartphone className={iconClass} />
                         return <TabletSmartphone className={iconClass} />
                       })()}
                       <div>
-                        <div className="text-sm font-black text-text-main">{option.label}</div>
-                        <div className="mt-2 text-sm leading-6 text-text-muted">{option.description}</div>
+                        <div className="text-sm font-semibold text-[var(--ink)]">{option.label}</div>
+                        <div className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">{option.description}</div>
                       </div>
                     </button>
                   )
@@ -474,7 +477,7 @@ export function TesterOnboarding({
             </section>
           </div>
 
-          {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
+          {errorMessage ? <p className="mt-6 text-sm text-[#c0392b]">{errorMessage}</p> : null}
           {footer}
         </div>
       ) : null}
@@ -485,27 +488,27 @@ export function TesterOnboarding({
         ) : (
           <div>
             <div className="max-w-2xl">
-              <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-4xl">Add your banking details</h1>
-              <p className="mt-3 text-lg leading-8 text-text-muted">
+              <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl sm:text-4xl">Add your banking details</h1>
+              <p className="mt-3 text-lg leading-8 text-[var(--ink-soft)]">
                 These details are used only for tester withdrawals so payouts can be processed without chasing you later.
               </p>
             </div>
 
             <div className="mt-8 grid gap-6">
-              <section className="rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-6">
+              <section className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--cream)] p-6">
                 <div className="space-y-5">
                   <div>
-                    <div className="text-[0.72rem] font-black uppercase tracking-[0.22em] text-text-muted">
+                    <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                       Bank transfer details
                     </div>
-                    <p className="mt-2 text-sm text-text-muted">
+                    <p className="mt-2 text-sm text-[var(--ink-soft)]">
                       Enter the bank account where you want your withdrawals sent.
                     </p>
                   </div>
 
                   <div className="grid gap-4">
                     <div>
-                      <label className="mb-2 block text-sm font-bold text-text-main">
+                      <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                         Account Holder Name
                       </label>
                       <input
@@ -514,16 +517,16 @@ export function TesterOnboarding({
                         onChange={(event) => handleBankFieldChange('accountHolderName', event.target.value)}
                         placeholder="Aarav Sharma"
                         autoComplete="name"
-                        className={textFieldClass}
+                        className={inputClass}
                       />
                       {getVisibleBankFieldError('accountHolderName') ? (
-                        <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('accountHolderName')}</p>
+                        <p className="mt-2 text-sm text-[#c0392b]">{getVisibleBankFieldError('accountHolderName')}</p>
                       ) : null}
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-2 block text-sm font-bold text-text-main">
+                        <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                           Account Number
                         </label>
                         <input
@@ -533,15 +536,15 @@ export function TesterOnboarding({
                           onChange={(event) => handleBankFieldChange('accountNumber', event.target.value)}
                           placeholder="123456789012"
                           autoComplete="off"
-                          className={textFieldClass}
+                          className={inputClass}
                         />
                         {getVisibleBankFieldError('accountNumber') ? (
-                          <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('accountNumber')}</p>
+                          <p className="mt-2 text-sm text-[#c0392b]">{getVisibleBankFieldError('accountNumber')}</p>
                         ) : null}
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-bold text-text-main">
+                        <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
                           IFSC Code
                         </label>
                         <input
@@ -550,10 +553,10 @@ export function TesterOnboarding({
                           onChange={(event) => handleBankFieldChange('ifscCode', event.target.value)}
                           placeholder="HDFC0123456"
                           autoComplete="off"
-                          className={textFieldClass}
+                          className={inputClass}
                         />
                         {getVisibleBankFieldError('ifscCode') ? (
-                          <p className="mt-2 text-sm text-red-500">{getVisibleBankFieldError('ifscCode')}</p>
+                          <p className="mt-2 text-sm text-[#c0392b]">{getVisibleBankFieldError('ifscCode')}</p>
                         ) : null}
                       </div>
                     </div>
@@ -561,12 +564,12 @@ export function TesterOnboarding({
                 </div>
               </section>
 
-              <section className="rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-5">
+              <section className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--cream)] p-5">
                 <div className="flex items-start gap-4">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
+                  <ShieldCheck className="h-6 w-6 text-[var(--electric)]" />
                   <div className="pt-1">
-                    <div className="text-sm font-black text-text-main">Security reassurance</div>
-                    <p className="mt-2 text-sm leading-6 text-text-muted">
+                    <div className="text-sm font-semibold text-[var(--ink)]">Security reassurance</div>
+                    <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">
                       Your banking details are encrypted at rest and used only when a withdrawal is processed. They are not shown to founders and are never included in mission data.
                     </p>
                   </div>
@@ -574,7 +577,7 @@ export function TesterOnboarding({
               </section>
             </div>
 
-            {errorMessage ? <p className="mt-6 text-sm text-red-500">{errorMessage}</p> : null}
+            {errorMessage ? <p className="mt-6 text-sm text-[#c0392b]">{errorMessage}</p> : null}
             {footer}
           </div>
         )
@@ -582,16 +585,16 @@ export function TesterOnboarding({
 
       {step === 5 ? (
         <div className="space-y-8 text-center mt-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(74,197,128,0.12)] text-[#1e7a47]">
             <CheckCircle2 className="h-10 w-10" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">You&apos;re all set!</h1>
-            <p className="mx-auto max-w-2xl text-lg leading-8 text-text-muted">
+            <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl sm:text-4xl">You&apos;re all set!</h1>
+            <p className="mx-auto max-w-2xl text-lg leading-8 text-[var(--ink-soft)]">
               We&apos;ll match you with missions that fit your skills. Keep your availability on to get notified.
             </p>
           </div>
-          {errorMessage ? <p className="text-sm text-red-500">{errorMessage}</p> : null}
+          {errorMessage ? <p className="text-sm text-[#c0392b]">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button
               type="button"

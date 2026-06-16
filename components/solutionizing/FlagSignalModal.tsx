@@ -43,15 +43,15 @@ export function FlagSignalModal({
       <button
         type="button"
         aria-label="Close flag modal"
-        className="absolute inset-0"
+        className="absolute inset-0 cursor-none"
         onClick={onClose}
       />
       <div className="relative z-10 w-full max-w-xl rounded-panel border border-border-subtle bg-surface p-8 shadow-2xl">
         <div className="mb-6">
-          <div className="mb-2 inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.72rem] font-black uppercase tracking-[0.18em] text-primary">
+          <div className="mb-2 inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.72rem] font-bold uppercase tracking-[0.18em] text-primary">
             Quick flag
           </div>
-          <h2 className="text-2xl font-black text-white">{title}</h2>
+          <h2 className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">{title}</h2>
           <p className="mt-2 text-sm leading-6 text-text-muted">{subtitle}</p>
           <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
             Target: {targetLabel}
@@ -92,7 +92,7 @@ export function FlagSignalModal({
               rows={4}
               maxLength={300}
               placeholder="Optional note. Keep it short and specific."
-              className={`${textFieldClass} resize-none`}
+              className={`${textFieldClass} resize-none cursor-none`}
             />
             <div className="mt-2 text-right text-xs text-text-muted">
               {details.length} / 300
@@ -105,7 +105,7 @@ export function FlagSignalModal({
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <button
             type="button"
-            className={`px-5 py-3 text-sm ${outlineButtonClass}`}
+            className={`px-5 py-3 text-sm ${outlineButtonClass} cursor-none`}
             onClick={onClose}
           >
             Cancel
@@ -113,7 +113,7 @@ export function FlagSignalModal({
           <button
             type="button"
             disabled={isSubmitting}
-            className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-sm ${primaryButtonClass}`}
+            className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-sm ${primaryButtonClass} cursor-none`}
             onClick={onSubmit}
           >
             {isSubmitting ? <SpinnerIcon /> : null}

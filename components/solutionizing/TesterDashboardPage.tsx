@@ -1,8 +1,8 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import { ArrowRightLeft, ClipboardList, HelpCircle, LogOut, Settings } from 'lucide-react'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ArrowRightLeft, ClipboardList, HelpCircle, Settings } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import posthog from 'posthog-js'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -15,10 +15,8 @@ import {
   SpinnerIcon,
   formatCoins,
   formatRupeesFromCoins,
-  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 import { SupportPage } from '@/components/solutionizing/shared/SupportPage'
-import { ThemeToggleButton } from '@/components/solutionizing/shared/ThemeToggleButton'
 import { minimumWithdrawalCoins } from '@/components/solutionizing/tester/constants'
 import { TesterMissionsTab } from '@/components/solutionizing/tester/TesterMissionsTab'
 import { TesterSettingsTab } from '@/components/solutionizing/tester/TesterSettingsTab'
@@ -54,32 +52,27 @@ function WithdrawalModal({
   const middleAmount = Math.max(minimumWithdrawalCoins, balance - 1000)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/70 p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-[2.5rem] border border-border-subtle bg-surface p-5 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+      <div className="relative z-10 w-full max-w-[480px] rounded-[20px] border border-[var(--border)] bg-[var(--cream)] p-8 max-h-[90vh] overflow-y-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h2 className="mb-1 text-2xl sm:text-3xl font-black text-white">Withdraw Coins</h2>
-            <p className="text-sm text-text-muted">Convert your coins to rupees</p>
+            <h2 className="font-[family-name:var(--font-fraunces)] text-[1.6rem] font-normal italic text-[var(--ink)]">request payout.</h2>
+            <p className="mt-1 font-[family-name:var(--font-dm-mono)] text-[0.72rem] uppercase tracking-widest text-[var(--ink-soft)]">CONVERT COINS TO RUPEES</p>
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated hover:bg-border-subtle" onClick={onClose}>
-            <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button onClick={onClose} className="p-2 text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <div className="mb-6 rounded-3xl border border-emerald-900/60 bg-emerald-950/30 p-5 sm:p-6">
-          <div className="mb-2 text-[0.65rem] font-bold tracking-widest text-text-muted uppercase">CURRENT BALANCE</div>
-          <div className="mb-2 flex items-baseline gap-2">
-            <span className="text-3xl sm:text-4xl font-black text-white">{formatCoins(balance)}</span>
-            <span className="text-sm font-semibold text-text-muted uppercase">coins</span>
-          </div>
-          <div className="text-base sm:text-lg font-bold text-emerald-400">≈ {formatRupeesFromCoins(balance)}</div>
+        <div className="mb-6 rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5">
+          <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--electric)]">YOUR BALANCE</div>
+          <div className="font-[family-name:var(--font-fraunces)] text-2xl font-bold leading-none text-[var(--ink)]">{formatCoins(balance)} coins</div>
+          <div className="mt-1 font-[family-name:var(--font-dm-mono)] text-[0.8rem] text-[var(--ink-soft)]">≈ {formatRupeesFromCoins(balance)}</div>
         </div>
 
         <div className="mb-6">
-          <label className="mb-3 block text-[0.65rem] font-bold tracking-widest text-white uppercase text-center sm:text-left">HOW MANY COINS TO WITHDRAW?</label>
+          <label className="mb-2 block font-[family-name:var(--font-dm-mono)] text-[0.72rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">HOW MANY COINS?</label>
           <div className="relative">
             <input
               type="number"
@@ -87,100 +80,63 @@ function WithdrawalModal({
               max={balance}
               value={amount}
               onChange={(event) => onAmountChange(Number(event.target.value))}
-              className="w-full rounded-2xl border-2 border-border-subtle bg-surface-elevated px-4 py-4 text-xl sm:text-2xl font-black text-white placeholder:text-text-muted transition-all focus:border-primary focus:outline-none"
+              className="w-full rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-light)] py-3 pl-4 pr-16 font-[family-name:var(--font-fraunces)] text-[1.4rem] font-bold text-[var(--ink)] outline-none cursor-none"
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted uppercase tracking-tighter">coins</div>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 font-[family-name:var(--font-dm-mono)] text-[0.7rem] text-[var(--ink-soft)]">COINS</span>
           </div>
-          <div className="mt-2 flex items-center justify-between px-2">
-            <span className="text-[0.6rem] font-bold uppercase tracking-wider text-text-muted">Min: 5,000</span>
-            <span className="text-[0.6rem] font-bold uppercase tracking-wider text-text-muted">Max: {formatCoins(balance)}</span>
+          <div className="mt-2 flex justify-between font-[family-name:var(--font-dm-mono)] text-[0.65rem] text-[var(--ink-soft)]">
+            <span>MIN: 5,000</span>
+            <span>MAX: {formatCoins(balance)}</span>
           </div>
         </div>
 
-        <div className="mb-6 rounded-3xl border border-sky-900/60 bg-sky-950/30 p-5 sm:p-6">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-text-muted">You will receive</span>
-            <span className="text-2xl sm:text-3xl font-black text-white">₹{(amount / 100).toFixed(0)}</span>
-          </div>
-          <div className="border-t border-sky-900/40 pt-3 text-[0.65rem] font-semibold text-text-muted uppercase text-center">Conversion rate: 100 coins = ₹1</div>
+        <div className="mb-6 flex items-center justify-between rounded-[10px] border border-[var(--border)] bg-[var(--bg-light)] px-5 py-3">
+          <span className="font-[family-name:var(--font-dm-mono)] text-[0.72rem] tracking-[0.08em] text-[var(--ink-soft)]">YOU RECEIVE</span>
+          <span className="font-[family-name:var(--font-fraunces)] text-[1.4rem] font-bold text-[var(--ink)]">₹{(amount / 100).toFixed(0)}</span>
         </div>
 
-        <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
-          <button className="rounded-2xl bg-surface-elevated py-3 text-sm font-bold text-text-main transition-colors hover:bg-border-subtle" onClick={() => onQuickPick(minimumWithdrawalCoins)}>
-            5,000
-          </button>
-          <button className="rounded-2xl bg-surface-elevated py-3 text-sm font-bold text-text-main transition-colors hover:bg-border-subtle" onClick={() => onQuickPick(middleAmount)}>
-            {formatCoins(middleAmount)}
-          </button>
-          <button
-            className="rounded-2xl bg-surface-elevated py-3 text-sm font-bold text-text-main transition-colors hover:bg-border-subtle disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => onQuickPick(safeAllAmount)}
-            disabled={!canUseAllAmount}
-            title={!canUseAllAmount ? 'Minimum withdrawal is 5,000 coins' : undefined}
-          >
-            All
-          </button>
+        <div className="mb-5 grid grid-cols-3 gap-2.5">
+          {[minimumWithdrawalCoins, middleAmount, safeAllAmount].map((val, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onQuickPick(val)}
+              disabled={i === 2 && !canUseAllAmount}
+              title={i === 2 && !canUseAllAmount ? 'Minimum withdrawal is 5,000 coins' : undefined}
+              className={`cursor-none rounded-lg border border-[var(--border)] bg-[var(--bg-light)] p-2.5 font-[family-name:var(--font-dm-mono)] text-[0.78rem] text-[var(--ink)] transition-colors hover:border-[var(--electric)] ${
+                i === 2 && !canUseAllAmount ? 'opacity-50' : 'opacity-100'
+              }`}
+            >
+              {i === 2 ? 'All' : formatCoins(val)}
+            </button>
+          ))}
         </div>
         {!canUseAllAmount ? (
-          <p className="mb-6 text-center text-[0.65rem] font-black uppercase tracking-widest text-amber-500">Minimum withdrawal is 5,000 coins.</p>
+          <p className="mb-5 text-center font-[family-name:var(--font-dm-mono)] text-[0.72rem] text-[var(--ink-soft)]">Minimum withdrawal is 5,000 coins.</p>
         ) : null}
 
-        <div className="mb-6 rounded-2xl border border-amber-900/50 bg-amber-950/30 p-4">
-          <div className="flex items-start gap-3">
-            <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <div className="text-xs font-semibold text-amber-300">
-              Withdrawals are processed within 3-5 business days. You&apos;ll receive a confirmation email once complete.
-            </div>
-          </div>
+        <div className="mb-5 flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-light)] px-4 py-3 text-[0.8rem] text-[var(--ink-soft)]">
+          <svg className="mt-0.5 h-4 w-4 shrink-0 text-[var(--electric)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>Withdrawals process within 3-5 business days. You&apos;ll get a confirmation email once complete.</div>
         </div>
 
-        {errorMessage ? <p className="mb-4 text-center text-xs font-bold text-red-400">{errorMessage}</p> : null}
+        {errorMessage ? <p className="mb-3 text-center font-[family-name:var(--font-dm-mono)] text-[0.75rem] text-[#c0392b]">{errorMessage}</p> : null}
 
         <button
-          className={`flex w-full items-center justify-center gap-2 py-4 text-base font-black tracking-widest ${primaryButtonClass}`}
+          type="button"
           disabled={isSubmitting}
           onClick={onSubmit}
+          className={`cursor-none flex w-full items-center justify-center gap-2 rounded-full bg-[var(--electric)] p-4 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 ${
+            isSubmitting ? 'opacity-70' : 'opacity-100'
+          }`}
         >
-          {isSubmitting ? <SpinnerIcon className="w-5 h-5" /> : null}
-          REQUEST WITHDRAWAL →
+          {isSubmitting ? <SpinnerIcon className="h-4 w-4" /> : null}
+          request payout →
         </button>
       </div>
     </div>
   )
 }
-
-function TabButton({
-  label,
-  glyph,
-  active,
-  disabled,
-  onClick,
-  className = '',
-}: {
-  label: string
-  glyph: ReactNode
-  active: boolean
-  disabled?: boolean
-  onClick?: () => void
-  className?: string
-}) {
-  return (
-    <button
-      type="button"
-      className={`${className} flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-bold transition-all ${active ? 'bg-primary text-white shadow-[0_4px_12px_rgba(249,124,90,0.35)]' : 'text-text-muted hover:bg-surface-elevated hover:text-text-main'} ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
-      onClick={disabled ? undefined : onClick}
-      aria-disabled={disabled ? 'true' : undefined}
-    >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? 'bg-white/20' : 'bg-surface-elevated'}`}>
-        {glyph}
-      </div>
-      {label}
-    </button>
-  )
-}
-
 function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   const router = useRouter()
   const { user, refetch, signOut } = useAuth()
@@ -400,19 +356,6 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     }
   }
 
-  const topBarTitle =
-    activeTab === 'support'
-      ? 'Support'
-      : activeTab === 'settings'
-        ? 'Settings'
-        : 'Dashboard'
-
-  const topBarDescription =
-    activeTab === 'support'
-      ? 'Find answers, check system status, and contact the team.'
-      : activeTab === 'settings'
-        ? 'Manage your profile, alerts, and device preferences.'
-        : 'Track active missions, withdrawals, and your current status.'
 
   const testerNavItems = [
     { id: 'missions', label: 'Missions', icon: ClipboardList },
@@ -421,155 +364,119 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   ] as const
 
   return (
-    <div className="min-h-screen bg-background px-4 py-4 sm:px-6 lg:px-8 text-text-main font-sans">
-      <div className="mx-auto grid max-w-[1600px] gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-border-subtle lg:bg-surface lg:p-5">
-          <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-surface-elevated px-4 py-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97C5A] to-[#E45D43] shadow-[0_18px_35px_-18px_rgba(249,124,90,0.4)]">
-              <BrandMark className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <div className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-text-muted">Solutionizing</div>
-              <div className="mt-1 text-base font-black text-white">Precision Core</div>
-            </div>
-          </div>
-
-          <nav className="space-y-2">
-            {testerNavItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
-                    activeTab === item.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-text-muted hover:bg-surface-elevated hover:text-text-main'
-                  }`}
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                    activeTab === item.id ? 'bg-primary/20 text-primary' : 'bg-surface-elevated text-text-muted'
-                  }`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  {item.label}
-                </button>
-              )
-            })}
-          </nav>
-
-          <div className="mt-auto space-y-2">
-            <div className="border-t border-border-subtle pt-4" />
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/15"
-              onClick={() => void handleSwitchToFounder()}
-              disabled={isSwitchingToFounder}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15">
-                <ArrowRightLeft className="h-4 w-4" />
-              </div>
-              {isSwitchingToFounder ? 'Switching...' : 'Switch to Founder'}
-            </button>
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-red-400 transition-all hover:bg-red-500/10"
-              onClick={() => void signOut()}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-500/10">
-                <LogOut className="h-4 w-4" />
-              </div>
-              Sign Out
-            </button>
-          </div>
-        </aside>
-
-        <main className="min-w-0 pb-28 lg:pb-0">
-          <div className="relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-5 sm:p-6 lg:p-8">
-            <div className="pointer-events-none absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-
-            <div className="relative z-10">
-              <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                <div className="max-w-3xl">
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">
-                    <BrandMark className="h-3.5 w-3.5 text-primary" />
-                    Tester Workspace
-                  </div>
-                  <h1 className="text-3xl font-black leading-tight text-white sm:text-4xl">
-                    {topBarTitle}
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base">{topBarDescription}</p>
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-end">
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:border-primary/40 hover:text-text-main disabled:cursor-wait disabled:opacity-70"
-                    onClick={() => void handleSwitchToFounder()}
-                    disabled={isSwitchingToFounder}
-                  >
-                    <ArrowRightLeft className="h-4 w-4" />
-                    {isSwitchingToFounder ? 'Switching...' : 'Switch to Founder'}
-                  </button>
-                  <ThemeToggleButton />
-                </div>
-              </div>
-
-              {activeTab === 'missions' ? (
-                <TesterMissionsTab
-                  user={user}
-                  stats={stats}
-                  assignments={assignments}
-                  isLoading={isLoading}
-                  loadError={loadError}
-                  now={now}
-                  balance={balance}
-                  onRetry={() => void loadDashboard()}
-                  onOpenWithdrawal={() => setWithdrawalOpen(true)}
-                  onAbandon={(assignment) => setAbandonTarget(assignment)}
-                />
-              ) : activeTab === 'support' ? (
-                <SupportPage role="TESTER" />
-              ) : (
-                <TesterSettingsTab
-                  displayName={user?.testerProfile?.displayName || 'N/A'}
-                  email={user?.email || 'N/A'}
-                  onOpenDeleteModal={() => setDeleteModalOpen(true)}
-                />
-              )}
-            </div>
-          </div>
-        </main>
+    <div className="flex min-h-screen bg-[var(--bg)]">
+      <div className="fixed left-0 top-0 z-[500] flex h-[50px] w-full items-center justify-between border-b border-[var(--border)] bg-[rgba(232,224,212,0.92)] px-6 lg:hidden">
+        <div className="flex items-center gap-1.5 font-['Satoshi'] text-[0.9rem] font-bold text-[var(--ink)]">
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-[var(--dark)] font-[family-name:var(--font-dm-mono)] text-[0.6rem] text-[var(--cream)]">S</div>
+          solutionizing
+        </div>
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--electric-mid)] bg-[var(--electric-dim)] font-[family-name:var(--font-dm-mono)] text-[0.7rem] font-semibold text-[var(--electric)]">
+          {(user?.testerProfile?.displayName ?? user?.email ?? 'T').charAt(0).toUpperCase()}
+        </div>
       </div>
 
-      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-panel border border-border-subtle bg-surface-elevated px-2 py-2 lg:hidden">
+      <aside className="fixed left-0 top-0 z-[100] hidden h-screen w-[260px] flex-col overflow-y-auto border-r border-[rgba(250,247,242,0.06)] bg-[var(--dark)] py-6 lg:flex">
+        <div className="border-b border-[rgba(250,247,242,0.04)] px-6 pb-6">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2.5 font-['Satoshi'] text-base font-bold tracking-tight text-[var(--cream)]">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--dark-surface)] font-[family-name:var(--font-dm-mono)] text-[0.7rem] text-[var(--cream)]">S</div>
+              solutionizing
+            </div>
+            <div className="w-6 h-[2px] rounded-full bg-[var(--electric)] mt-1" />
+          </div>
+        </div>
+
+        <nav className="mt-6 flex flex-col gap-1">
+          {testerNavItems.map((item) => {
+            const Icon = item.icon
+            const isActive = activeTab === item.id
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                className={`cursor-none flex w-full items-center gap-3 border-l-2 px-6 py-3 text-left font-['Satoshi'] text-[0.9rem] font-medium transition-all ${
+                  isActive
+                    ? 'border-[var(--electric)] bg-[rgba(250,247,242,0.06)] text-[var(--cream)]'
+                    : 'border-transparent text-[rgba(250,247,242,0.5)] hover:bg-[rgba(250,247,242,0.03)] hover:text-[rgba(250,247,242,0.7)]'
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+                {item.label}
+              </button>
+            )
+          })}
+        </nav>
+
+        <div className="mt-auto flex flex-col gap-4 border-t border-[rgba(250,247,242,0.04)] p-6">
+          <div className="rounded-[10px] border border-[rgba(255,107,26,0.2)] bg-[var(--dark-surface)] px-4 py-3">
+            <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--electric)]">TOTAL EARNED</div>
+            <div className="mb-1 font-[family-name:var(--font-fraunces)] text-[1.8rem] font-bold leading-none text-[var(--cream)]">
+              {formatRupeesFromCoins(balance)}
+            </div>
+            <div className="text-[0.78rem] text-[rgba(250,247,242,0.4)]">{formatCoins(balance)} coins</div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--electric-mid)] bg-[var(--electric-dim)] font-[family-name:var(--font-dm-mono)] text-[0.8rem] font-semibold text-[var(--electric)]">
+              {(user?.testerProfile?.displayName ?? user?.email ?? 'T').charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-['Satoshi'] text-[0.88rem] font-semibold leading-[1.2] text-[var(--cream)]">
+                {user?.testerProfile?.displayName ?? user?.email?.split('@')[0] ?? 'Tester'}
+              </span>
+              <span className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] text-[rgba(250,247,242,0.3)]">TESTER</span>
+            </div>
+          </div>
+
+          <button type="button" onClick={() => void handleSwitchToFounder()} disabled={isSwitchingToFounder} className="flex items-center gap-2 font-[family-name:var(--font-dm-mono)] text-[0.72rem] text-[rgba(250,247,242,0.4)] transition-colors hover:text-[rgba(250,247,242,0.7)] cursor-none">
+            <ArrowRightLeft className="h-3 w-3" />
+            {isSwitchingToFounder ? 'switching...' : 'switch to founder'}
+          </button>
+
+          <button type="button" onClick={() => void signOut()} className="text-left font-[family-name:var(--font-dm-mono)] text-[0.72rem] text-[rgba(250,247,242,0.25)] transition-colors hover:text-[rgba(250,247,242,0.5)] cursor-none">
+            sign out
+          </button>
+        </div>
+      </aside>
+
+      <main className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 py-20 lg:ml-[260px] lg:w-[calc(100%-260px)] lg:px-12 lg:py-10">
+        <style>{`
+          @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+        `}</style>
+
+        <div className="mb-10 flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="font-[family-name:var(--font-fraunces)] text-[1.6rem] font-normal italic text-[var(--ink)]">
+              {activeTab === 'missions' ? 'your missions.' : activeTab === 'settings' ? 'account settings.' : 'how can we help?'}
+            </h1>
+            <div className="w-10 h-[3px] rounded-full bg-[var(--electric)] mt-1.5" />
+          </div>
+          <button type="button" onClick={() => setWithdrawalOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 font-['Satoshi'] text-[0.88rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 cursor-none">
+            get payout →
+          </button>
+        </div>
+
+        <div key={activeTab} className="animate-[tabEnter_0.22s_ease_forwards]">
+          {activeTab === 'missions' ? (
+            <TesterMissionsTab user={user} stats={stats} assignments={assignments} isLoading={isLoading} loadError={loadError} now={now} balance={balance} onRetry={() => void loadDashboard()} onOpenWithdrawal={() => setWithdrawalOpen(true)} onAbandon={(assignment) => setAbandonTarget(assignment)} />
+          ) : activeTab === 'support' ? (
+            <SupportPage role="TESTER" />
+          ) : (
+            <TesterSettingsTab displayName={user?.testerProfile?.displayName || 'N/A'} email={user?.email || 'N/A'} onOpenDeleteModal={() => setDeleteModalOpen(true)} />
+          )}
+        </div>
+      </main>
+
+      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] lg:hidden">
         {testerNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
-
           return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveTab(item.id)}
-              className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-text-muted hover:bg-surface hover:text-text-main'
-              }`}
-            >
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                  isActive
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-surface text-text-muted'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <span className="w-full truncate text-center text-[10px] font-bold uppercase tracking-[0.18em]">
-                {item.label}
-              </span>
+            <button key={item.id} type="button" onClick={() => setActiveTab(item.id)} className={`flex flex-1 flex-col items-center justify-center p-2 transition-colors ${
+              isActive ? 'text-[var(--electric)]' : 'text-[rgba(250,247,242,0.4)]'
+            }`}>
+              <Icon className="h-5 w-5" strokeWidth={2} />
             </button>
           )
         })}
@@ -626,3 +533,4 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
 export function TesterDashboardPage({ initialData }: TesterDashboardPageProps) {
   return <TesterDashboardContent initialData={initialData} />
 }
+

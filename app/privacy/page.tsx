@@ -29,7 +29,7 @@ export default function PrivacyPage() {
             "To build aggregated anonymous benchmarks across the platform so founders can understand product signal quality without exposing another founder's private mission data.",
           ]}
         />
-        <p className="font-semibold text-text-main">
+        <p className="font-semibold text-[var(--ink)]">
           We use anonymised and aggregated mission outcomes to improve our benchmark scoring models. No individual mission data is shared with other founders. Raw responses are never sold.
         </p>
       </LegalSection>
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
       <LegalSection title="9. Contact">
         <p>
           For privacy questions, deletion requests, or data requests, contact us at{" "}
-          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
+          <a href="mailto:hello@solutionizing.com" className="font-semibold text-[var(--electric)] hover:opacity-80 cursor-none">
             hello@solutionizing.com
           </a>
           .

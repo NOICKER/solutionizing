@@ -16,8 +16,6 @@ import {
   SpinnerIcon,
   clampPercent,
   formatCoins,
-  outlineButtonClass,
-  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
 type MissionPulseFilter = 'current' | 'completed'
@@ -61,20 +59,6 @@ function getDashboardMissionHref(mission: ApiMission) {
   return `/mission/status/${mission.id}`
 }
 
-function DashboardGlyphChip({
-  children,
-  className = '',
-}: {
-  children: string
-  className?: string
-}) {
-  return (
-    <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-xs font-black uppercase ${className}`}>
-      {children}
-    </div>
-  )
-}
-
 function StatCard({
   label,
   value,
@@ -88,17 +72,25 @@ function StatCard({
   className: string
   isLoading: boolean
 }) {
+  void className
   return (
-    <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <DashboardGlyphChip className={className}>{glyph}</DashboardGlyphChip>
-        <div className="rounded-full bg-surface-elevated px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-text-muted">
-          Live
+    <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '8px',
+          background: 'var(--electric-dim)', border: '1px solid var(--electric-mid)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'DM Mono, monospace', fontSize: '0.8rem', fontWeight: 600, color: 'var(--electric)',
+        }}>
+          {glyph}
         </div>
+        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: 'var(--electric)', letterSpacing: '0.08em', background: 'var(--electric-dim)', padding: '0.2rem 0.6rem', borderRadius: '100px' }}>
+          LIVE
+        </span>
       </div>
-      <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.2em] text-text-muted">{label}</div>
-      <div className="text-3xl font-black text-white">
-        {isLoading ? <span className="inline-block h-8 w-14 animate-pulse rounded-xl bg-surface-elevated" /> : value}
+      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', letterSpacing: '0.12em', marginBottom: '0.4rem' }}>{label}</div>
+      <div style={{ fontFamily: 'Fraunces, serif', fontSize: '2.2rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1 }}>
+        {isLoading ? <span style={{ display: 'inline-block', height: '2rem', width: '3rem', background: 'var(--bg)', borderRadius: '4px' }} /> : value}
       </div>
     </div>
   )
@@ -120,79 +112,54 @@ function RecentMissionCard({
 
   const content = (
     <>
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <h3 className="text-lg font-black text-white transition-colors group-hover:text-primary">
-          {mission.title}
-        </h3>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '1rem' }}>
+        <h3 style={{ fontFamily: 'Fraunces, serif', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>{mission.title}</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '0.4rem' }}>
           <MissionStatusBadge status={mission.status} />
           <MissionHealthScoreBadge score={mission.healthScore} />
-          {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? (
-            <RetestCountChip count={mission.retests!.length} />
-          ) : null}
+          {mission.status === 'COMPLETED' && (mission.retests?.length ?? 0) > 0 ? <RetestCountChip count={mission.retests!.length} /> : null}
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="text-text-muted">
-            {mission.testersCompleted} of {mission.testersRequired} testers
-          </span>
-          <span className="font-bold text-white">{Math.round(progress)}%</span>
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--ink-soft)' }}>
+          <span>{mission.testersCompleted} of {mission.testersRequired} testers</span>
+          <span style={{ color: 'var(--electric)' }}>{Math.round(progress)}%</span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-surface-elevated">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[#F97C5A] to-[#E45D43]"
-            style={{ width: `${progress}%` }}
-          />
+        <div style={{ background: 'var(--bg)', height: '4px', borderRadius: '100px', overflow: 'hidden' }}>
+          <div style={{ width: `${progress}%`, background: 'var(--electric)', height: '4px', borderRadius: '100px' }} />
         </div>
       </div>
 
       {isApproved ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <button
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+          <button className="cursor-none"
             type="button"
             disabled={isLaunching}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm ${primaryButtonClass} disabled:pointer-events-none disabled:opacity-70`}
             onClick={() => onLaunchMission(mission)}
+            style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.55rem 1.2rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.82rem', cursor: 'none', opacity: isLaunching ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
           >
             {isLaunching ? <SpinnerIcon /> : null}
             Launch Mission
           </button>
-          {href ? (
-            <Link href={href} className={`px-4 py-2 text-sm ${outlineButtonClass}`}>
-              VIEW {'->'}
-            </Link>
-          ) : null}
+          {href ? <Link className="cursor-none" href={href} style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--electric)' }}>VIEW {'->'}</Link> : null}
         </div>
       ) : href ? (
-        <div className="flex items-center gap-1 text-sm font-bold text-primary transition-colors group-hover:text-primary-hover">
-          View
-          <svg
-            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--electric)' }}>View {'->'}</div>
       ) : (
-        <div className="text-sm font-bold text-primary">Ready to launch from Mission Control</div>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--electric)' }}>Ready to launch from Mission Control</div>
       )}
     </>
   )
 
+  const cardStyle = { background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.2rem', cursor: href ? 'none' : undefined } as const
+
   if (!href || isApproved) {
-    return <div className="group rounded-card border border-border-subtle bg-surface p-4 sm:p-5">{content}</div>
+    return <div style={cardStyle}>{content}</div>
   }
 
   return (
-    <Link
-      href={href}
-      aria-label={`Open ${mission.title}`}
-      className="group block rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
-    >
+    <Link className="cursor-none" href={href} aria-label={`Open ${mission.title}`} style={{ ...cardStyle, display: 'block', textDecoration: 'none', transition: 'border-color 0.2s' }}>
       {content}
     </Link>
   )
@@ -203,29 +170,19 @@ function EmptyMissionPulseState({ filter }: { filter: MissionPulseFilter }) {
   const isCurrentView = filter === 'current'
 
   return (
-    <div className="rounded-card border border-dashed border-border-subtle bg-surface-elevated/60 p-6 sm:p-8">
-      <div className="max-w-xl">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-          <ClipboardList className="h-6 w-6" />
-        </div>
-        <h3 className="text-2xl font-black text-white">
-          {isCurrentView ? 'No running missions right now' : 'No completed missions yet'}
-        </h3>
-        <p className="mt-3 text-sm leading-6 text-text-muted">
-          {isCurrentView
-            ? 'Start a fresh mission from here, or switch the selector to completed missions for archived reports.'
-            : 'Completed missions stay here for review once testers finish the full run.'}
-        </p>
-        {isCurrentView ? (
-          <button
-            type="button"
-            className={`mt-6 px-6 py-3 text-base ${primaryButtonClass}`}
-            onClick={() => router.push('/mission/wizard')}
-          >
-            + New Mission
-          </button>
-        ) : null}
-      </div>
+    <div style={{ background: 'var(--bg-light)', border: '1px dashed var(--border-strong)', borderRadius: '12px', padding: '2.5rem', textAlign: 'center' }}>
+      <ClipboardList style={{ width: 40, height: 40, color: 'var(--ink-soft)', margin: '0 auto 1rem' }} />
+      <h3 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.2rem', color: 'var(--ink)', fontWeight: 400, marginBottom: '0.5rem' }}>
+        {isCurrentView ? 'no running missions right now.' : 'no completed missions yet.'}
+      </h3>
+      <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.88rem', color: 'var(--ink-soft)', maxWidth: '32rem', margin: '0 auto 1.5rem' }}>
+        {isCurrentView ? 'Start a fresh mission, or switch to completed missions for archived reports.' : 'Completed missions stay here once testers finish the full run.'}
+      </p>
+      {isCurrentView ? (
+        <button className="cursor-none" type="button" onClick={() => router.push('/mission/wizard')} style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.4rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.88rem', cursor: 'none' }}>
+          + new mission
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -245,45 +202,33 @@ function ProductJourneySection({ missions }: { missions: ApiMission[] }) {
   }
 
   return (
-    <section className="mt-6 rounded-panel border border-border-subtle bg-surface p-4 sm:p-6">
-      <div className="mb-6">
-        <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Journey Map</div>
-        <h2 className="mt-2 text-2xl font-black text-white">Product Journey</h2>
-        <p className="mt-2 text-sm font-bold text-text-muted">
-          {`${journeyMissions.length} missions run · Started ${formatMissionDate(journeyMissions[0].createdAt)}`}
+    <section style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.5rem 2rem', marginTop: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--electric)', letterSpacing: '0.12em' }}>JOURNEY MAP</div>
+        <h2 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.3rem', color: 'var(--ink)', fontWeight: 400, marginTop: '0.35rem' }}>product journey.</h2>
+        <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '0.4rem' }}>
+          {`${journeyMissions.length} missions run - Started ${formatMissionDate(journeyMissions[0].createdAt)}`}
         </p>
       </div>
 
-      <div className="space-y-0">
+      <div>
         {journeyMissions.map((mission, index) => {
           const isRetest = Boolean(mission.parentMissionId)
 
           return (
-            <div key={mission.id} className="relative grid grid-cols-[1.5rem_minmax(0,1fr)] gap-4 pb-6 last:pb-0">
-              {index < journeyMissions.length - 1 ? (
-                <div className="absolute bottom-0 left-[0.7rem] top-6 w-px bg-border-subtle" />
-              ) : null}
-              <div className="relative z-10 mt-1 h-4 w-4 rounded-full border border-primary/50 bg-surface shadow-[0_0_0_4px_rgba(249,124,90,0.08)]" />
-              <div
-                className={`rounded-card border border-border-subtle bg-surface-elevated p-4 ${
-                  isRetest ? 'border-l-4 border-l-primary/70' : ''
-                }`}
-              >
-                {isRetest ? (
-                  <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">
-                    <span className="h-px w-8 bg-primary/60" />
-                    Retest
-                  </div>
-                ) : null}
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <h3 className="text-base font-black text-white sm:text-lg">{mission.title}</h3>
-                    <p className="mt-1 text-sm text-text-muted">
+            <div key={mission.id} style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1.25rem minmax(0, 1fr)', gap: '1rem', paddingBottom: index < journeyMissions.length - 1 ? '1.2rem' : 0 }}>
+              {index < journeyMissions.length - 1 ? <div style={{ position: 'absolute', top: 14, bottom: 0, left: 5, width: 2, background: 'var(--border-strong)' }} /> : null}
+              <div style={{ position: 'relative', zIndex: 1, marginTop: 4, background: 'var(--cream)', border: '2px solid var(--electric)', borderRadius: '50%', width: 12, height: 12 }} />
+              <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1rem' }}>
+                {isRetest ? <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--electric)', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>RETEST</div> : null}
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+                  <div>
+                    <h3 style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.95rem', color: 'var(--ink)' }}>{mission.title}</h3>
+                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', marginTop: '0.25rem' }}>
                       {mission.completedAt ? `Completed ${formatMissionDate(mission.completedAt)}` : 'Not completed yet'}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                     <MissionHealthScoreBadge score={mission.healthScore} />
                     <MissionStatusBadge status={mission.status} />
                   </div>
@@ -360,10 +305,10 @@ export function FounderDashboardTab({
     : currentMissions
 
   const statsCards = [
-    { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-emerald-900/30 text-emerald-300' },
-    { label: 'TOTAL MISSIONS', value: missionStats.total, glyph: 'T', className: 'bg-primary/10 text-primary' },
-    { label: 'COMPLETED', value: missionStats.completed, glyph: 'C', className: 'bg-sky-900/30 text-sky-300' },
-    { label: 'DRAFTS', value: missionStats.drafts, glyph: 'D', className: 'bg-amber-900/30 text-amber-300' },
+    { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-[rgba(74,197,128,0.12)] text-[#1e7a47]' },
+    { label: 'TOTAL MISSIONS', value: missionStats.total, glyph: 'T', className: 'bg-[var(--electric-dim)] text-[var(--electric)]' },
+    { label: 'COMPLETED', value: missionStats.completed, glyph: 'C', className: 'bg-[rgba(56,189,248,0.12)] text-[#0369a1]' },
+    { label: 'DRAFTS', value: missionStats.drafts, glyph: 'D', className: 'bg-[rgba(251,191,36,0.12)] text-[#92400e]' },
   ] as const
 
   let content
@@ -372,7 +317,7 @@ export function FounderDashboardTab({
     content = (
       <div className="space-y-3">
         <DashboardCardSkeleton count={3} variant="full" onClick={onSkeletonClick} />
-        {loadingMessage ? <p className="text-center text-sm italic text-[#6b687a] dark:text-gray-400">{loadingMessage}</p> : null}
+        {loadingMessage ? <p className="text-center text-sm italic text-[var(--ink-soft)]">{loadingMessage}</p> : null}
       </div>
     )
   } else if (loadError) {
@@ -388,7 +333,7 @@ export function FounderDashboardTab({
     content = (
       <EmptyStatePanel
         buttonLabel="CREATE YOUR FIRST MISSION ->"
-        icon={<ClipboardList className="h-16 w-16 text-[#9b98a8] dark:text-gray-400" />}
+        icon={<ClipboardList className="h-16 w-16 text-[var(--ink-soft)]" />}
         onPrimaryAction={() => router.push('/mission/wizard')}
       />
     )
@@ -411,62 +356,44 @@ export function FounderDashboardTab({
   }
 
   return (
-    <>
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
-        <div className="rounded-card border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+    <div className="animate-[tabEnter_0.22s_ease_forwards]">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ background: 'var(--cream)', border: '1px solid var(--electric-mid)', borderRadius: '12px', padding: '1.2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'var(--electric-dim)', border: '1px solid var(--electric-mid)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--electric)' }}>
               <Coins className="h-5 w-5" />
             </div>
-            <div className="rounded-full bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-primary">
-              Wallet
-            </div>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.62rem', color: 'var(--electric)', letterSpacing: '0.08em', background: 'var(--electric-dim)', padding: '0.2rem 0.6rem', borderRadius: '100px' }}>WALLET</span>
           </div>
-          <div className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.2em] text-text-muted">COIN BALANCE</div>
-          <div className="text-3xl font-black text-white">
-            {isBalanceLoading ? (
-              <span className="inline-block h-8 w-14 animate-pulse rounded-xl bg-surface-elevated" />
-            ) : (
-              formatCoins(coinBalance)
-            )}
+          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', letterSpacing: '0.12em', marginBottom: '0.4rem' }}>COIN BALANCE</div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: '2.2rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1 }}>
+            {isBalanceLoading ? <span style={{ display: 'inline-block', height: '2rem', width: '3rem', background: 'var(--bg)', borderRadius: '4px' }} /> : formatCoins(coinBalance)}
           </div>
         </div>
         {statsCards.map((card) => (
-          <StatCard
-            key={card.label}
-            label={card.label}
-            value={card.value}
-            glyph={card.glyph}
-            className={card.className}
-            isLoading={isLoading}
-          />
+          <StatCard key={card.label} label={card.label} value={card.value} glyph={card.glyph} className={card.className} isLoading={isLoading} />
         ))}
       </div>
 
-      <section
-        id="missions-section"
-        className="rounded-panel border border-border-subtle bg-surface p-4 sm:p-6"
-      >
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <section id="missions-section" style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.5rem 2rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <div>
-            <div className="text-[0.7rem] font-bold uppercase tracking-[0.22em] text-text-muted">Mission Pulse</div>
-            <h2 className="mt-2 text-2xl font-black text-white">
-              {missionPulseFilter === 'completed' ? 'Completed Missions' : 'Current Missions'}
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', letterSpacing: '0.12em' }}>MISSION PULSE</div>
+            <h2 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.3rem', color: 'var(--ink)', fontWeight: 400, marginTop: '0.35rem' }}>
+              {missionPulseFilter === 'completed' ? 'completed missions.' : 'current missions.'}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm text-text-muted">
-              {missionPulseFilter === 'completed'
-                ? 'Completed missions stay here for review without competing with live work.'
-                : 'A quick look at your active, draft, review, and approved missions.'}
+            <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '0.5rem', maxWidth: '36rem' }}>
+              {missionPulseFilter === 'completed' ? 'Completed missions stay here for review without competing with live work.' : 'A quick look at your active, draft, review, and approved missions.'}
             </p>
           </div>
 
-          <label className="flex w-full flex-col gap-2 sm:w-56">
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Show</span>
-            <select
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '12rem' }}>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--ink-soft)', letterSpacing: '0.12em' }}>SHOW</span>
+            <select className="cursor-none"
               aria-label="Choose mission pulse list"
               value={missionPulseFilter}
               onChange={(event) => setMissionPulseFilter(event.target.value as MissionPulseFilter)}
-              className="w-full rounded-2xl border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-white outline-none transition-colors hover:border-primary/40 focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+              style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.8rem', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--ink)', cursor: 'none', outline: 'none' }}
             >
               <option value="current">Current Missions</option>
               <option value="completed">Completed Missions</option>
@@ -477,15 +404,11 @@ export function FounderDashboardTab({
         {content}
 
         {!isLoading && !loadError ? (
-          <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <Link href="/mission/wizard" className={`px-6 py-3 text-base ${primaryButtonClass}`}>
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.2rem', borderTop: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link className="cursor-none" href="/mission/wizard" style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.4rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.88rem', cursor: 'none', textDecoration: 'none' }}>
               + New Mission
             </Link>
-            <button
-              type="button"
-              className="text-sm font-bold text-text-muted transition-colors hover:text-text-main hover:underline"
-              onClick={onViewAllMissions}
-            >
+            <button className="cursor-none" type="button" style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--ink-soft)', background: 'none', border: 'none', cursor: 'none' }} onClick={onViewAllMissions}>
               View all missions
             </button>
           </div>
@@ -493,6 +416,6 @@ export function FounderDashboardTab({
       </section>
 
       {!isLoading && !loadError && missions.length > 0 ? <ProductJourneySection missions={missions} /> : null}
-    </>
+    </div>
   )
 }

@@ -68,17 +68,17 @@ function formatRatingEventReason(reason: string, missionName: string) {
 
 function RatingEventList({ events }: { events: ApiTesterStats['ratingEvents'] }) {
   if (events.length === 0) {
-    return <p className="mt-3 text-xs font-semibold text-text-muted">No score changes yet.</p>
+    return <p className="mt-3 font-['Satoshi'] text-[0.8rem] text-[var(--ink-soft)]">No score changes yet.</p>
   }
 
   return (
-    <div className="mt-3 space-y-2 border-t border-border-subtle pt-3">
+    <div className="mt-3 flex flex-col gap-2 border-t border-[var(--border)] pt-3">
       {events.slice(0, 3).map((event) => {
         const missionName = event.mission?.title ?? 'mission'
         const eventText = `${formatSignedDelta(event.delta)} — ${formatRatingEventReason(event.reason, missionName)} on ${formatEventDate(event.createdAt)}`
 
         return (
-          <p key={event.id} className="text-xs font-semibold leading-5 text-text-muted">
+          <p key={event.id} className="font-['Satoshi'] text-[0.75rem] leading-[1.6] text-[var(--ink-soft)]">
             {eventText}
           </p>
         )
@@ -150,12 +150,12 @@ function CheckMissionsButton({
         type="button"
         disabled={state === 'loading'}
         onClick={() => void handleClick()}
-        className="group relative inline-flex h-8 items-center justify-center gap-1.5 overflow-hidden rounded-full border border-sky-500/30 bg-gradient-to-r from-sky-500/10 to-sky-500/5 px-4 text-xs font-bold tracking-wide text-sky-400 transition-all hover:border-sky-500/50 hover:from-sky-500/20 hover:to-sky-500/10 hover:shadow-[0_0_15px_rgba(14,165,233,0.15)] focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:ring-offset-2 focus:ring-offset-surface disabled:pointer-events-none disabled:opacity-60"
+        className={`cursor-none flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-4 py-1.5 font-['Satoshi'] text-[0.8rem] font-semibold text-[var(--ink)] transition-colors ${state === 'loading' ? 'opacity-60' : ''}`}
       >
         {state === 'loading' ? (
           <SpinnerIcon />
         ) : (
-          <svg className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-3.5 w-3.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         )}
@@ -168,12 +168,8 @@ function CheckMissionsButton({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className={`text-right text-[0.65rem] font-bold ${
-              state === 'success'
-                ? 'text-emerald-400'
-                : state === 'rate-limited'
-                  ? 'text-amber-400'
-                  : 'text-red-400'
+            className={`text-right font-['Satoshi'] text-[0.75rem] font-semibold ${
+              state === 'success' ? 'text-green-600' : state === 'rate-limited' ? 'text-amber-500' : 'text-red-600'
             }`}
           >
             {message}
@@ -211,12 +207,12 @@ export function TesterMissionsTab({
   const assignmentCards = useMemo(() => {
     if (isLoading) {
       return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {[1, 2].map((card) => (
-            <div key={card} className="rounded-card border border-border-subtle bg-surface p-6">
-              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-surface-elevated" />
-              <div className="mb-4 h-20 animate-pulse rounded-2xl bg-surface-elevated" />
-              <div className="h-12 animate-pulse rounded-[2rem] bg-surface-elevated" />
+            <div key={card} className="rounded-[10px] border border-[var(--border)] bg-[var(--bg-light)] p-6">
+              <div className="mb-4 h-6 w-1/3 animate-pulse rounded-[4px] bg-[var(--border-strong)]" />
+              <div className="mb-4 h-20 animate-pulse rounded-[16px] bg-[var(--border-strong)]" />
+              <div className="h-12 animate-pulse rounded-[32px] bg-[var(--border-strong)]" />
             </div>
           ))}
         </div>
@@ -241,18 +237,18 @@ export function TesterMissionsTab({
           : null
 
       return (
-        <div className="rounded-card border border-sky-900/50 bg-sky-950/20 p-8 text-left">
+        <div className="rounded-[14px] border border-[rgba(215,122,87,0.2)] bg-[rgba(215,122,87,0.05)] p-8 text-left">
           <div className="flex items-start gap-4">
-            <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-900/50 text-sky-300">
+            <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-[12px] bg-[var(--electric-dim)] text-[var(--electric)]">
               <Info className="h-5 w-5" />
             </div>
-            <div className="space-y-2">
-              <div className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">In Queue</div>
-              <p className="text-base font-semibold text-white">
+            <div className="flex flex-col gap-2">
+              <div className="font-[family-name:var(--font-dm-mono)] text-[0.75rem] tracking-[0.12em] text-[var(--electric)]">IN QUEUE</div>
+              <p className="font-['Satoshi'] text-base font-semibold text-[var(--ink)]">
                 {getNoAvailableMissionsMessage(missedMissionCount)}
               </p>
               {activeMissionLabel ? (
-                <p className="text-sm text-sky-100/80">{activeMissionLabel}</p>
+                <p className="font-['Satoshi'] text-[0.9rem] text-[var(--ink-soft)]">{activeMissionLabel}</p>
               ) : null}
             </div>
           </div>
@@ -261,7 +257,7 @@ export function TesterMissionsTab({
     }
 
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         {currentAssignments.map((assignment) => {
           const remainingHours = differenceInHours(new Date(assignment.timeoutAt), now, {
             roundingMethod: 'floor',
@@ -275,51 +271,49 @@ export function TesterMissionsTab({
                 : `${Math.max(1, remainingHours)} hours`
 
           return (
-            <div key={assignment.id} className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
-              <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div key={assignment.id} className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
+              <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row">
                 <div className="flex-1">
-                  <h3 className="text-lg font-black text-white">{assignment.mission.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-text-muted">{assignment.mission.goal}</p>
+                  <h3 className="font-['Satoshi'] text-[1.1rem] font-bold text-[var(--ink)]">{assignment.mission.title}</h3>
+                  <p className="mt-1 font-['Satoshi'] text-[0.9rem] leading-[1.6] text-[var(--ink-soft)]">{assignment.mission.goal}</p>
                 </div>
                 <div
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
-                    assignment.status === 'ASSIGNED' ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-900/60' : 'bg-amber-950/60 text-amber-400 border border-amber-900/60'
+                  className={`inline-flex rounded-full border px-3 py-1 font-[family-name:var(--font-dm-mono)] text-[0.7rem] ${
+                    assignment.status === 'ASSIGNED'
+                      ? 'border-[rgba(74,197,128,0.25)] bg-[rgba(74,197,128,0.12)] text-[#1e7a47]'
+                      : 'border-[rgba(251,191,36,0.25)] bg-[rgba(251,191,36,0.12)] text-[#92400e]'
                   }`}
                 >
                   {assignment.status.replaceAll('_', ' ')}
                 </div>
               </div>
 
-              <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-4">
-                <div className="col-span-1">
-                  <div className="mb-1 text-[0.6rem] font-bold uppercase tracking-widest text-text-muted">REWARD</div>
-                  <div className="text-base sm:text-lg font-black text-white">
+              <div className="mb-6 grid grid-cols-3 gap-4">
+                <div>
+                  <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">REWARD</div>
+                  <div className="font-['Satoshi'] text-[1.1rem] font-bold text-[var(--ink)]">
                     {formatCoins(assignment.mission.coinPerTester)}
                   </div>
-                  <div className="text-[0.65rem] font-semibold text-text-muted uppercase">
+                  <div className="font-['Satoshi'] text-[0.75rem] text-[var(--ink-soft)]">
                     (₹{(assignment.mission.coinPerTester / 100).toFixed(0)})
                   </div>
                 </div>
-                <div className="col-span-1">
-                  <div className="mb-1 text-[0.6rem] font-bold uppercase tracking-widest text-text-muted">DURATION</div>
-                  <div className="text-base sm:text-lg font-black text-white">
+                <div>
+                  <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">DURATION</div>
+                  <div className="font-['Satoshi'] text-[1.1rem] font-bold text-[var(--ink)]">
                     {assignment.mission.estimatedMinutes}m
                   </div>
                 </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <div className="mb-1 text-[0.6rem] font-bold uppercase tracking-widest text-text-muted">EXPIRES IN</div>
+                <div>
+                  <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">EXPIRES IN</div>
                   <div
-                    className={`text-base sm:text-lg font-black ${
-                      preciseHours <= 0.5
-                        ? 'text-red-400'
-                        : preciseHours <= 2
-                          ? 'text-amber-400'
-                          : 'text-text-muted'
+                    className={`font-['Satoshi'] text-[1.1rem] font-bold ${
+                      preciseHours <= 0.5 ? 'text-[#c0392b]' : preciseHours <= 2 ? 'text-[#92400e]' : 'text-[var(--ink)]'
                     }`}
                   >
                     {preciseHours <= 0.5 ? (
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-[rgba(192,57,43,0.18)]" />
                         EXPIRING
                       </span>
                     ) : (
@@ -330,12 +324,12 @@ export function TesterMissionsTab({
               </div>
 
               <div className="flex items-center gap-3">
-                <Link href={`/tester/workspace/${assignment.id}`} className={`flex-1 py-3 text-center ${primaryButtonClass}`}>
+                <Link href={`/tester/workspace/${assignment.id}`} className="cursor-none flex-1 rounded-full bg-[var(--electric)] px-3 py-3 text-center font-['Satoshi'] text-[0.95rem] font-bold text-[var(--cream)] no-underline">
                   {assignment.status === 'IN_PROGRESS' ? 'CONTINUE →' : 'START MISSION →'}
                 </Link>
                 <button
-                  className="text-sm font-semibold text-text-muted hover:text-red-400 transition-colors"
                   onClick={() => onAbandon(assignment)}
+                  className="cursor-none bg-transparent font-['Satoshi'] text-[0.9rem] text-[var(--ink-soft)] underline"
                 >
                   Abandon
                 </button>
@@ -348,44 +342,44 @@ export function TesterMissionsTab({
   }, [currentAssignments, isLoading, loadError, missedMissionCount, now, onAbandon, onRetry, stats?.activeMissionCount])
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl animate-[tabEnter_0.22s_ease_forwards]">
       <WelcomeBanner />
 
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-black text-white">Dashboard</h1>
-          <p className="text-text-muted">Welcome back! Here&apos;s your mission overview.</p>
+          <h1 className="font-[family-name:var(--font-fraunces)] text-[2rem] italic font-normal text-[var(--ink)]">Dashboard</h1>
+          <p className="font-['Satoshi'] text-base text-[var(--ink-soft)]">Welcome back! Here&apos;s your mission overview.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-4 py-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="text-sm font-semibold text-white">Ready for Missions</span>
+        <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-4 py-2">
+          <div className="h-2 w-2 rounded-full bg-[rgba(74,197,128,0.12)]" />
+          <span className="font-['Satoshi'] text-[0.85rem] font-semibold text-[var(--ink)]">Ready for Missions</span>
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-emerald-950/60 text-emerald-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[rgba(74,197,128,0.12)] text-[#1e7a47]">
               <Coins className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="text-[0.65rem] font-bold uppercase tracking-wider text-text-muted">BALANCE</div>
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">BALANCE</div>
           </div>
-          <div className="mb-1 text-2xl sm:text-3xl font-black text-white">
-            {isLoading ? <div className="h-8 w-16 animate-pulse rounded bg-surface-elevated" /> : formatCoins(balance)}
+          <div className="mb-1 font-['Satoshi'] text-[1.8rem] font-bold text-[var(--ink)]">
+            {isLoading ? <div className="h-8 w-16 animate-pulse rounded bg-[var(--cream)]" /> : formatCoins(balance)}
           </div>
-          <div className="text-[0.7rem] font-semibold text-text-muted uppercase tracking-tighter">≈ {formatRupeesFromCoins(balance)}</div>
+          <div className="font-['Satoshi'] text-[0.8rem] text-[var(--ink-soft)]">≈ {formatRupeesFromCoins(balance)}</div>
         </div>
 
-        <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
+        <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-purple-950/60 text-purple-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[rgba(139,92,246,0.1)] text-[#5b21b6]">
               <Star className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="text-[0.65rem] font-bold uppercase tracking-wider text-text-muted">SCORE</div>
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">SCORE</div>
           </div>
-          <div className="mb-2 text-2xl sm:text-3xl font-black text-white">
+          <div className="mb-2 font-['Satoshi'] text-2xl font-bold text-[var(--ink)] sm:text-3xl">
             {isLoading ? (
-              <div className="h-8 w-16 animate-pulse rounded bg-surface-elevated" />
+              <div className="h-8 w-16 animate-pulse rounded bg-[var(--cream)]" />
             ) : (
               user?.testerProfile?.reputationScore ?? stats?.reputationScore ?? 0
             )}
@@ -394,71 +388,70 @@ export function TesterMissionsTab({
           {!isLoading ? <RatingEventList events={ratingEvents} /> : null}
         </div>
 
-        <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
+        <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-sky-950/60 text-sky-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[rgba(56,189,248,0.12)] text-[#0369a1]">
               <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="text-[0.65rem] font-bold uppercase tracking-wider text-text-muted">DONE</div>
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">DONE</div>
           </div>
-          <div className="mb-1 text-2xl sm:text-3xl font-black text-white">
-            {isLoading ? <div className="h-8 w-16 animate-pulse rounded bg-surface-elevated" /> : stats?.totalCompleted ?? 0}
+          <div className="mb-1 font-['Satoshi'] text-[1.8rem] font-bold text-[var(--ink)]">
+            {isLoading ? <div className="h-8 w-16 animate-pulse rounded bg-[var(--cream)]" /> : stats?.totalCompleted ?? 0}
           </div>
-          <div className="text-[0.7rem] font-bold text-text-muted uppercase tracking-tighter">missions</div>
+          <div className="font-['Satoshi'] text-[0.8rem] text-[var(--ink-soft)]">missions</div>
         </div>
 
-        <div className="rounded-card border border-border-subtle bg-surface p-4 sm:p-5 transition-all hover:border-primary/30 hover:bg-surface-elevated">
+        <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
           <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-950/60 text-amber-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[rgba(251,191,36,0.12)] text-[#92400e]">
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="text-[0.65rem] font-bold uppercase tracking-wider text-text-muted">RATE</div>
+            <div className="font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">RATE</div>
           </div>
-          <div className="mb-1 text-2xl sm:text-3xl font-black text-white">
+          <div className="mb-1 font-['Satoshi'] text-[1.8rem] font-bold text-[var(--ink)]">
             {isLoading ? (
-              <div className="h-8 w-16 animate-pulse rounded bg-surface-elevated" />
+              <div className="h-8 w-16 animate-pulse rounded bg-[var(--cream)]" />
             ) : (
               `${stats?.completionRate ?? 0}%`
             )}
           </div>
-          <div className="text-[0.75rem] font-black uppercase text-emerald-400 tracking-tighter">Consistency</div>
+          <div className="font-['Satoshi'] text-[0.8rem] font-bold text-[#1e7a47]">Consistency</div>
           {!isLoading ? <RatingEventList events={ratingEvents} /> : null}
         </div>
       </div>
 
-      <div className="relative mb-8 overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#F97C5A] to-[#E45D43] p-6 sm:p-8 text-white shadow-[0_8px_32px_-8px_rgba(249,124,90,0.4)]">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between text-center lg:text-left">
+      <div className="relative mb-8 overflow-hidden rounded-[24px] bg-[var(--electric)] p-8 text-[var(--cream)]">
+        <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div className="flex-1">
-            <h3 className="mb-2 text-2xl font-black tracking-tight">Ready for payout?</h3>
-            <p className="mb-4 text-base sm:text-lg font-bold text-white/90">
-              You&apos;ve earned <span className="text-white underline decoration-white/30 underline-offset-4">{formatCoins(balance)}</span> coins (≈ ₹{(balance / 100).toFixed(0)})
+            <h3 className="mb-2 font-[family-name:var(--font-fraunces)] text-[1.6rem] italic font-normal text-[var(--cream)]">Ready for payout?</h3>
+            <p className="mb-4 font-['Satoshi'] text-[1.1rem] font-semibold text-[rgba(250,247,242,0.9)]">
+              You&apos;ve earned <span className="underline decoration-[rgba(250,247,242,0.4)] underline-offset-4">{formatCoins(balance)}</span> coins (≈ ₹{(balance / 100).toFixed(0)})
             </p>
-            <div className="flex items-center gap-4 px-2 sm:px-0">
-              <div className="h-3 flex-1 rounded-full bg-white/20">
+            <div className="flex items-center gap-4">
+              <div className="h-3 flex-1 rounded-full bg-[rgba(250,247,242,0.2)]">
                 <div
-                  className="h-3 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] transition-all duration-1000"
+                  className="h-3 rounded-full bg-[var(--cream)] transition-[width] duration-1000 ease-in-out"
                   style={{ width: `${Math.min(100, (balance / minimumWithdrawalCoins) * 100)}%` }}
                 />
               </div>
-              <span className="text-[0.65rem] font-black uppercase tracking-widest">{Math.floor((balance / minimumWithdrawalCoins) * 100)}%</span>
+              <span className="font-[family-name:var(--font-dm-mono)] text-[0.75rem] tracking-[0.12em]">{Math.floor((balance / minimumWithdrawalCoins) * 100)}%</span>
             </div>
-            <p className="mt-4 flex items-center justify-center lg:justify-start gap-2 text-[0.65rem] font-black uppercase tracking-[0.14em] text-white/70">
+            <p className="mt-4 flex items-center gap-2 font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[rgba(250,247,242,0.8)]">
               <Info className="h-3.5 w-3.5" />
               Minimum withdrawal: 5,000 coins
             </p>
           </div>
 
-          <div className="flex-shrink-0">
+          <div>
             {balance >= minimumWithdrawalCoins ? (
               <button
-                className="w-full sm:w-auto rounded-[1.4rem] bg-white px-10 py-4 font-black text-[#F97C5A] tracking-widest transition-all hover:scale-105 hover:shadow-xl active:scale-95"
                 onClick={onOpenWithdrawal}
+                className="cursor-none rounded-full bg-[var(--cream)] px-10 py-4 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--electric)]"
               >
                 WITHDRAW NOW →
               </button>
             ) : (
-              <button className="w-full sm:w-auto cursor-not-allowed rounded-[1.4rem] bg-white/30 backdrop-blur-sm px-10 py-4 font-black text-white/70 tracking-widest" disabled>
+              <button disabled className="cursor-none rounded-full bg-[rgba(250,247,242,0.3)] px-10 py-4 font-['Satoshi'] text-[0.95rem] font-bold text-[rgba(250,247,242,0.8)]">
                 COLLECT MORE COINS
               </button>
             )}
@@ -466,9 +459,9 @@ export function TesterMissionsTab({
         </div>
       </div>
 
-      <div className="mb-6 rounded-card border border-amber-900/50 bg-amber-950/20 p-4 text-sm leading-6 text-amber-100">
+      <div className="mb-6 rounded-[12px] border border-[rgba(251,191,36,0.25)] bg-[rgba(251,191,36,0.12)] p-4 font-['Satoshi'] text-[0.9rem] text-[var(--ink)]">
         <div className="flex items-start gap-3">
-          <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#92400e]" />
           <p>
             Missions expire if not completed within the {"founder's"} set deadline. Missing a deadline reduces your score and consistency rating. Lower ratings mean fewer mission assignments.
           </p>
@@ -476,10 +469,10 @@ export function TesterMissionsTab({
       </div>
 
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-black text-white">Current Missions</h2>
+        <h2 className="font-[family-name:var(--font-fraunces)] text-[1.6rem] italic font-normal text-[var(--ink)]">Current Missions</h2>
         <div className="flex items-center gap-4">
           <CheckMissionsButton missedMissionCount={missedMissionCount} onRefresh={onRetry} />
-          <span className="rounded-full border border-border-subtle bg-surface-elevated px-4 py-1 text-sm font-bold text-text-muted">
+          <span className="rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-3 py-1 font-[family-name:var(--font-dm-mono)] text-[0.7rem] text-[var(--ink-soft)]">
             {currentAssignments.length} ACTIVE
           </span>
         </div>
@@ -490,28 +483,25 @@ export function TesterMissionsTab({
       {missedAssignments.length > 0 ? (
         <section className="mt-10">
           <div className="mb-4">
-            <h2 className="text-2xl font-black text-white">Missed Missions</h2>
-            <p className="mt-1 text-sm text-text-muted">Expired assignments stay here so you can track what affected your score.</p>
+            <h2 className="font-[family-name:var(--font-fraunces)] text-[1.6rem] italic font-normal text-[var(--ink)]">Missed Missions</h2>
+            <p className="mt-1 font-['Satoshi'] text-[0.9rem] text-[var(--ink-soft)]">Expired assignments stay here so you can track what affected your score.</p>
           </div>
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {missedAssignments.map((assignment) => {
               const expiredAt = assignment.timedOutAt ?? assignment.timeoutAt
 
               return (
-                <div
-                  key={assignment.id}
-                  className="rounded-card border border-gray-700/70 bg-gray-900/50 p-4 opacity-75 sm:p-5"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div key={assignment.id} className="rounded-[12px] border border-dashed border-[var(--border)] bg-transparent p-5 opacity-70">
+                  <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
                     <div>
-                      <h3 className="text-lg font-black text-gray-200">{assignment.mission.title}</h3>
-                      <p className="mt-1 text-sm text-gray-400">Expired {formatEventDate(expiredAt)}</p>
+                      <h3 className="font-['Satoshi'] text-[1.1rem] font-semibold text-[var(--ink)]">{assignment.mission.title}</h3>
+                      <p className="mt-1 font-['Satoshi'] text-[0.85rem] text-[var(--ink-soft)]">Expired {formatEventDate(expiredAt)}</p>
                     </div>
-                    <span className="inline-flex rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-xs font-bold text-gray-400">
+                    <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--bg-light)] px-3 py-1 font-[family-name:var(--font-dm-mono)] text-[0.7rem] text-[var(--ink-soft)]">
                       TIMED OUT
                     </span>
                   </div>
-                  <p className="mt-4 text-sm font-semibold text-gray-300">
+                  <p className="mt-4 font-['Satoshi'] text-[0.9rem] text-[var(--ink-soft)]">
                     Your rating dropped due to this missed mission.
                   </p>
                 </div>

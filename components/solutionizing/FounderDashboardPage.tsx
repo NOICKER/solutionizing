@@ -2,21 +2,20 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRightLeft, ClipboardList, HelpCircle, LayoutDashboard, LogOut, Settings, Wallet, CheckCircle2, Circle } from 'lucide-react'
+import { ArrowRightLeft, ClipboardList, HelpCircle, LayoutDashboard, Settings, Wallet } from 'lucide-react'
 import posthog from 'posthog-js'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { useAuth } from '@/context/AuthContext'
 import { ApiMission } from '@/types/api'
 import { deleteAccount } from '@/lib/api/account'
-import { BrandMark, CoinBalanceSkeleton, ConfirmationDialog, PageLoadingBar, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
+import { BrandMark, ConfirmationDialog, PageLoadingBar, formatCoins } from '@/components/solutionizing/ui'
 import { FounderDashboardTab } from '@/components/solutionizing/founder/FounderDashboardTab'
 import { FounderMissionsTab } from '@/components/solutionizing/founder/FounderMissionsTab'
 import { FounderSettingsTab } from '@/components/solutionizing/founder/FounderSettingsTab'
 import { FounderWalletsTab, type PurchaseFlowState } from '@/components/solutionizing/founder/FounderWalletsTab'
 import { SupportPage } from '@/components/solutionizing/shared/SupportPage'
-import { ThemeToggleButton } from '@/components/solutionizing/shared/ThemeToggleButton'
 
 interface BalanceResponse {
   balance?: number
@@ -30,63 +29,12 @@ interface FounderDashboardPageProps {
   }
 }
 
-function GlyphChip({
-  children,
-  className = '',
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-xs font-black uppercase ${className}`}>
-      {children}
-    </div>
-  )
-}
-
-function SidebarNavItem({
-  label,
-  glyph,
-  active = false,
-  disabled = false,
-  href,
-  onClick,
-}: {
+type ChecklistStep = {
   label: string
-  glyph: ReactNode
-  active?: boolean
-  disabled?: boolean
-  href?: string
-  onClick?: () => void
-}) {
-  const className = active
-    ? 'flex items-center gap-3 rounded-2xl bg-primary/10 px-4 py-3 text-sm font-bold text-primary'
-    : 'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-main'
-
-  if (href) {
-    return (
-      <Link href={href} className={className}>
-        <GlyphChip className={active ? 'bg-primary/20 text-primary' : 'bg-surface-elevated text-text-muted'}>
-          {glyph}
-        </GlyphChip>
-        {label}
-      </Link>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      className={`${className} w-full text-left ${disabled ? 'cursor-default text-text-muted/50 hover:bg-transparent hover:text-text-muted/50' : ''}`}
-      onClick={disabled ? undefined : onClick}
-      aria-disabled={disabled ? 'true' : undefined}
-    >
-      <GlyphChip className={active ? 'bg-primary/20 text-primary' : 'bg-surface-elevated text-text-muted'}>
-        {glyph}
-      </GlyphChip>
-      {label}
-    </button>
-  )
+  sub: string
+  complete: boolean
+  locked: boolean
+  action: { label: string; href: string } | { label: string; onClick: () => void } | null
 }
 
 function GetStartedChecklist({
@@ -101,77 +49,135 @@ function GetStartedChecklist({
   const step1Complete = coinBalance > 0
   const step2Complete = missionsCount > 0
 
+  const steps: ChecklistStep[] = [
+    {
+      label: 'create your account',
+      sub: 'done on signup',
+      complete: true,
+      locked: false,
+      action: null,
+    },
+    {
+      label: 'buy coins',
+      sub: step1Complete ? 'coins purchased' : 'get coins to fund your first mission',
+      complete: step1Complete,
+      locked: false,
+      action: !step1Complete ? { label: 'buy coins ->', onClick: onBuyCoins } : null,
+    },
+    {
+      label: 'post your first mission',
+      sub: step2Complete ? 'mission created' : 'takes 5 minutes',
+      complete: step2Complete,
+      locked: false,
+      action: !step2Complete ? { label: 'create mission ->', href: '/mission/wizard' } : null,
+    },
+    {
+      label: 'review your first report',
+      sub: 'unlocks after mission completes',
+      complete: false,
+      locked: true,
+      action: null,
+    },
+  ]
+
   return (
-    <div className="rounded-3xl border border-border-subtle bg-surface p-8">
-      <div className="mb-8">
-        <h2 className="mb-2 text-2xl font-black text-white">Get started with Solutionizing</h2>
-        <p className="text-text-muted">Three steps to your first insight</p>
+    <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.5rem 2rem', marginBottom: '2rem' }}>
+      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--electric)', letterSpacing: '0.1em', marginBottom: '1rem' }}>
+        GETTING STARTED
       </div>
 
-      <div className="space-y-6">
-        {/* Step 1: Buy coins */}
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            {step1Complete ? (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
-            ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-surface text-xs font-bold text-primary">
-                1
-              </div>
+      {steps.map((step, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '0.75rem 0',
+            borderBottom: i < steps.length - 1 ? '1px solid var(--border)' : 'none',
+            opacity: step.locked ? 0.6 : 1,
+          }}
+        >
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              flexShrink: 0,
+              border: step.complete ? 'none' : '1.5px solid var(--border-strong)',
+              background: step.complete ? 'var(--electric)' : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.3s cubic-bezier(0.16,1,0.3,1)',
+            }}
+          >
+            {step.complete && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4.5l2.5 2.5L9 1" stroke="var(--cream)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             )}
           </div>
-          <div className="flex-1">
-            <div className="font-semibold text-white">Buy coins</div>
-            <p className="mt-1 text-sm text-text-muted">
-              {step1Complete ? 'Coins purchased ✓' : 'Get coins to fund your first mission'}
-            </p>
-          </div>
-          {!step1Complete && (
-            <button className="mt-1 flex-shrink-0 text-sm font-bold text-primary transition-colors hover:text-primary-hover" onClick={onBuyCoins}>
-              Buy Coins →
-            </button>
-          )}
-        </div>
 
-        {/* Step 2: Create your first mission */}
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            {step2Complete ? (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <span
+              style={{
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                color: step.complete ? 'var(--ink-soft)' : 'var(--ink)',
+                textDecoration: step.complete ? 'line-through' : 'none',
+                transition: 'color 0.3s cubic-bezier(0.16,1,0.3,1)',
+              }}
+            >
+              {step.label}
+            </span>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--ink-soft)' }}>
+              {step.sub}
+            </span>
+          </div>
+
+          {step.action && (
+            'href' in step.action ? (
+              <Link className="cursor-none"
+                href={step.action.href}
+                style={{
+                  background: 'var(--electric)',
+                  color: 'var(--cream)',
+                  borderRadius: '100px',
+                  padding: '0.5rem 1.1rem',
+                  fontFamily: 'Satoshi, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {step.action.label}
+              </Link>
             ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-surface text-xs font-bold text-primary">
-                2
-              </div>
-            )}
-          </div>
-          <div className="flex-1">
-            <div className="font-semibold text-white">Create your first mission</div>
-            <p className="mt-1 text-sm text-text-muted">
-              {step2Complete ? 'Mission created ✓' : 'Launch your first mission to get feedback'}
-            </p>
-          </div>
-          {!step2Complete && (
-            <Link href="/mission/wizard" className="mt-1 flex-shrink-0 rounded-2xl bg-gradient-to-r from-primary to-primary-hover px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:shadow-lg">
-              Create Mission →
-            </Link>
+              <button className="cursor-none"
+                type="button"
+                onClick={step.action.onClick}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontFamily: 'DM Mono, monospace',
+                  fontSize: '0.78rem',
+                  color: 'var(--electric)',
+                  fontWeight: 500,
+                  cursor: 'none',
+                }}
+              >
+                {step.action.label}
+              </button>
+            )
           )}
         </div>
-
-        {/* Step 3: Get feedback */}
-        <div className="flex items-start gap-4 opacity-50">
-          <div className="flex-shrink-0">
-            <Circle className="h-6 w-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <div className="font-semibold text-white">Get feedback</div>
-            <p className="mt-1 text-sm text-text-muted">Launches after your mission is live</p>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }
-
 const founderNavItems = [
   { id: 'dashboard', label: 'Dashboard', mobileLabel: 'Dashboard', icon: LayoutDashboard },
   { id: 'missions', label: 'Missions', mobileLabel: 'Missions', icon: ClipboardList },
@@ -461,233 +467,348 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
     setLoadingMessageIndex((currentIndex) => (currentIndex + 1) % dashboardLoadingMessages.length)
   }, [isLoading])
 
-  const headerLabel =
-    activeTab === 'missions'
-      ? 'Missions'
-      : activeTab === 'wallets'
-        ? 'Wallets & Coins'
-        : activeTab === 'settings'
-          ? 'Settings'
-          : activeTab === 'support'
-            ? 'Support'
-          : 'Dashboard'
-
-  const headerDescription =
-    activeTab === 'wallets'
-      ? 'Manage your coin balance and choose a package to keep upcoming missions funded.'
-      : activeTab === 'settings'
-        ? 'Manage your founder account and preferences from one place.'
-        : activeTab === 'support'
-          ? 'Find quick answers, check system status, and reach the team when you need a hand.'
-        : 'Keep your launches, reviews, and completed studies moving from one place. Everything below is powered by your live mission data.'
-
   return (
-    <div className="min-h-screen bg-background px-4 py-4 sm:px-6 lg:px-8 text-text-main">
+    <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
       <PageLoadingBar isLoading={isLoading} />
-      <div className="mx-auto grid max-w-[1600px] gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="hidden lg:flex lg:min-h-[calc(100vh-2rem)] lg:flex-col lg:rounded-panel lg:border lg:border-border-subtle lg:bg-surface lg:p-5">
-          <div className="mb-10 flex items-center gap-4 rounded-[1.75rem] bg-surface-elevated px-4 py-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97C5A] to-[#E45D43] shadow-[0_18px_35px_-18px_rgba(249,124,90,0.4)]">
-              <BrandMark className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <div className="text-[0.65rem] font-bold uppercase tracking-[0.24em] text-text-muted">Obsidian</div>
-              <div className="mt-1 text-base font-black text-white">Precision Core</div>
-            </div>
-          </div>
 
-          <nav className="space-y-2">
-            {founderNavItems.map((item) => {
-              const Icon = item.icon
-
-              return (
-                <SidebarNavItem
-                  key={item.id}
-                  label={item.label}
-                  glyph={<Icon className="h-4 w-4" />}
-                  onClick={() => setActiveTab(item.id)}
-                  active={activeTab === item.id}
-                />
-              )
-            })}
-          </nav>
-
-          <div className="mt-auto rounded-[1.75rem] border border-border-subtle bg-surface-elevated p-4">
-            <div className="flex items-center gap-3">
-              <GlyphChip className="bg-primary/20 text-primary">{userInitials}</GlyphChip>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-black text-white">{userName}</div>
-                <div className="text-xs font-medium uppercase tracking-[0.18em] text-text-muted">Founder</div>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-primary/30 bg-primary/10 px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/15"
-              onClick={() => void handleSwitchToTester()}
-              disabled={isSwitchingToTester}
-            >
-              <GlyphChip className="h-8 w-8 bg-primary/15 text-primary">
-                <ArrowRightLeft className="h-4 w-4" />
-              </GlyphChip>
-              {isSwitchingToTester ? 'Switching...' : 'Switch to Tester'}
-            </button>
-            <button
-              type="button"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:bg-surface hover:text-text-main"
-              onClick={() => void signOut()}
-            >
-              <GlyphChip className="h-8 w-8 bg-surface text-text-muted">
-                <LogOut className="h-4 w-4" />
-              </GlyphChip>
-              Log out
-            </button>
-          </div>
-        </aside>
-
-        <main className="min-w-0 pb-28 lg:pb-0">
-          <div className="relative overflow-hidden rounded-panel border border-border-subtle bg-surface p-5 sm:p-6 lg:p-8">
-            <div className="pointer-events-none absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-
-            <div className="relative z-10">
-              <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                <div className="max-w-3xl">
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-text-muted">
-                    <BrandMark className="h-3.5 w-3.5 text-primary" />
-                    {headerLabel}
-                  </div>
-                  <h1 className="text-3xl font-black leading-tight text-white sm:text-4xl">
-                    Welcome back, <span className="text-primary">{userName}</span>
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted sm:text-base">{headerDescription}</p>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center xl:justify-end">
-                  {isBalanceLoading ? (
-                    <CoinBalanceSkeleton />
-                  ) : (
-                    <div className="flex items-center gap-3 rounded-[1.7rem] border border-border-subtle bg-surface-elevated px-4 py-3">
-                      <GlyphChip className="bg-primary/20 text-primary">C</GlyphChip>
-                      <div>
-                        <div className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-text-muted">Architectural Capital</div>
-                        <div className="mt-1 flex items-baseline gap-2">
-                          <span className="text-2xl font-black text-white">{formatCoins(coinBalance)} coins</span>
-                          <span className="text-sm font-medium text-text-muted">~ Rs {(coinBalance / 100).toFixed(0)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <button className={`px-5 py-3 text-sm ${primaryButtonClass}`} onClick={() => setActiveTab('wallets')}>
-                    Buy Coins
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-[1.4rem] border border-border-subtle bg-surface-elevated px-4 py-3 text-sm font-bold text-text-muted transition-colors hover:border-primary/40 hover:text-text-main disabled:cursor-wait disabled:opacity-70"
-                    onClick={() => void handleSwitchToTester()}
-                    disabled={isSwitchingToTester}
-                  >
-                    <ArrowRightLeft className="h-4 w-4" />
-                    {isSwitchingToTester ? 'Switching...' : 'Switch to Tester'}
-                  </button>
-                  <ThemeToggleButton />
-                </div>
-              </div>
-
-              {activeTab === 'dashboard' ? (
-                missions.length === 0 && !isLoading ? (
-                  <>
-                    <GetStartedChecklist
-                      coinBalance={coinBalance}
-                      missionsCount={missions.length}
-                      onBuyCoins={() => setActiveTab('wallets')}
-                    />
-                  </>
-                ) : (
-                  <FounderDashboardTab
-                    isLoading={isLoading}
-                    loadError={loadError}
-                    missions={missions}
-                    coinBalance={coinBalance}
-                    isBalanceLoading={isBalanceLoading}
-                    loadingMessage={dashboardLoadingMessages[loadingMessageIndex]}
-                    actionLoading={actionLoading}
-                    onSkeletonClick={handleSkeletonClick}
-                    onRetry={() => void loadDashboard()}
-                    onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
-                    onViewAllMissions={() => setActiveTab('missions')}
-                  />
-                )
-              ) : activeTab === 'missions' ? (
-                <FounderMissionsTab
-                  missions={missions}
-                  isLoading={isLoading}
-                  loadError={loadError}
-                  cardErrors={cardErrors}
-                  actionLoading={actionLoading}
-                  onRetry={() => void loadDashboard()}
-                  onSubmitMission={(mission) => void handleMissionAction(mission, 'submit')}
-                  onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
-                  onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
-                  onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
-                />
-              ) : activeTab === 'wallets' ? (
-                <FounderWalletsTab
-                  coinBalance={coinBalance}
-                  purchaseLoadingPackId={purchaseLoadingPackId}
-                  purchaseResult={purchaseResult}
-                  onPurchase={(packId) => void handlePurchase(packId)}
-                  onResetPurchaseResult={() => setPurchaseResult(null)}
-                  onGoToMissions={() => {
-                    setPurchaseResult(null)
-                    setActiveTab('missions')
-                  }}
-                />
-              ) : activeTab === 'support' ? (
-                <SupportPage role="FOUNDER" />
-              ) : (
-                <FounderSettingsTab
-                  userName={userName}
-                  userEmail={userEmail}
-                  onOpenDeleteModal={() => setDeleteModalOpen(true)}
-                />
-              )}
-            </div>
-          </div>
-        </main>
+      <div
+        className="lg:hidden"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '50px',
+          background: 'rgba(232, 224, 212, 0.92)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 1.5rem',
+          zIndex: 500,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>
+          <BrandMark className="h-4 w-4 text-ink" />
+          solutionizing
+        </div>
+        <div
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            background: 'var(--electric-dim)',
+            border: '1px solid var(--electric-mid)',
+            color: 'var(--electric)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'DM Mono, monospace',
+            fontSize: '0.7rem',
+            fontWeight: 600,
+          }}
+        >
+          {userInitials}
+        </div>
       </div>
 
-      <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-panel border border-border-subtle bg-surface-elevated px-2 py-2 lg:hidden">
+      <aside
+        className="hidden lg:flex lg:flex-col"
+        style={{
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          width: '260px',
+          height: '100vh',
+          background: 'var(--dark)',
+          borderRight: '1px solid rgba(250, 247, 242, 0.06)',
+          padding: '1.5rem 0',
+          zIndex: 100,
+          overflowY: 'auto',
+        }}
+      >
+        <div style={{ padding: '0 1.5rem 1.5rem', borderBottom: '1px solid rgba(250, 247, 242, 0.04)' }}>
+          <div className="flex flex-col">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 700, fontSize: '1rem', color: 'var(--cream)', letterSpacing: '-0.03em' }}>
+              <BrandMark className="h-5 w-5 text-cream" />
+              solutionizing
+            </div>
+            <div className="w-6 h-[2px] rounded-full bg-[var(--electric)] mt-1" />
+          </div>
+        </div>
+
+        <nav style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+          {founderNavItems.map((item) => {
+            const Icon = item.icon
+            const isActive = activeTab === item.id
+
+            return (
+              <button className="cursor-none"
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                style={{
+                  padding: '0.7rem 1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  fontFamily: 'Satoshi, sans-serif',
+                  fontWeight: 500,
+                  fontSize: '0.9rem',
+                  color: isActive ? 'var(--cream)' : 'rgba(250, 247, 242, 0.5)',
+                  background: isActive ? 'rgba(250, 247, 242, 0.06)' : 'transparent',
+                  border: 'none',
+                  borderLeft: isActive ? '2px solid var(--electric)' : '2px solid transparent',
+                  width: '100%',
+                  textAlign: 'left',
+                  transition: 'color 0.2s cubic-bezier(0.16,1,0.3,1), background 0.2s cubic-bezier(0.16,1,0.3,1), border-color 0.3s cubic-bezier(0.16,1,0.3,1)',
+                  cursor: 'none',
+                }}
+              >
+                <Icon style={{ width: 16, height: 16, strokeWidth: 1.8 }} />
+                {item.label}
+              </button>
+            )
+          })}
+        </nav>
+
+        <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid rgba(250, 247, 242, 0.04)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ background: 'var(--dark-surface)', border: '1px solid rgba(255, 107, 26, 0.2)', borderRadius: '10px', padding: '0.8rem 1rem' }}>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--electric)', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>COIN BALANCE</div>
+            {isBalanceLoading ? (
+              <div style={{ height: '1.8rem', width: '80px', background: 'rgba(250,247,242,0.08)', borderRadius: '4px', marginBottom: '0.2rem' }} />
+            ) : (
+              <div style={{ fontFamily: 'Fraunces, serif', fontSize: '1.8rem', fontWeight: 700, color: 'var(--cream)', lineHeight: 1, marginBottom: '0.2rem' }}>
+                {formatCoins(coinBalance)}
+              </div>
+            )}
+            <div style={{ fontSize: '0.78rem', color: 'rgba(250, 247, 242, 0.4)' }}>~ Rs {(coinBalance / 100).toFixed(0)} value</div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: 'var(--electric-dim)',
+                border: '1px solid var(--electric-mid)',
+                color: 'var(--electric)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'DM Mono, monospace',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
+            >
+              {userInitials}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--cream)', lineHeight: 1.2 }}>{userName}</span>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'rgba(250, 247, 242, 0.3)' }}>FOUNDER</span>
+            </div>
+          </div>
+
+          <button className="cursor-none"
+            type="button"
+            onClick={() => void handleSwitchToTester()}
+            disabled={isSwitchingToTester}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontFamily: 'DM Mono, monospace',
+              fontSize: '0.72rem',
+              color: 'rgba(250, 247, 242, 0.4)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              textAlign: 'left',
+              cursor: 'none',
+              transition: 'color 0.2s cubic-bezier(0.16,1,0.3,1)',
+            }}
+          >
+            <ArrowRightLeft style={{ width: 12, height: 12 }} />
+            {isSwitchingToTester ? 'switching...' : 'switch to tester'}
+          </button>
+
+          <button className="cursor-none"
+            type="button"
+            onClick={() => void signOut()}
+            style={{
+              fontFamily: 'DM Mono, monospace',
+              fontSize: '0.72rem',
+              color: 'rgba(250, 247, 242, 0.25)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              textAlign: 'left',
+              cursor: 'none',
+              transition: 'color 0.2s cubic-bezier(0.16,1,0.3,1)',
+            }}
+          >
+            sign out
+          </button>
+        </div>
+      </aside>
+
+      <main
+        className="founder-main-canvas lg:pb-0"
+        style={{ marginLeft: '260px', minHeight: '100vh', background: 'var(--bg)', padding: '2.5rem 3rem', width: 'calc(100% - 260px)' }}
+      >
+        <style>{`
+          @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+          @media (max-width: 1024px) {
+            .founder-main-canvas {
+              margin-left: 0 !important;
+              width: 100% !important;
+              padding: 5rem 1.5rem 6rem !important;
+            }
+          }
+        `}</style>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', gap: '1rem' }}>
+          <div className="flex flex-col">
+            <h1 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.6rem', color: 'var(--ink)', fontWeight: 400 }}>
+              {activeTab === 'dashboard' ? `good to see you, ${userName.split(' ')[0]}.` :
+               activeTab === 'missions' ? 'your missions.' :
+               activeTab === 'wallets' ? 'wallet & coins.' :
+               activeTab === 'settings' ? 'account settings.' :
+               'how can we help?'}
+            </h1>
+            <div className="w-10 h-[3px] rounded-full bg-[var(--electric)] mt-1.5" />
+          </div>
+          <Link className="cursor-none"
+            href="/mission/wizard"
+            style={{
+              background: 'var(--electric)',
+              color: 'var(--cream)',
+              border: 'none',
+              borderRadius: '100px',
+              padding: '0.65rem 1.4rem',
+              fontFamily: 'Satoshi, sans-serif',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              textDecoration: 'none',
+              transition: 'background 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s cubic-bezier(0.16,1,0.3,1)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            new mission -&gt;
+          </Link>
+        </div>
+
+        <div key={activeTab} className="animate-[tabEnter_0.22s_ease_forwards]">
+          {activeTab === 'dashboard' ? (
+            missions.length === 0 && !isLoading ? (
+              <GetStartedChecklist
+                coinBalance={coinBalance}
+                missionsCount={missions.length}
+                onBuyCoins={() => setActiveTab('wallets')}
+              />
+            ) : (
+              <FounderDashboardTab
+                isLoading={isLoading}
+                loadError={loadError}
+                missions={missions}
+                coinBalance={coinBalance}
+                isBalanceLoading={isBalanceLoading}
+                loadingMessage={dashboardLoadingMessages[loadingMessageIndex]}
+                actionLoading={actionLoading}
+                onSkeletonClick={handleSkeletonClick}
+                onRetry={() => void loadDashboard()}
+                onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
+                onViewAllMissions={() => setActiveTab('missions')}
+              />
+            )
+          ) : activeTab === 'missions' ? (
+            <FounderMissionsTab
+              missions={missions}
+              isLoading={isLoading}
+              loadError={loadError}
+              cardErrors={cardErrors}
+              actionLoading={actionLoading}
+              onRetry={() => void loadDashboard()}
+              onSubmitMission={(mission) => void handleMissionAction(mission, 'submit')}
+              onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
+              onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
+              onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
+            />
+          ) : activeTab === 'wallets' ? (
+            <FounderWalletsTab
+              coinBalance={coinBalance}
+              purchaseLoadingPackId={purchaseLoadingPackId}
+              purchaseResult={purchaseResult}
+              onPurchase={(packId) => void handlePurchase(packId)}
+              onResetPurchaseResult={() => setPurchaseResult(null)}
+              onGoToMissions={() => {
+                setPurchaseResult(null)
+                setActiveTab('missions')
+              }}
+            />
+          ) : activeTab === 'support' ? (
+            <SupportPage role="FOUNDER" />
+          ) : (
+            <FounderSettingsTab
+              userName={userName}
+              userEmail={userEmail}
+              onOpenDeleteModal={() => setDeleteModalOpen(true)}
+            />
+          )}
+        </div>
+      </main>
+
+      <nav
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '56px',
+          background: 'var(--dark)',
+          borderTop: '1px solid rgba(250, 247, 242, 0.08)',
+          zIndex: 9999,
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+        }}
+        className="lg:hidden"
+      >
         {founderNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
 
           return (
-            <button
+            <button className="cursor-none"
               key={item.id}
               type="button"
               onClick={() => setActiveTab(item.id)}
-              className={`flex min-w-0 flex-1 flex-col items-center gap-2 rounded-card px-2 py-2 transition ${
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-text-muted hover:bg-surface hover:text-text-main'
-              }`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isActive ? 'var(--electric)' : 'rgba(250, 247, 242, 0.4)',
+                background: 'none',
+                border: 'none',
+                padding: '0.4rem',
+                transition: 'color 0.2s cubic-bezier(0.16,1,0.3,1)',
+                cursor: 'none',
+                flex: 1,
+              }}
             >
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                  isActive
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-surface text-text-muted'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <span className="w-full truncate text-center text-[10px] font-bold uppercase tracking-[0.18em]">
-                {item.mobileLabel}
-              </span>
+              <Icon style={{ width: 20, height: 20, strokeWidth: 2 }} />
             </button>
           )
         })}
       </nav>
-
       {dialogMission ? (
         <ConfirmationDialog
           title={dialogMission.type === 'pause' ? 'Pause this mission?' : 'Close this mission?'}

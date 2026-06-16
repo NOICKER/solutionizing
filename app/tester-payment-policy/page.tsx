@@ -64,7 +64,7 @@ export default function TesterPaymentPolicyPage() {
       <LegalSection title="7. Payment Disputes and Contact">
         <p>
           For payment disputes or payout questions, email{" "}
-          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline">
+          <a href="mailto:hello@solutionizing.com" className="font-semibold text-primary hover:underline cursor-none">
             hello@solutionizing.com
           </a>
           . This policy is governed by the laws of India.
