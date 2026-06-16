@@ -1068,7 +1068,7 @@ function MissionWizardContent() {
 
             clearLocalDraft()
             dirtyRef.current = false
-            toast.success('Payment successful! Mission launched.')
+            toast.success('Payment successful. Mission submitted for review.')
             router.push('/dashboard/founder')
           } catch (err: any) {
             console.error(err)

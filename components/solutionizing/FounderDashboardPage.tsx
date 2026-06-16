@@ -458,51 +458,9 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
     <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
       <PageLoadingBar isLoading={isLoading} />
 
-      <div
-        className="lg:hidden"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '50px',
-          background: 'rgba(232, 224, 212, 0.92)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 1.5rem',
-          zIndex: 500,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>
-          <BrandMark className="h-4 w-4 text-ink" />
-          solutionizing
-        </div>
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            background: 'var(--electric-dim)',
-            border: '1px solid var(--electric-mid)',
-            color: 'var(--electric)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'DM Mono, monospace',
-            fontSize: '0.7rem',
-            fontWeight: 600,
-          }}
-        >
-          {userInitials}
-        </div>
-      </div>
 
       <aside
-        className="hidden lg:flex lg:flex-col"
+        className="hidden md:flex md:flex-col"
         style={{
           position: 'fixed',
           left: 0,
@@ -644,12 +602,12 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
       </aside>
 
       <main
-        className="founder-main-canvas lg:pb-0"
+        className="founder-main-canvas md:pb-0"
         style={{ marginLeft: '260px', minHeight: '100vh', background: 'var(--bg)', padding: '2.5rem 3rem', width: 'calc(100% - 260px)' }}
       >
         <style>{`
           @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
-          @media (max-width: 1024px) {
+          @media (max-width: 768px) {
             .founder-main-canvas {
               margin-left: 0 !important;
               width: 100% !important;
@@ -751,7 +709,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
           justifyContent: 'space-around',
           alignItems: 'center',
         }}
-        className="lg:hidden"
+        className="md:hidden"
       >
         {founderNavItems.map((item) => {
           const Icon = item.icon

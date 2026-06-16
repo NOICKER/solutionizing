@@ -365,17 +365,8 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
 
   return (
     <div className="flex min-h-screen bg-[var(--bg)]">
-      <div className="fixed left-0 top-0 z-[500] flex h-[50px] w-full items-center justify-between border-b border-[var(--border)] bg-[rgba(232,224,212,0.92)] px-6 lg:hidden">
-        <div className="flex items-center gap-1.5 font-['Satoshi'] text-[0.9rem] font-bold text-[var(--ink)]">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-[var(--dark)] font-[family-name:var(--font-dm-mono)] text-[0.6rem] text-[var(--cream)]">S</div>
-          solutionizing
-        </div>
-        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--electric-mid)] bg-[var(--electric-dim)] font-[family-name:var(--font-dm-mono)] text-[0.7rem] font-semibold text-[var(--electric)]">
-          {(user?.testerProfile?.displayName ?? user?.email ?? 'T').charAt(0).toUpperCase()}
-        </div>
-      </div>
 
-      <aside className="fixed left-0 top-0 z-[100] hidden h-screen w-[260px] flex-col overflow-y-auto border-r border-[rgba(250,247,242,0.06)] bg-[var(--dark)] py-6 lg:flex">
+      <aside className="fixed left-0 top-0 z-[100] hidden h-screen w-[260px] flex-col overflow-y-auto border-r border-[rgba(250,247,242,0.06)] bg-[var(--dark)] py-6 md:flex">
         <div className="border-b border-[rgba(250,247,242,0.04)] px-6 pb-6">
           <div className="flex flex-col">
             <div className="flex items-center gap-2.5 font-['Satoshi'] text-base font-bold tracking-tight text-[var(--cream)]">
@@ -440,7 +431,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         </div>
       </aside>
 
-      <main className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 py-20 lg:ml-[260px] lg:w-[calc(100%-260px)] lg:px-12 lg:py-10">
+      <main className="founder-main-canvas min-h-screen w-full bg-[var(--bg)] px-6 py-20 md:ml-[260px] md:w-[calc(100%-260px)] md:px-12 md:py-10">
         <style>{`
           @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
         `}</style>
@@ -468,7 +459,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] lg:hidden">
+      <nav className="fixed bottom-0 left-0 z-[9999] flex h-[56px] w-full items-center justify-around border-t border-[rgba(250,247,242,0.08)] bg-[var(--dark)] md:hidden">
         {testerNavItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
