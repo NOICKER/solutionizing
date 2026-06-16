@@ -113,6 +113,7 @@ model FounderProfile {
   updatedAt     DateTime @updatedAt
   missions  Mission[]
   ratings   TesterRating[]
+  payments  Payment[]
   @@map("founder_profiles")
 }
 model TesterProfile {
@@ -178,6 +179,7 @@ model Mission {
   questions   MissionQuestion[]
   assignments MissionAssignment[]
   flags       MissionFlag[]
+  payment     Payment?
   ratingEvents TesterRatingEvent[]
   @@index([founderId])
   @@index([parentMissionId])
@@ -369,4 +371,23 @@ model FeedbackWidgetWaitlist {
   email     String   @unique
   createdAt DateTime @default(now())
   @@map("feedback_widget_waitlist")
+}
+model Payment {
+  id                  String   @id @default(cuid())
+  razorpayOrderId     String   @unique
+  razorpayPaymentId   String?  @unique
+  amount              Int
+  currency            String   @default("INR")
+  status              String
+  founderId           String
+  founder             FounderProfile @relation(fields: [founderId], references: [id])
+  missionPayload      Json?
+  missionId           String?  @unique
+  mission             Mission? @relation(fields: [missionId], references: [id])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([razorpayOrderId])
+  @@index([founderId])
+  @@map("payments")
 }

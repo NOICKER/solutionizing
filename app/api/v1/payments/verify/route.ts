@@ -8,28 +8,6 @@ interface VerifyBody {
   razorpay_order_id: string
   razorpay_payment_id: string
   razorpay_signature: string
-  testersRequired: number
-  missionData: {
-    title: string
-    goal: string
-    difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-    estimatedMinutes: number
-    timeoutDuration: number
-    assets: Array<{
-      type: string
-      url?: string
-      text?: string
-      label?: string
-      order: number
-    }>
-    questions: Array<{
-      order: number
-      type: string
-      text: string
-      options?: string[]
-      isRequired: boolean
-    }>
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -46,8 +24,6 @@ export async function POST(request: NextRequest) {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      testersRequired,
-      missionData,
     } = body
 
     // Validate required fields
@@ -55,17 +31,27 @@ export async function POST(request: NextRequest) {
       return badRequest('Missing Razorpay payment fields')
     }
 
-    if (
-      typeof testersRequired !== 'number' ||
-      !Number.isInteger(testersRequired) ||
-      testersRequired < 1 ||
-      testersRequired > 3
-    ) {
-      return badRequest('testersRequired must be an integer between 1 and 3')
+    const payment = await prisma.payment.findUnique({
+      where: { razorpayOrderId: razorpay_order_id },
+    })
+
+    if (!payment) {
+      return apiError('Payment order not found in our records', 'ORDER_NOT_FOUND', 404)
     }
 
-    if (!missionData || !missionData.title || !missionData.goal) {
-      return badRequest('Missing mission data')
+    if (payment.status === 'captured') {
+      return ok({
+        success: true,
+        missionId: payment.missionId,
+      })
+    }
+
+    const payload = payment.missionPayload as any
+    const testersRequired = payload?.testersRequired
+    const missionData = payload?.missionData
+
+    if (!missionData || !testersRequired) {
+      return serverError()
     }
 
     // Verify HMAC signature
@@ -89,38 +75,54 @@ export async function POST(request: NextRequest) {
     }
 
     // Payment verified — create mission with paidAt timestamp
-    const mission = await prisma.mission.create({
-      data: {
-        founderId: founderProfile.id,
-        title: missionData.title.trim(),
-        goal: missionData.goal.trim(),
-        difficulty: missionData.difficulty,
-        estimatedMinutes: missionData.estimatedMinutes,
-        testersRequired,
-        timeoutDuration: missionData.timeoutDuration,
-        coinPerTester: 0,
-        coinPlatformFee: 0,
-        coinCostTotal: 0,
-        status: 'PENDING_REVIEW',
-        paidAt: new Date(),
-        assets: {
-          create: missionData.assets.map((asset) => ({
-            type: asset.type === 'TEXT' ? 'TEXT_DESCRIPTION' : asset.type === 'VIDEO' ? 'SHORT_VIDEO' : asset.type as any,
-            url: asset.type === 'TEXT' ? (asset.text ?? '') : (asset.url ?? ''),
-            label: asset.label || null,
-            order: asset.order,
-          })),
+    // Payment verified — process in a transaction
+    const [mission, updatedPayment] = await prisma.$transaction([
+      prisma.mission.create({
+        data: {
+          founderId: founderProfile.id,
+          title: missionData.title.trim(),
+          goal: missionData.goal.trim(),
+          difficulty: missionData.difficulty,
+          estimatedMinutes: missionData.estimatedMinutes,
+          testersRequired,
+          timeoutDuration: missionData.timeoutDuration,
+          coinPerTester: 0,
+          coinPlatformFee: 0,
+          coinCostTotal: 0,
+          status: 'PENDING_REVIEW',
+          paidAt: new Date(),
+          assets: {
+            create: missionData.assets.map((asset: any) => ({
+              type: asset.type === 'TEXT' ? 'TEXT_DESCRIPTION' : asset.type === 'VIDEO' ? 'SHORT_VIDEO' : asset.type,
+              url: asset.type === 'TEXT' ? (asset.text ?? '') : (asset.url ?? ''),
+              label: asset.label || null,
+              order: asset.order,
+            })),
+          },
+          questions: {
+            create: missionData.questions.map((q: any) => ({
+              order: q.order,
+              type: q.type,
+              text: q.text.trim(),
+              options: q.options ?? [],
+              isRequired: q.isRequired,
+            })),
+          },
         },
-        questions: {
-          create: missionData.questions.map((q) => ({
-            order: q.order,
-            type: q.type as any,
-            text: q.text.trim(),
-            options: q.options ?? [],
-            isRequired: q.isRequired,
-          })),
+      }),
+      prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'captured',
+          razorpayPaymentId: razorpay_payment_id,
         },
-      },
+      }),
+    ])
+
+    // Link the mission to the payment
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { missionId: mission.id },
     })
 
     return ok({

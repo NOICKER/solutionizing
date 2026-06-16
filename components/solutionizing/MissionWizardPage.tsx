@@ -1020,7 +1020,10 @@ function MissionWizardContent() {
       const orderRes = await fetch('/api/v1/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testersRequired: payload.testersRequired }),
+        body: JSON.stringify({ 
+          testersRequired: payload.testersRequired,
+          missionData: payload,
+        }),
       })
       
       if (!orderRes.ok) {
@@ -1047,8 +1050,6 @@ function MissionWizardContent() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                testersRequired: payload.testersRequired,
-                missionData: payload,
               }),
             })
             
