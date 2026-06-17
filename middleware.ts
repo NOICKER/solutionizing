@@ -89,7 +89,8 @@ export async function middleware(request: NextRequest) {
   if (path === '/') {
     if (hasAuthCookieHint(request)) {
       const supabase = createMiddlewareSupabaseClient(request, response)
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       const dashboardPath = getDashboardPathForRole(user?.app_metadata?.role)
 
       if (dashboardPath) {
@@ -112,7 +113,8 @@ export async function middleware(request: NextRequest) {
   const supabase = createMiddlewareSupabaseClient(request, response)
 
   // Refresh session — required for Server Components to read auth state
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   // Guard: JWT cookie present but session invalid (e.g. missing `sub` claim).
   // Clear the stale cookies and redirect to landing instead of a raw 403 loop.
@@ -196,5 +198,7 @@ export async function middleware(request: NextRequest) {
   return response
 }
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }
