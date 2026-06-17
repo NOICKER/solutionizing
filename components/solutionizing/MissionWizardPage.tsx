@@ -1289,7 +1289,7 @@ function MissionWizardContent() {
           </div>
         ) : null}
 
-        <div className="mx-auto max-w-[720px] px-4 sm:px-6 flex items-center justify-center py-5 gap-0 relative">
+        <div className="mx-auto max-w-[850px] px-4 sm:px-6 flex items-center justify-center py-5 gap-0 relative">
           {([
             { num: 1, label: 'Brief' },
             { num: 2, label: 'Setup' },
