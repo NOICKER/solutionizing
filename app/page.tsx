@@ -1,7 +1,31 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function LandingPage() {
+  const [showScrollChip, setShowScrollChip] = useState(false);
+  const hasTriggeredChip = useRef(false);
+  const chipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 700) {
+        if (!hasTriggeredChip.current) {
+          hasTriggeredChip.current = true;
+          setShowScrollChip(true);
+          chipTimeoutRef.current = setTimeout(() => {
+            setShowScrollChip(false);
+          }, 8000);
+        }
+      } else {
+        if (showScrollChip) {
+          setShowScrollChip(false);
+          if (chipTimeoutRef.current) clearTimeout(chipTimeoutRef.current);
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [showScrollChip]);
   useEffect(() => {
     const existing = document.getElementById('landing-css');
     if (existing) existing.remove();
@@ -495,6 +519,15 @@ export default function LandingPage() {
     }
     .bad-cursor {
       transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .broken-hero-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: rgba(250,247,242,0.4);
+      margin-bottom: 1.5rem;
+      transition: opacity 0.4s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     @media (max-width: 768px) {
       .btn-primary.hero-cta-primary.is-broken {
@@ -1065,6 +1098,10 @@ export default function LandingPage() {
         if (badCursor) {
           badCursor.style.opacity = '0';
         }
+        const hint = document.querySelector('.is-broken-hint');
+        if (hint) {
+          hint.style.opacity = '0';
+        }
       }, 300);
       
       // 500ms: ???? snaps back to Support with scramble effect over 300ms
@@ -1380,45 +1417,6 @@ export default function LandingPage() {
     }
 
     setInterval(cycleFeed, 2200);
-
-    // --- RUPEE PAYOUT TICKER ---
-    let currentPayout = 247840;
-    let missionsCompleted = 312;
-    
-    function formatRupee(val) {
-      const str = val.toString();
-      let lastThree = str.substring(str.length - 3);
-      const otherNumbers = str.substring(0, str.length - 3);
-      if (otherNumbers !== '') {
-        lastThree = ',' + lastThree;
-      }
-      const res = otherNumbers.replace(/\\B(?=(\\d{2})+(?!\\d))/g, ",") + lastThree;
-      return '₹' + res;
-    }
-    
-    function tickPayout() {
-      if (!isTesterSectionVisible) return;
-      
-      const payoutEl = document.getElementById('payout-amount');
-      const missionsEl = document.getElementById('missions-completed');
-      if (!payoutEl) return;
-      
-      const increment = Math.floor(Math.random() * 101) + 50; // 50 to 150
-      currentPayout += increment;
-      
-      if (Math.random() > 0.6 && missionsEl) {
-        missionsCompleted += 1;
-      }
-      
-      payoutEl.style.opacity = '0';
-      setTimeout(() => {
-        payoutEl.textContent = formatRupee(currentPayout);
-        if (missionsEl) missionsEl.textContent = missionsCompleted;
-        payoutEl.style.opacity = '1';
-      }, 150);
-    }
-    
-    setInterval(tickPayout, 4000);
 
     // --- REPORT BUILDER VALIDATOR & ANIMATOR ---
     const launchBtn = document.getElementById('demo-launch');
@@ -1903,6 +1901,15 @@ export default function LandingPage() {
     <span style={{ opacity: 0.5, marginLeft: "10px" }}>move cursor to inspect</span>
   </div>
 
+  {/* Notification Chip */}
+  <div 
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+    className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2 rounded-full bg-[var(--cream)] px-4 py-2 text-xs font-medium text-[var(--ink)] shadow-[0_8px_30px_rgba(28,16,8,0.12)] ring-1 ring-[var(--border)] transition-all duration-300 cursor-pointer hover:scale-105 ${showScrollChip ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0 pointer-events-none'}`}
+  >
+    <div className="w-2 h-2 rounded-full bg-[var(--electric)]" />
+    <span className="mono">↑ something just changed</span>
+  </div>
+
   <nav>
     <a href="#" className="nav-logo">
       <svg viewBox="0 0 28 28" fill="none" strokeWidth="2">
@@ -1916,7 +1923,6 @@ export default function LandingPage() {
     <div className="nav-center" id="nav-center">
       <a href="#">Founders ▾</a>
       <a href="#">Testers ▾</a>
-      <a href="#" id="nav-support" data-original="Support">Support</a>
       <a href="#">Pricing</a>
       <div className="nav-indicator" id="nav-indicator"></div>
     </div>
@@ -1938,6 +1944,9 @@ export default function LandingPage() {
       <p className="subtext-line active">real strangers use your product. solutionizing turns their honest reactions into a prioritized list of exactly what to fix.</p>
       <p className="subtext-line">71% of users who get stuck never tell you. they just leave. solutionizing tells you.</p>
       <p className="subtext-line">your next user is already confused. find out where before they disappear.</p>
+    </div>
+    <div className="broken-hero-hint is-broken-hint anim-fade-up h-delay-4" style={{ marginTop: '2rem', marginBottom: '-1.5rem' }}>
+      scroll down to run a diagnosis →
     </div>
     <div className="hero-ctas anim-fade-up h-delay-4">
       <div style={{ position: "relative", display: "inline-block" }} className="hero-cta-wrapper">
@@ -2054,8 +2063,8 @@ export default function LandingPage() {
             {/* Dynamically populated from JS */}
           </div>
         </div>
-        <div className="feed-total">
-          <span id="payout-amount">₹2,47,840</span> paid out to testers · <span id="missions-completed">312</span> missions completed
+        <div className="feed-total" style={{ color: 'rgba(250, 247, 242, 0.4)' }}>
+          early access · invite-only · 4 testers active
         </div>
       </div>
 
@@ -2253,19 +2262,9 @@ export default function LandingPage() {
         </ul>
       </div>
       <div className="footer-col">
-        <h4>Community</h4>
-        <ul>
-          <li><a href="#">Discord</a></li>
-          <li><a href="#">Twitter</a></li>
-          <li><a href="#">LinkedIn</a></li>
-          <li><a href="#">Blog</a></li>
-        </ul>
-      </div>
-      <div className="footer-col">
         <h4>Company</h4>
         <ul>
           <li><a href="#">About</a></li>
-          <li><a href="#">Careers</a></li>
           <li><a href="#">Privacy</a></li>
           <li><a href="#">Terms</a></li>
         </ul>

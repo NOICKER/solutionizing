@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import html2canvas from 'html2canvas'
 import { apiFetch } from '@/lib/api/client'
 import { toast } from '@/components/ui/sonner'
+import { useAuth } from '@/context/AuthContext'
 
 type Point = { x: number; y: number }
 type Stroke = Point[]
@@ -14,6 +15,7 @@ const CATEGORIES = ['Bug', 'Suggestion', 'Compliment', 'Other']
 
 export default function FeedbackWidget() {
   const pathname = usePathname()
+  const { user } = useAuth()
   
   const [isOpen, setIsOpen] = useState(false)
   const [isCapturing, setIsCapturing] = useState(false)
@@ -308,17 +310,27 @@ export default function FeedbackWidget() {
     )
   }
 
+  if (!user) return null
+
   return (
     <>
       <button
         data-feedback-widget
         onClick={handleCapture}
         disabled={isCapturing}
-        className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl hover:bg-[var(--electric-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--electric-dim)] focus:ring-offset-2 cursor-none ${isCapturing ? 'opacity-80 scale-95 pointer-events-none' : ''}`}
+        className={`fixed bottom-6 right-6 z-[9999] flex items-center justify-center rounded-full bg-[var(--electric)] text-sm font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-[var(--electric-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--electric-dim)] focus:ring-offset-2 cursor-none group overflow-hidden ${isCapturing ? 'opacity-80 scale-95 pointer-events-none w-auto px-5 py-3' : 'w-[52px] h-[52px] hover:w-[220px]'}`}
         style={isCapturing ? { animation: 'feedback-capture-pulse 1.5s infinite' } : {}}
       >
-        {isCapturing ? <Loader2 size={18} className="animate-spin" /> : <MessageSquare size={18} />}
-        {isCapturing ? 'Capturing...' : 'Feedback Solutionizing'}
+        <div className="flex items-center justify-center min-w-max">
+          {isCapturing ? (
+            <div className="flex items-center gap-2"><Loader2 size={18} className="animate-spin" /> Capturing...</div>
+          ) : (
+            <>
+              <span className="block group-hover:hidden text-base font-black tracking-wide">FS</span>
+              <span className="hidden group-hover:flex items-center gap-2"><MessageSquare size={18} /> Feedback Solutionizing</span>
+            </>
+          )}
+        </div>
       </button>
 
       {isOpen && (
