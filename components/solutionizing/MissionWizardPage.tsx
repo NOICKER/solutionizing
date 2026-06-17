@@ -1070,7 +1070,114 @@ function MissionWizardContent() {
     }
   }
 
-  async function fetchTemplates() {
+  const reviewAssets = useMemo(
+    () =>
+      getCommittedAssets(state.assets).map(({ asset }, index) => (
+        <div key={`${asset.type}-${index}`} className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
+          <div className="mb-2 text-sm font-bold text-[var(--electric)]">ASSET {index + 1}</div>
+          <div className="mb-2 text-lg font-bold text-[var(--ink)] ">{asset.type}</div>
+          <p className="break-words text-sm text-[var(--ink-soft)] ">
+            {asset.type === 'TEXT' ? asset.text : asset.url}
+          </p>
+          {asset.label?.trim() ? (
+            <p className="mt-3 text-sm font-semibold text-[var(--ink)] ">Label: {asset.label.trim()}</p>
+          ) : null}
+        </div>
+      )),
+    [state.assets]
+  )
+
+  const reviewQuestions = useMemo(
+    () =>
+      state.questions.map((question, index) => (
+        <div key={index} className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
+          <div className="mb-2 text-sm font-bold text-[var(--electric)]">QUESTION {index + 1}</div>
+          <div className="mb-2 text-lg font-bold text-[var(--ink)] ">{question.text}</div>
+          <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)] ">Tester will see</div>
+          {question.type === 'TEXT_SHORT' ? (
+            <input
+              type="text"
+              disabled
+              placeholder="Tester's answer..."
+              className={`${textFieldClass} opacity-50 cursor-not-allowed mt-3 cursor-none`}
+            />
+          ) : null}
+          {question.type === 'TEXT_LONG' ? (
+            <textarea
+              disabled
+              rows={3}
+              placeholder="Tester's detailed response..."
+              className={`${textFieldClass} opacity-50 cursor-not-allowed resize-none mt-3 cursor-none`}
+            />
+          ) : null}
+          {question.type === 'RATING_1_5' ? (
+            <div className="mt-3">
+              <StarRow value={0} readonly={true} size={28} />
+            </div>
+          ) : null}
+          {question.type === 'YES_NO' ? (
+            <div className="mt-3 flex gap-3">
+              <button disabled className="rounded-2xl border-2 border-[var(--border)] px-6 py-2 text-sm font-bold text-[var(--ink-soft)]  cursor-none">
+                Yes
+              </button>
+              <button disabled className="rounded-2xl border-2 border-[var(--border)] px-6 py-2 text-sm font-bold text-[var(--ink-soft)]  cursor-none">
+                No
+              </button>
+            </div>
+          ) : null}
+          {question.type === 'MULTIPLE_CHOICE' ? (
+            <div className="mt-3 space-y-2">
+              {(question.options ?? []).map((opt, optionIndex) => (
+                <div
+                  key={optionIndex}
+                  className="rounded-2xl border-2 border-[var(--border)] px-4 py-2 text-sm text-[var(--ink-soft)] "
+                >
+                  {opt || `Option ${optionIndex + 1}`}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )),
+    [state.questions]
+  )
+
+  function applyQuestionPack(packId: string) {
+    const pack = questionPacks.find((p) => p.id === packId)
+    if (!pack) return
+    const questions = pack.questions.map((q, i) => ({ ...q, order: i }))
+    updateState((current) => ({ ...current, questions }))
+  }
+
+  function insertQuestionTemplate(template: typeof questionTemplates[number]) {
+    updateState((current) => {
+      const nextQuestion: WizardQuestion = {
+        ...template.question,
+        options: template.question.options ? [...template.question.options] : undefined,
+        order: current.questions.length,
+      }
+      const shouldReplaceStarter =
+        current.questions.length === 1 &&
+        !current.questions[0].text.trim() &&
+        current.questions[0].type === 'TEXT_SHORT' &&
+        current.questions[0].required
+
+      const nextQuestions = shouldReplaceStarter
+        ? [{ ...nextQuestion, order: 0 }]
+        : [...current.questions, nextQuestion].slice(0, 6)
+
+      return {
+        ...current,
+        questions: nextQuestions.map((question, index) => ({
+          ...question,
+          options: question.options ? [...question.options] : undefined,
+          order: index,
+        })),
+      }
+    })
+  }
+
+  const fetchTemplates = useCallback(async () => {
     setIsLoadingTemplates(true)
     const { data, error } = await supabase.from('wizard_templates').select('*').order('created_at', { ascending: false })
     setIsLoadingTemplates(false)
@@ -1079,7 +1186,7 @@ function MissionWizardContent() {
       return
     }
     setTemplates(data || [])
-  }
+  }, [supabase])
 
   useEffect(() => {
     if (showTemplatesModal) {
@@ -1087,7 +1194,7 @@ function MissionWizardContent() {
       setIsAddingNewTemplate(false)
       setNewTemplateName('')
     }
-  }, [showTemplatesModal])
+  }, [showTemplatesModal, fetchTemplates])
 
   async function handleSaveTemplate() {
     if (!newTemplateName.trim()) {
