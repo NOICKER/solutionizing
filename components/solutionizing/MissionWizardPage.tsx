@@ -1,7 +1,7 @@
 "use client"
 
 import { createBrowserClient } from '@supabase/ssr'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Trash2, Library } from 'lucide-react'
 import Image from 'next/image'
 import posthog from 'posthog-js'
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -24,6 +24,32 @@ interface WizardState {
  assets: WizardAsset[]
  questions: WizardQuestion[]
 }
+
+interface WizardTemplate {
+  id: string
+  founder_id: string
+  name: string
+  config: {
+    difficulty: Difficulty
+    estimatedMinutes: number
+    testersRequired: number
+    questions: WizardQuestion[]
+  }
+  created_at: string
+}
+
+/*
+create table wizard_templates (
+  id uuid primary key default gen_random_uuid(),
+  founder_id uuid references auth.users(id) on delete cascade,
+  name text not null,
+  config jsonb not null,
+  created_at timestamptz default now()
+);
+alter table wizard_templates enable row level security;
+create policy "Founders manage own templates" on wizard_templates
+  for all using (auth.uid() = founder_id);
+*/
 
 interface BalanceResponse {
  balance?: number
@@ -569,9 +595,17 @@ function MissionWizardContent() {
  const [isLoading, setIsLoading] = useState(true)
  const [showBillModal, setShowBillModal] = useState(false)
  const [pendingMissionPayload, setPendingMissionPayload] = useState<any>(null)
- const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
- const [submitError, setSubmitError] = useState('')
- const dirtyRef = useRef(false)
+  const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
+  const [submitError, setSubmitError] = useState('')
+
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false)
+  const [templates, setTemplates] = useState<WizardTemplate[]>([])
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+  const [newTemplateName, setNewTemplateName] = useState('')
+  const [isAddingNewTemplate, setIsAddingNewTemplate] = useState(false)
+
+  const dirtyRef = useRef(false)
  const assetFileInputRefs = useRef<Array<HTMLInputElement | null>>([])
  const hydratedStateRef = useRef<WizardState>(initialState)
  const draftStorageKey = useMemo(
@@ -1036,119 +1070,75 @@ function MissionWizardContent() {
     }
   }
 
- const reviewAssets = useMemo(
- () =>
- getCommittedAssets(state.assets).map(({ asset }, index) => (
- <div key={`${asset.type}-${index}`} className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
- <div className="mb-2 text-sm font-bold text-[var(--electric)]">ASSET {index + 1}</div>
- <div className="mb-2 text-lg font-bold text-[var(--ink)] ">{asset.type}</div>
- <p className="break-words text-sm text-[var(--ink-soft)] ">
- {asset.type === 'TEXT' ? asset.text : asset.url}
- </p>
- {asset.label?.trim() ? (
- <p className="mt-3 text-sm font-semibold text-[var(--ink)] ">Label: {asset.label.trim()}</p>
- ) : null}
- </div>
- )),
- [state.assets]
- )
+  async function fetchTemplates() {
+    setIsLoadingTemplates(true)
+    const { data, error } = await supabase.from('wizard_templates').select('*').order('created_at', { ascending: false })
+    setIsLoadingTemplates(false)
+    if (error) {
+      toast.error('Failed to load templates')
+      return
+    }
+    setTemplates(data || [])
+  }
 
- const reviewQuestions = useMemo(
- () =>
- state.questions.map((question, index) => (
- <div key={index} className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
- <div className="mb-2 text-sm font-bold text-[var(--electric)]">QUESTION {index + 1}</div>
- <div className="mb-2 text-lg font-bold text-[var(--ink)] ">{question.text}</div>
- <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)] ">Tester will see</div>
- {question.type === 'TEXT_SHORT' ? (
- <input
- type="text"
- disabled
- placeholder="Tester's answer..."
- className={`${textFieldClass} opacity-50 cursor-not-allowed mt-3 cursor-none`}
- />
- ) : null}
- {question.type === 'TEXT_LONG' ? (
- <textarea
- disabled
- rows={3}
- placeholder="Tester's detailed response..."
- className={`${textFieldClass} opacity-50 cursor-not-allowed resize-none mt-3 cursor-none`}
- />
- ) : null}
- {question.type === 'RATING_1_5' ? (
- <div className="mt-3">
- <StarRow value={0} readonly={true} size={28} />
- </div>
- ) : null}
- {question.type === 'YES_NO' ? (
- <div className="mt-3 flex gap-3">
- <button disabled className="rounded-2xl border-2 border-[var(--border)] px-6 py-2 text-sm font-bold text-[var(--ink-soft)]  cursor-none">
- Yes
- </button>
- <button disabled className="rounded-2xl border-2 border-[var(--border)] px-6 py-2 text-sm font-bold text-[var(--ink-soft)]  cursor-none">
- No
- </button>
- </div>
- ) : null}
- {question.type === 'MULTIPLE_CHOICE' ? (
- <div className="mt-3 space-y-2">
- {(question.options ?? []).map((opt, optionIndex) => (
- <div
- key={optionIndex}
- className="rounded-2xl border-2 border-[var(--border)] px-4 py-2 text-sm text-[var(--ink-soft)] "
- >
- {opt || `Option ${optionIndex + 1}`}
- </div>
- ))}
- </div>
- ) : null}
- </div>
- )),
- [state.questions]
- )
+  useEffect(() => {
+    if (showTemplatesModal) {
+      void fetchTemplates()
+      setIsAddingNewTemplate(false)
+      setNewTemplateName('')
+    }
+  }, [showTemplatesModal])
 
- 
+  async function handleSaveTemplate() {
+    if (!newTemplateName.trim()) {
+      toast.error('Please enter a template name')
+      return
+    }
+    setIsSavingTemplate(true)
+    const { data, error } = await supabase.from('wizard_templates').insert({
+      name: newTemplateName.trim(),
+      config: {
+        difficulty: state.difficulty,
+        estimatedMinutes: state.estimatedMinutes,
+        testersRequired: state.testersRequired,
+        questions: state.questions
+      }
+    }).select().single()
+    setIsSavingTemplate(false)
 
+    if (error) {
+      toast.error('Failed to save template')
+      return
+    }
+    setNewTemplateName('')
+    setIsAddingNewTemplate(false)
+    setTemplates([data, ...templates])
+    toast.success('Template saved!')
+  }
 
+  async function handleDeleteTemplate(id: string) {
+    const { error } = await supabase.from('wizard_templates').delete().eq('id', id)
+    if (error) {
+      toast.error('Failed to delete template')
+      return
+    }
+    setTemplates(templates.filter(t => t.id !== id))
+    toast.success('Template deleted')
+  }
 
- function applyQuestionPack(packId: string) {
-  const pack = questionPacks.find((p) => p.id === packId)
-  if (!pack) return
-  const questions = pack.questions.map((q, i) => ({ ...q, order: i }))
-  updateState((current) => ({ ...current, questions }))
- }
+  function handleApplyTemplate(template: WizardTemplate) {
+    updateState(current => ({
+      ...current,
+      difficulty: template.config.difficulty ?? current.difficulty,
+      estimatedMinutes: template.config.estimatedMinutes ?? current.estimatedMinutes,
+      testersRequired: template.config.testersRequired ?? current.testersRequired,
+      questions: template.config.questions ?? current.questions,
+    }))
+    setShowTemplatesModal(false)
+    toast.success('Template applied.')
+  }
 
- function insertQuestionTemplate(template: typeof questionTemplates[number]) {
- updateState((current) => {
- const nextQuestion: WizardQuestion = {
- ...template.question,
- options: template.question.options ? [...template.question.options] : undefined,
- order: current.questions.length,
- }
- const shouldReplaceStarter =
- current.questions.length === 1 &&
- !current.questions[0].text.trim() &&
- current.questions[0].type === 'TEXT_SHORT' &&
- current.questions[0].required
-
- const nextQuestions = shouldReplaceStarter
- ? [{ ...nextQuestion, order: 0 }]
- : [...current.questions, nextQuestion].slice(0, 6)
-
- return {
- ...current,
- questions: nextQuestions.map((question, index) => ({
- ...question,
- options: question.options ? [...question.options] : undefined,
- order: index,
- })),
- }
- })
- }
-
-
- if (isLoading) {
+  if (isLoading) {
  return (
  <div className="min-h-screen bg-[var(--bg)]">
  <div className="mx-auto max-w-2xl px-4 sm:px-6 md:px-8 space-y-6 pt-6">
@@ -1192,7 +1182,7 @@ function MissionWizardContent() {
           </div>
         ) : null}
 
-        <div className="mx-auto max-w-[720px] px-4 sm:px-6 flex items-center justify-center py-5 gap-0">
+        <div className="mx-auto max-w-[720px] px-4 sm:px-6 flex items-center justify-center py-5 gap-0 relative">
           {([
             { num: 1, label: 'Brief' },
             { num: 2, label: 'Setup' },
@@ -1227,6 +1217,15 @@ function MissionWizardContent() {
               </Fragment>
             )
           })}
+
+          <button
+            type="button"
+            onClick={() => setShowTemplatesModal(true)}
+            className="absolute right-4 sm:right-6 flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--ink-soft)] hover:border-[var(--ink-soft)] transition-colors cursor-none bg-white/50"
+          >
+            <Library className="h-4 w-4" />
+            <span className="hidden sm:inline">Templates</span>
+          </button>
         </div>
       </div>
 
@@ -1772,6 +1771,99 @@ function MissionWizardContent() {
           </div>
         </div>
       </div>
+
+{showTemplatesModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="w-full max-w-md rounded-2xl bg-[var(--cream)] border border-[var(--border)] p-6 shadow-2xl flex flex-col max-h-[80vh]">
+      <div className="flex items-center justify-between mb-4 shrink-0">
+        <h2 className="text-xl font-bold font-[family-name:var(--font-fraunces)] italic text-[var(--ink)]">Your Templates</h2>
+        <button onClick={() => setShowTemplatesModal(false)} className="text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none">
+          <XCircle className="h-6 w-6" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto min-h-[100px] mb-4 space-y-3">
+        {isLoadingTemplates ? (
+          <div className="flex justify-center py-8"><SpinnerIcon className="h-6 w-6 text-[var(--electric)]" /></div>
+        ) : templates.length === 0 ? (
+          <div className="text-center py-8 text-sm text-[var(--ink-soft)]">
+            No templates yet. Fill in the wizard and save your setup as a template.
+          </div>
+        ) : (
+          templates.map(t => (
+            <div key={t.id} className="flex items-center justify-between p-3 rounded-xl border border-[var(--border)] bg-[var(--bg)]">
+              <span className="font-semibold text-sm text-[var(--ink)] truncate mr-2">{t.name}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <button 
+                  onClick={() => handleApplyTemplate(t)}
+                  className="rounded-full bg-[var(--electric)]/10 text-[var(--electric)] px-3 py-1 text-xs font-bold hover:bg-[var(--electric)]/20 cursor-none"
+                >
+                  Apply
+                </button>
+                <button 
+                  onClick={() => {
+                    if (window.confirm('Delete this template?')) {
+                      void handleDeleteTemplate(t.id)
+                    }
+                  }}
+                  className="text-[#c0392b]/70 hover:text-[#c0392b] cursor-none p-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="pt-4 border-t border-[var(--border)] shrink-0">
+        {isAddingNewTemplate ? (
+          isSavingTemplate ? (
+            <div className="flex justify-center py-2"><SpinnerIcon className="h-5 w-5 text-[var(--electric)]" /></div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <input 
+                type="text" 
+                value={newTemplateName} 
+                onChange={e => setNewTemplateName(e.target.value)} 
+                placeholder="Name this template..." 
+                className={`${textFieldClass} text-sm py-2 cursor-none`} 
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button 
+                  onClick={() => {
+                    setIsAddingNewTemplate(false)
+                    setNewTemplateName('')
+                  }}
+                  className="rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--ink)] hover:bg-[var(--bg)] cursor-none"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => void handleSaveTemplate()}
+                  disabled={!newTemplateName.trim()}
+                  className="rounded-full bg-[var(--electric)] text-white px-4 py-2 text-sm font-bold hover:opacity-90 disabled:opacity-50 cursor-none"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="flex justify-end">
+            <button 
+              onClick={() => setIsAddingNewTemplate(true)}
+              className="rounded-full bg-[var(--electric)] text-white px-4 py-2 text-sm font-bold hover:opacity-90 cursor-none"
+            >
+              Save Current as Template
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
 {showBillModal && pendingMissionPayload && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
