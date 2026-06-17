@@ -4,7 +4,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { CheckCircle, XCircle } from 'lucide-react'
 import Image from 'next/image'
 import posthog from 'posthog-js'
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from '@/components/ui/sonner'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -556,7 +556,7 @@ function MissionWizardContent() {
  const legacyEditMissionId = editParam && editParam !== 'true' ? editParam : null
  const editMissionId = missionIdParam ?? legacyEditMissionId
  const isEditMode = editParam === 'true' ? Boolean(missionIdParam) : Boolean(editMissionId)
- const [activeStage, setActiveStage] = useState<'brief' | 'setup' | 'questions' | 'review'>('brief')
+  const [step, setStep] = useState(1)
  const [state, setState] = useState<WizardState>(initialState)
  const [showDraftBanner, setShowDraftBanner] = useState(false)
  const [showRejectedBanner, setShowRejectedBanner] = useState(false)
@@ -853,11 +853,6 @@ function MissionWizardContent() {
  await handleAssetFileSelected(index, pastedImage)
  }
 
-  function getStageForFieldKey(fieldKey: string): 'brief' | 'setup' | 'questions' | 'review' {
-    if (fieldKey === 'title' || fieldKey === 'goal') return 'brief'
-    if (fieldKey === 'assets' || fieldKey.startsWith('asset-')) return 'setup'
-    return 'questions'
-  }
 
   async function handleSave(action: 'draft' | 'submit') {
     setSubmitError('')
@@ -871,8 +866,8 @@ function MissionWizardContent() {
     const firstErrorKey = Object.keys(validationErrors)[0]
     if (firstErrorKey) {
       setErrors(validationErrors)
-      const targetStage = getStageForFieldKey(firstErrorKey)
-      setActiveStage(targetStage)
+      const targetStep = getStepForFieldKey(firstErrorKey)
+      setStep(targetStep)
       window.setTimeout(() => scrollToField(firstErrorKey === 'assets' ? 'asset-0' : firstErrorKey), 0)
       return
     }
@@ -1152,67 +1147,6 @@ function MissionWizardContent() {
  })
  }
 
- function renderStepNavigation(position: 'top' | 'bottom') {
- const containerClass =
- position === 'top'
- ? 'mb-8 flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-[var(--border)] pb-4 px-4 py-3 sm:px-6'
- : 'mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[var(--border)] pt-4 px-4 sm:px-6'
- const canGoBack = step > 1
-
- return (
- <div className={containerClass}>
- {position === 'bottom' ? (
- <div />
- ) : (
- <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
- <button
- type="button"
- className="font-semibold text-[var(--electric)] hover:text-[#c0392b] cursor-none"
- onClick={() => {
- router.push('/dashboard/founder')
- }}
- >
- Back to Dashboard
- </button>
- <button
- type="button"
- disabled={!canGoBack}
- className="font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40  cursor-none"
- onClick={handleBack}
- >
- {'<- Back'}
- </button>
- </div>
- )}
- {step < 4 ? (
- <button type="button" className={`w-full sm:w-auto px-8 py-3.5 ${primaryButtonClass} cursor-none`} onClick={handleNext}>
- {'CONTINUE ->'}
- </button>
- ) : (
- <div className="flex flex-col sm:flex-row flex-wrap items-center justify-end gap-3 w-full sm:w-auto">
- <button
- type="button"
- disabled={pendingAction !== null}
- className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 ${outlineButtonClass} cursor-none`}
- onClick={() => void handleSave('draft')}
- >
- {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
- {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
- </button>
- <button
- type="button"
- disabled={pendingAction !== null || !canReviewChecklistSubmit}
- className={`w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-4 text-base ${primaryButtonClass} rounded-[12px] bg-[var(--electric)] text-[var(--cream)] px-6 py-3 font-semibold transition-opacity hover:opacity-90 cursor-none`}
- onClick={() => void handleSave('submit')}
- >
- {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
- {isEditMode ? 'PAY & LAUNCH MISSION' : 'PAY & LAUNCH MISSION'}
- </button>
- </div>
- )}
- </div>
- )
- }
 
  if (isLoading) {
  return (
@@ -1224,56 +1158,84 @@ function MissionWizardContent() {
  )
  }
 
- return (
- <div className="min-h-screen xl:h-screen xl:overflow-hidden bg-[var(--bg)] pb-12 xl:pb-0 flex flex-col font-['Satoshi'] selection:bg-[var(--electric)] selection:text-white">
-    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 pt-6 xl:pt-10 transition-all duration-300 h-full flex flex-col">
- {showDraftBanner ? (
- <div className="mb-6 flex items-center justify-between rounded-xl border border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.06)] p-4 ">
- <span className="text-sm font-semibold text-[#92400e] ">You have an unsaved draft. Continue where you left off?</span>
- <button
- type="button"
- onClick={() => {
- clearLocalDraft()
- dirtyRef.current = false
- setState(hydratedStateRef.current)
- setShowDraftBanner(false)
- }}
- className="text-sm font-bold text-[#92400e] underline hover:text-amber-900  cursor-none"
- >
- Clear draft
- </button>
- </div>
- ) : null}
- {showRejectedBanner ? (
- <div className="mb-6 rounded-xl border border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.06)] p-4 ">
- <div className="flex items-start justify-between gap-4">
- <div>
- <p className="text-sm font-semibold text-amber-900 ">
- This mission was rejected. Review the feedback below, make your changes, and resubmit for review.
- </p>
- <p className="mt-2 text-sm text-[#92400e] ">{rejectedReviewNote}</p>
- </div>
- <button
- type="button"
- onClick={() => setShowRejectedBanner(false)}
- className="text-sm font-bold text-[#92400e] underline hover:text-amber-900  cursor-none"
- >
- Dismiss
- </button>
- </div>
- </div>
- ) : null}
- 
+  return (
+    <div className="h-screen flex flex-col bg-[var(--bg)] font-['Satoshi'] selection:bg-[var(--electric)] selection:text-white">
 
- 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 h-full xl:h-[calc(100vh-120px)] items-start mt-6 flex-1">
-
-        {/* Column 1: Brief & Setup (3/12) */}
-        <div className="xl:col-span-3 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">1. Brief & Setup</h2>
-            <div className="inline-flex rounded-full bg-[var(--electric)]/10 px-3 py-1 text-xs font-bold text-[var(--electric)] uppercase">{state.difficulty}</div>
+      {/* ── ZONE 1: Fixed top bar ── */}
+      <div className="shrink-0 bg-[var(--cream)] border-b border-[var(--border)]">
+        {showDraftBanner ? (
+          <div className="mx-auto max-w-[720px] mt-4 px-4 sm:px-6 flex items-center justify-between rounded-xl border border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.06)] p-4">
+            <span className="text-sm font-semibold text-[#92400e]">You have an unsaved draft. Continue where you left off?</span>
+            <button
+              type="button"
+              onClick={() => {
+                clearLocalDraft()
+                dirtyRef.current = false
+                setState(hydratedStateRef.current)
+                setShowDraftBanner(false)
+              }}
+              className="text-sm font-bold text-[#92400e] underline hover:text-amber-900 cursor-none"
+            >
+              Clear draft
+            </button>
           </div>
+        ) : null}
+        {showRejectedBanner ? (
+          <div className="mx-auto max-w-[720px] mt-4 px-4 sm:px-6 rounded-xl border border-[rgba(251,191,36,0.2)] bg-[rgba(251,191,36,0.06)] p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-amber-900">This mission was rejected. Review the feedback below, make your changes, and resubmit for review.</p>
+                <p className="mt-2 text-sm text-[#92400e]">{rejectedReviewNote}</p>
+              </div>
+              <button type="button" onClick={() => setShowRejectedBanner(false)} className="text-sm font-bold text-[#92400e] underline hover:text-amber-900 cursor-none">Dismiss</button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mx-auto max-w-[720px] px-4 sm:px-6 flex items-center justify-center py-5 gap-0">
+          {([
+            { num: 1, label: 'Brief' },
+            { num: 2, label: 'Setup' },
+            { num: 3, label: 'Questions' },
+            { num: 4, label: 'Review' },
+          ] as const).map((s, i) => {
+            const isActive = step === s.num
+            const isCompleted = s.num < 4 && Object.keys(validateStep(s.num, state)).length === 0 && !isActive
+            return (
+              <Fragment key={s.num}>
+                {i > 0 && <div className={`h-0.5 w-8 sm:w-12 transition-colors ${step > i ? 'bg-[var(--electric)]' : 'bg-[var(--border)]'}`} />}
+                <button
+                  type="button"
+                  onClick={() => setStep(s.num)}
+                  className={`flex items-center gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-all cursor-none ${
+                    isActive
+                      ? 'bg-[var(--electric)] text-white shadow-md'
+                      : isCompleted
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-[var(--bg)] text-[var(--ink-soft)] border border-[var(--border)] hover:border-[var(--ink-soft)]'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-[var(--border)] text-[var(--ink-soft)]'
+                    }`}>{s.num}</span>
+                  )}
+                  <span className="hidden sm:inline">{s.label}</span>
+                </button>
+              </Fragment>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* ── ZONE 2: Scrollable middle ── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-[720px] px-4 sm:px-6 md:px-8 py-8 space-y-8">
+
+          {step === 1 && (
+            <>
 <div className="space-y-8 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4">
  <div data-field-key="title">
  <label className="mb-3 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)] ">GIVE YOUR MISSION A TITLE</label>
@@ -1322,7 +1284,11 @@ function MissionWizardContent() {
  </div>
  </div>
  </div>
+            </>
+          )}
 
+          {step === 2 && (
+            <>
 <div className="space-y-8">
  <div className="pt-6">
  <label className="mb-6 block text-sm font-bold uppercase tracking-wider text-[var(--ink-soft)] ">DIFFICULTY</label>
@@ -1575,11 +1541,11 @@ function MissionWizardContent() {
  {state.assets.length < 3 ? <button type="button" className="text-sm font-semibold text-[var(--electric)] hover:underline cursor-none" onClick={() => updateState((current) => ({ ...current, assets: [...current.assets, { type: 'LINK', url: '', label: '' }] }))}>+ Add another asset</button> : null}
  </div>
  </div>
-        </div>
+            </>
+          )}
 
-        {/* Column 2: Assets & Questions (5/12) */}
-        <div className="xl:col-span-5 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
-          <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">2. Assets & Questions</h2>
+          {step === 3 && (
+            <>
 <div className="space-y-6">
  <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
  <div className="flex flex-wrap items-end justify-between gap-3">
@@ -1678,11 +1644,11 @@ function MissionWizardContent() {
 
  {state.questions.length < 6 ? <button type="button" className={`px-6 py-3 ${primaryButtonClass} cursor-none`} onClick={() => updateState((current) => ({ ...current, questions: [...current.questions, { text: '', type: 'TEXT_SHORT', required: true, order: current.questions.length }] }))}>+ ADD QUESTION</button> : null}
  </div>
-        </div>
+            </>
+          )}
 
-        {/* Column 3: Review & Launch (4/12) */}
-        <div className="xl:col-span-4 flex flex-col gap-6 overflow-y-auto h-full xl:pr-4 hide-scrollbar pb-10">
-          <h2 className="text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">3. Review & Launch</h2>
+          {step === 4 && (
+            <>
 <div className="space-y-6">
  <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 overflow-hidden">
  <div className="wizard-review-header">
@@ -1743,30 +1709,69 @@ function MissionWizardContent() {
  {reviewQuestions}
  {submitError ? <p className="text-sm text-[#c0392b] ">{submitError}</p> : null}
  </div>
-          <div className="mt-4 flex flex-col sm:flex-row flex-wrap items-center justify-end gap-3 w-full pb-10">
-            <button
-              type="button"
-              disabled={pendingAction !== null}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 ${outlineButtonClass} cursor-none`}
-              onClick={() => void handleSave('draft')}
-            >
-              {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
-              {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
-            </button>
-            <button
-              type="button"
-              disabled={pendingAction !== null || !canReviewChecklistSubmit}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-4 text-base ${primaryButtonClass} rounded-[12px] bg-[var(--electric)] text-[var(--cream)] font-semibold transition-opacity hover:opacity-90 cursor-none`}
-              onClick={() => void handleSave('submit')}
-            >
-              {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
-              PAY & LAUNCH MISSION
-            </button>
+            </>
+          )}
+
+        </div>
+      </div>
+
+      {/* ── ZONE 3: Fixed bottom bar ── */}
+      <div className="shrink-0 border-t border-[var(--border)] bg-[var(--cream)] px-4 sm:px-8 py-4">
+        <div className="mx-auto max-w-[720px] flex items-center justify-between">
+          <div>
+            {step === 1 ? (
+              <button type="button" onClick={() => router.push('/dashboard/founder')} className="font-semibold text-[var(--electric)] hover:text-[#c0392b] cursor-none">
+                ← Dashboard
+              </button>
+            ) : (
+              <button type="button" onClick={() => setStep((s) => s - 1)} className="font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none">
+                ← Back
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {step < 4 ? (
+              <button
+                type="button"
+                className={`px-8 py-3.5 ${primaryButtonClass} cursor-none`}
+                onClick={() => {
+                  const stepErrors = validateStep(step, state)
+                  if (Object.keys(stepErrors).length > 0) {
+                    setErrors((current) => ({ ...current, ...stepErrors }))
+                    const firstKey = Object.keys(stepErrors)[0]
+                    window.setTimeout(() => scrollToField(firstKey), 0)
+                    return
+                  }
+                  setStep((s) => s + 1)
+                }}
+              >
+                CONTINUE →
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled={pendingAction !== null}
+                  className={`flex items-center justify-center gap-2 px-6 py-3.5 ${outlineButtonClass} cursor-none`}
+                  onClick={() => void handleSave('draft')}
+                >
+                  {pendingAction === 'draft' ? <SpinnerIcon className="w-5 h-5" /> : null}
+                  {isEditMode ? 'SAVE CHANGES' : 'SAVE AS DRAFT'}
+                </button>
+                <button
+                  type="button"
+                  disabled={pendingAction !== null || !canReviewChecklistSubmit}
+                  className={`flex items-center justify-center gap-2 px-10 py-4 text-base ${primaryButtonClass} cursor-none`}
+                  onClick={() => void handleSave('submit')}
+                >
+                  {pendingAction === 'submit' ? <SpinnerIcon className="w-5 h-5" /> : null}
+                  PAY & LAUNCH MISSION
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
-    </div>
-
 
 {showBillModal && pendingMissionPayload && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -1807,8 +1812,8 @@ function MissionWizardContent() {
       </div>
     </div>
   )}
- </div>
- )
+    </div>
+  )
 }
 
 export function MissionWizardPage() {
