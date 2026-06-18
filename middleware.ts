@@ -83,6 +83,12 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // Cron routes authenticate via CRON_SECRET header — skip session checks
+  // so external cron services (cron-job.org) aren't redirected to /auth.
+  if (path.startsWith('/api/v1/cron/')) {
+    return response
+  }
+
   const isPublicRoute = publicRoutes.has(path)
 
   // Redirect logged-in users away from the landing page in one hop.
