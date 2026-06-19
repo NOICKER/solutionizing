@@ -48,18 +48,41 @@ export async function GET(request: Request) {
       try {
         // Upsert: create user record if it doesn't exist (e.g. first-time OAuth),
         // or update emailVerified if already present.
-        const dbUser = await prisma.user.upsert({
-          where: { id: userId },
-          update: {
-            emailVerified: isEmailConfirmed || undefined,
-          },
-          create: {
-            id: userId,
-            email: userEmail!,
-            emailVerified: isEmailConfirmed,
-          },
-          select: { role: true },
-        })
+        let dbUser;
+        try {
+          dbUser = await prisma.user.upsert({
+            where: { email: userEmail! },
+            update: {
+              emailVerified: isEmailConfirmed || undefined,
+            },
+            create: {
+              id: userId,
+              email: userEmail!,
+              emailVerified: isEmailConfirmed,
+            },
+            select: { role: true },
+          })
+        } catch (upsertError) {
+          console.error('[auth:callback] Primary DB operation failed, retrying:', upsertError)
+          try {
+            dbUser = await prisma.user.upsert({
+              where: { email: userEmail! },
+              update: {
+                emailVerified: isEmailConfirmed || undefined,
+              },
+              create: {
+                id: userId,
+                email: userEmail!,
+                emailVerified: isEmailConfirmed,
+              },
+              select: { role: true },
+            })
+          } catch (retryError) {
+            console.error('[auth:callback] Retry failed:', retryError)
+            await supabase.auth.signOut().catch(() => {})
+            return applySupabaseCookies(new NextResponse('Internal Server Error', { status: 500 }))
+          }
+        }
 
         console.log('[auth:callback] dbUser.role:', dbUser.role)
 
@@ -67,9 +90,10 @@ export async function GET(request: Request) {
         if (type !== 'recovery' && !dbUser.role) {
           redirectPath = '/select-role'
         }
-      } catch (upsertError) {
-        console.error('[auth:callback] Failed to upsert user:', upsertError)
-        // Still redirect to dashboard — session cookies are what matter
+      } catch (unexpectedError) {
+        console.error('[auth:callback] Failed to process user:', unexpectedError)
+        await supabase.auth.signOut().catch(() => {})
+        return applySupabaseCookies(new NextResponse('Internal Server Error', { status: 500 }))
       }
     }
   } catch (error) {

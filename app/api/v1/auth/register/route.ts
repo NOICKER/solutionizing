@@ -74,18 +74,39 @@ export async function POST(request: Request) {
         console.error('[register] Failed to sync Supabase metadata:', error)
       }
 
-      await prisma.user.upsert({
-        where: { id: data.user.id },
-        update: {
-          email: data.user.email!,
-          emailVerified: !!data.user.email_confirmed_at,
-        },
-        create: {
-          id: data.user.id,
-          email: data.user.email!,
-          emailVerified: !!data.user.email_confirmed_at,
-        },
-      })
+      let dbUser;
+      try {
+        dbUser = await prisma.user.upsert({
+          where: { email: data.user.email! },
+          update: {
+            emailVerified: !!data.user.email_confirmed_at,
+          },
+          create: {
+            id: data.user.id,
+            email: data.user.email!,
+            emailVerified: !!data.user.email_confirmed_at,
+          },
+        })
+      } catch (err) {
+        console.error('[register] Primary DB operation failed, retrying:', err)
+        try {
+          dbUser = await prisma.user.upsert({
+            where: { email: data.user.email! },
+            update: {
+              emailVerified: !!data.user.email_confirmed_at,
+            },
+            create: {
+              id: data.user.id,
+              email: data.user.email!,
+              emailVerified: !!data.user.email_confirmed_at,
+            },
+          })
+        } catch (retryErr) {
+          console.error('[register] Retry failed:', retryErr)
+          await supabase.auth.signOut().catch(() => {})
+          return applySupabaseCookies(serverError())
+        }
+      }
     }
 
     return applySupabaseCookies(
