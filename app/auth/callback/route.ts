@@ -55,7 +55,20 @@ export async function GET(request: Request) {
     if (userId) {
       try {
         let dbUser;
+        let wasDeleted = false;
         try {
+          const existingUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { isDeleted: true },
+          })
+          wasDeleted = existingUser?.isDeleted === true
+
+          if (wasDeleted) {
+            console.log('[auth:callback] Soft-deleted account re-authenticating — wiping old profiles for re-onboarding')
+            await prisma.founderProfile.deleteMany({ where: { userId } })
+            await prisma.testerProfile.deleteMany({ where: { userId } })
+          }
+
           dbUser = await prisma.user.upsert({
             where: { id: userId },
             update: {
@@ -63,6 +76,7 @@ export async function GET(request: Request) {
               emailVerified: isEmailConfirmed || undefined,
               isDeleted: false,
               deletedAt: null,
+              ...(wasDeleted ? { role: 'TESTER' } : {}),
             },
             create: {
               id: userId,
@@ -95,8 +109,11 @@ export async function GET(request: Request) {
 
         console.log('[auth:callback] dbUser.role:', dbUser.role)
 
-        // Send new users (no role yet) to role selection instead of dashboard
-        if (type !== 'recovery' && !dbUser.role) {
+        if (wasDeleted) {
+          console.log('[auth:callback] Resurrected soft-deleted account — sending to /select-role for fresh onboarding')
+          redirectPath = '/select-role'
+        } else if (type !== 'recovery' && !dbUser.role) {
+          // Send new users (no role yet) to role selection instead of dashboard
           redirectPath = '/select-role'
         }
       } catch (unexpectedError) {
