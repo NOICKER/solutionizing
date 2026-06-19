@@ -77,15 +77,16 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
   const path = request.nextUrl.pathname
 
-  // Let the OAuth callback route handle its own auth via exchangeCodeForSession.
+  // Let specific auth endpoints handle their own logic without middleware interference.
   // Must be skipped entirely — no session check, no redirect.
-  if (path === '/auth/callback' || path.startsWith('/auth/callback/')) {
+  if (path === '/auth/callback' || path.startsWith('/auth/callback/') || path === '/auth/logout') {
     return response
   }
 
-  // Cron routes authenticate via CRON_SECRET header — skip session checks
-  // so external cron services (cron-job.org) aren't redirected to /auth.
-  if (path.startsWith('/api/v1/cron/')) {
+  // Let API routes handle their own auth logic and return JSON responses,
+  // instead of being redirected to UI pages.
+  // This also implicitly covers Cron routes which authenticate via CRON_SECRET header.
+  if (path.startsWith('/api/')) {
     return response
   }
 

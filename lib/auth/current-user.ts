@@ -149,9 +149,6 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
   })
 
   if (!dbUser || dbUser.isDeleted) {
-    // Kill the Supabase session and clear auth cookies so the middleware
-    // stops treating this session as valid (prevents redirect loops).
-    await supabase.auth.signOut().catch(() => {})
     return null
   }
 

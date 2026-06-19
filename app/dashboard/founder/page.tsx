@@ -12,7 +12,7 @@ export default async function FounderDashboardPage() {
   const user = await getCurrentAppUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/auth/logout?next=/login')
   }
 
   if (user.role === null) {
