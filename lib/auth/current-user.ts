@@ -118,8 +118,14 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
   } = await supabase.auth.getUser()
 
   if (error || !authUser) {
+    console.log('[getCurrentAppUser] RETURNING NULL — Supabase auth failed.', {
+      error: error?.message ?? null,
+      hasAuthUser: !!authUser,
+    })
     return null
   }
+
+  console.log('[getCurrentAppUser] Supabase auth OK. userId:', authUser.id, 'email:', authUser.email)
 
   const dbUser = await prisma.user.findUnique({
     where: { id: authUser.id },
@@ -149,8 +155,22 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
   })
 
   if (!dbUser || dbUser.isDeleted) {
+    console.log('[getCurrentAppUser] RETURNING NULL — Prisma lookup failed.', {
+      dbUserFound: !!dbUser,
+      isDeleted: dbUser?.isDeleted ?? 'N/A',
+      searchedForId: authUser.id,
+    })
     return null
   }
+
+  console.log('[getCurrentAppUser] Prisma user found:', {
+    id: dbUser.id,
+    email: dbUser.email,
+    role: dbUser.role,
+    isDeleted: dbUser.isDeleted,
+    hasFounderProfile: !!dbUser.founderProfile,
+    hasTesterProfile: !!dbUser.testerProfile,
+  })
 
   const roles = getDashboardRoles(dbUser)
   const normalizedRole: AppRole =
