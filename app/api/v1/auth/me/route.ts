@@ -36,13 +36,18 @@ export async function GET(request: Request) {
       return signOutAndClearCookies(request, unauthorized())
     }
 
+    const appRole = authUser.app_metadata?.role as AppRole | null | undefined
     const roles = getDashboardRoles(dbUser)
-    const normalizedRole: AppRole =
-      dbUser.role === 'ADMIN'
-        ? 'ADMIN'
-        : roles.includes(dbUser.role)
-          ? dbUser.role
-          : roles[0] ?? null
+    
+    // If Supabase says they don't have a role yet, they haven't finished onboarding.
+    // Force role to null to keep them on /select-role, regardless of Prisma's default.
+    const normalizedRole: AppRole | null = appRole 
+      ? (dbUser.role === 'ADMIN'
+          ? 'ADMIN'
+          : roles.includes(dbUser.role)
+            ? dbUser.role
+            : roles[0] ?? null)
+      : null
 
     return ok({
       id: dbUser.id,

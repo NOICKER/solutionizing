@@ -44,44 +44,46 @@ export async function GET(request: Request) {
 
     console.log('[auth:callback] userId:', userId, '| isEmailConfirmed:', isEmailConfirmed)
 
+    if (!userEmail) {
+      console.error('[auth:callback] Missing email from Supabase Auth')
+      await supabase.auth.signOut().catch(() => {})
+      return applySupabaseCookies(
+        NextResponse.redirect(new URL('/login?error=missing_email', request.url))
+      )
+    }
+
     if (userId) {
       try {
-        // Upsert: create user record if it doesn't exist (e.g. first-time OAuth),
-        // or update emailVerified if already present.
         let dbUser;
         try {
           dbUser = await prisma.user.upsert({
-            where: { email: userEmail! },
+            where: { id: userId },
             update: {
+              email: userEmail,
               emailVerified: isEmailConfirmed || undefined,
             },
             create: {
               id: userId,
-              email: userEmail!,
+              email: userEmail,
               emailVerified: isEmailConfirmed,
             },
             select: { role: true },
           })
-        } catch (upsertError) {
-          console.error('[auth:callback] Primary DB operation failed, retrying:', upsertError)
-          try {
-            dbUser = await prisma.user.upsert({
-              where: { email: userEmail! },
-              update: {
-                emailVerified: isEmailConfirmed || undefined,
-              },
-              create: {
-                id: userId,
-                email: userEmail!,
-                emailVerified: isEmailConfirmed,
-              },
-              select: { role: true },
-            })
-          } catch (retryError) {
-            console.error('[auth:callback] Retry failed:', retryError)
+        } catch (upsertError: any) {
+          console.error('[auth:callback] Primary DB operation failed:', upsertError)
+          
+          // Prisma P2002 means a Unique Constraint Violation. Since we upsert by ID, 
+          // this guarantees the conflict is on the email address.
+          if (upsertError?.code === 'P2002') {
+            console.error('[auth:callback] Duplicate email constraint hit. Redirecting.')
             await supabase.auth.signOut().catch(() => {})
-            return applySupabaseCookies(new NextResponse('Internal Server Error', { status: 500 }))
+            return applySupabaseCookies(
+              NextResponse.redirect(new URL('/login?error=account_conflict', request.url))
+            )
           }
+
+          // Throw non-P2002 errors down to the unexpected error handler
+          throw upsertError
         }
 
         console.log('[auth:callback] dbUser.role:', dbUser.role)
@@ -93,7 +95,9 @@ export async function GET(request: Request) {
       } catch (unexpectedError) {
         console.error('[auth:callback] Failed to process user:', unexpectedError)
         await supabase.auth.signOut().catch(() => {})
-        return applySupabaseCookies(new NextResponse('Internal Server Error', { status: 500 }))
+        return applySupabaseCookies(
+          NextResponse.redirect(new URL('/login?error=auth_error', request.url))
+        )
       }
     }
   } catch (error) {
