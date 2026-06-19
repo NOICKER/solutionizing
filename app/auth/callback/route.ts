@@ -46,7 +46,7 @@ export async function GET(request: Request) {
 
     if (!userEmail) {
       console.error('[auth:callback] Missing email from Supabase Auth')
-      await supabase.auth.signOut().catch(() => {})
+      await supabase.auth.signOut().catch(() => { })
       return applySupabaseCookies(
         NextResponse.redirect(new URL('/login?error=missing_email', request.url))
       )
@@ -61,6 +61,8 @@ export async function GET(request: Request) {
             update: {
               email: userEmail,
               emailVerified: isEmailConfirmed || undefined,
+              isDeleted: false,
+              deletedAt: null,
             },
             create: {
               id: userId,
@@ -76,12 +78,12 @@ export async function GET(request: Request) {
           })
         } catch (upsertError: any) {
           console.error('[auth:callback] Primary DB operation failed. Error name:', upsertError?.name, 'Code:', upsertError?.code, 'Message:', upsertError?.message)
-          
+
           // Prisma P2002 means a Unique Constraint Violation. Since we upsert by ID, 
           // this guarantees the conflict is on the email address.
           if (upsertError?.code === 'P2002') {
             console.error('[auth:callback] Duplicate email constraint hit. Redirecting.')
-            await supabase.auth.signOut().catch(() => {})
+            await supabase.auth.signOut().catch(() => { })
             return applySupabaseCookies(
               NextResponse.redirect(new URL('/login?error=account_conflict', request.url))
             )
@@ -99,7 +101,7 @@ export async function GET(request: Request) {
         }
       } catch (unexpectedError) {
         console.error('[auth:callback] Failed to process user:', unexpectedError)
-        await supabase.auth.signOut().catch(() => {})
+        await supabase.auth.signOut().catch(() => { })
         return applySupabaseCookies(
           NextResponse.redirect(new URL('/login?error=auth_error', request.url))
         )
