@@ -149,6 +149,9 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
   })
 
   if (!dbUser || dbUser.isDeleted) {
+    // Kill the Supabase session and clear auth cookies so the middleware
+    // stops treating this session as valid (prevents redirect loops).
+    await supabase.auth.signOut().catch(() => {})
     return null
   }
 
@@ -156,8 +159,8 @@ export async function getCurrentAppUser(): Promise<CurrentAppUser | null> {
   const normalizedRole: AppRole =
     dbUser.role === 'ADMIN'
       ? 'ADMIN'
-      : roles.includes(dbUser.role)
-        ? dbUser.role
+      : roles.includes(dbUser.role as DashboardRole)
+        ? (dbUser.role as DashboardRole)
         : roles[0] ?? null
 
   return {
