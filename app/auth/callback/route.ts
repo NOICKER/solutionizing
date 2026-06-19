@@ -67,10 +67,15 @@ export async function GET(request: Request) {
               email: userEmail,
               emailVerified: isEmailConfirmed,
             },
-            select: { role: true },
+            select: { id: true, email: true, role: true },
+          })
+          console.log('[auth:callback] Prisma upsert SUCCEEDED. DB User returned:', {
+            id: dbUser.id,
+            email: dbUser.email,
+            role: dbUser.role
           })
         } catch (upsertError: any) {
-          console.error('[auth:callback] Primary DB operation failed:', upsertError)
+          console.error('[auth:callback] Primary DB operation failed. Error name:', upsertError?.name, 'Code:', upsertError?.code, 'Message:', upsertError?.message)
           
           // Prisma P2002 means a Unique Constraint Violation. Since we upsert by ID, 
           // this guarantees the conflict is on the email address.
@@ -102,7 +107,9 @@ export async function GET(request: Request) {
     }
   } catch (error) {
     console.error('[auth:callback] Unexpected error in callback:', error)
-    // On any unexpected failure, fall through to redirect with cookies applied
+    return applySupabaseCookies(
+      NextResponse.redirect(new URL('/login?error=auth_failed', request.url))
+    )
   }
 
   console.log('[auth:callback] Redirecting to:', redirectPath)
