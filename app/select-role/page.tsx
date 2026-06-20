@@ -9,10 +9,17 @@ import {
 } from '@/components/solutionizing/ui'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
+import { createBrowserClient } from '@supabase/ssr'
 
 function SelectRoleContent() {
   const router = useRouter()
   const { user, refetch, applyRoleSelection } = useAuth()
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  )
   const [founderName, setFounderName] = useState('')
   const [testerName, setTesterName] = useState('')
   const [founderNameError, setFounderNameError] = useState('')
@@ -71,6 +78,8 @@ function SelectRoleContent() {
         },
       })
 
+      await supabase.auth.refreshSession()
+
       applyRoleSelection(role, displayName)
       void refetch()
       router.replace(getPostSelectionPath())
@@ -82,6 +91,8 @@ function SelectRoleContent() {
         if (resolvedRole === role) {
           applyRoleSelection(role, displayName)
         }
+
+        await supabase.auth.refreshSession()
 
         void refetch()
         router.replace(getPostSelectionPath())
@@ -147,19 +158,17 @@ function SelectRoleContent() {
             {/* Founder card */}
             <div
               onClick={() => setActiveRole('FOUNDER')}
-              className={`rounded-[16px] border-2 p-6 flex-1 cursor-none transition-all ${
-                founderIsActive
+              className={`rounded-[16px] border-2 p-6 flex-1 cursor-none transition-all ${founderIsActive
                   ? 'border-[var(--electric)] bg-[rgba(255,107,26,0.04)]'
                   : 'border-[var(--border)] bg-[var(--cream)] hover:border-[var(--electric)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)]'
-              }`}
+                }`}
             >
               <div className="mb-6 flex flex-col items-center text-center">
                 <div
-                  className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
-                    founderIsActive
+                  className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${founderIsActive
                       ? 'bg-[var(--electric-dim)] text-[var(--electric)]'
                       : 'bg-[var(--bg-light)] text-[var(--ink-soft)]'
-                  }`}
+                    }`}
                 >
                   <svg
                     className="h-8 w-8"
@@ -201,11 +210,10 @@ function SelectRoleContent() {
                   setActiveRole('FOUNDER')
                   void handleSelectRole('FOUNDER')
                 }}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold transition-all cursor-none disabled:opacity-50 ${
-                  founderIsActive
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold transition-all cursor-none disabled:opacity-50 ${founderIsActive
                     ? 'bg-[var(--electric)] text-[var(--cream)] hover:opacity-90'
                     : 'border-2 border-[var(--border-strong)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--electric)] hover:text-[var(--electric)]'
-                }`}
+                  }`}
               >
                 {submittingRole === 'FOUNDER' && isLoading ? (
                   <SpinnerIcon className="h-5 w-5" />
@@ -217,19 +225,17 @@ function SelectRoleContent() {
             {/* Tester card */}
             <div
               onClick={() => setActiveRole('TESTER')}
-              className={`rounded-[16px] border-2 p-6 flex-1 cursor-none transition-all ${
-                testerIsActive
+              className={`rounded-[16px] border-2 p-6 flex-1 cursor-none transition-all ${testerIsActive
                   ? 'border-[var(--electric)] bg-[rgba(255,107,26,0.04)]'
                   : 'border-[var(--border)] bg-[var(--cream)] hover:border-[var(--electric)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)]'
-              }`}
+                }`}
             >
               <div className="mb-6 flex flex-col items-center text-center">
                 <div
-                  className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${
-                    testerIsActive
+                  className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all ${testerIsActive
                       ? 'bg-[var(--electric-dim)] text-[var(--electric)]'
                       : 'bg-[var(--bg-light)] text-[var(--ink-soft)]'
-                  }`}
+                    }`}
                 >
                   <svg className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -265,11 +271,10 @@ function SelectRoleContent() {
                   setActiveRole('TESTER')
                   void handleSelectRole('TESTER')
                 }}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold transition-all cursor-none disabled:opacity-50 ${
-                  testerIsActive
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold transition-all cursor-none disabled:opacity-50 ${testerIsActive
                     ? 'bg-[var(--electric)] text-[var(--cream)] hover:opacity-90'
                     : 'border-2 border-[var(--border-strong)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--electric)] hover:text-[var(--electric)]'
-                }`}
+                  }`}
               >
                 {submittingRole === 'TESTER' && isLoading ? (
                   <SpinnerIcon className="h-5 w-5" />
