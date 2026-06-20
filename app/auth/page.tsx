@@ -347,256 +347,257 @@ function AuthForm() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 lg:ml-[45%] min-h-screen bg-[var(--bg)] flex items-center justify-center p-6 sm:p-10">
+      <div className="flex-1 lg:ml-[45%] min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center p-6 sm:p-10">
+        <a href="/" className="mb-3 self-start inline-flex items-center gap-1.5 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] font-[family-name:var(--font-dm-mono)] cursor-none transition-colors">
+          ← back to home
+        </a>
         <div className="w-full max-w-md rounded-[16px] border border-[var(--border)] bg-[var(--cream)] p-8 sm:p-10">
-        {signupSuccess ? (
-          <div className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(74,197,128,0.12)]">
-              <svg className="w-10 h-10 text-[#1e7a47]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          {signupSuccess ? (
+            <div className="text-center">
+              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(74,197,128,0.12)]">
+                <svg className="w-10 h-10 text-[#1e7a47]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="mb-4 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl">Check your inbox</h2>
+              <p className="mb-8 text-lg text-[var(--ink-soft)]">
+                Check your inbox — we sent you a verification link.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signin')
+                  setPendingMode('signin')
+                  setSignupSuccess(false)
+                  setPassword('')
+                }}
+                className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
+              >
+                ← Back to sign in
+              </button>
             </div>
-            <h2 className="mb-4 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl">Check your inbox</h2>
-            <p className="mb-8 text-lg text-[var(--ink-soft)]">
-              Check your inbox — we sent you a verification link.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('signin')
-                setPendingMode('signin')
-                setSignupSuccess(false)
-                setPassword('')
-              }}
-              className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
+          ) : (
+            <div
+              className={`transition-opacity duration-200 ${isModeContentVisible ? 'opacity-100' : 'opacity-0'
+                }`}
             >
-              ← Back to sign in
-            </button>
-          </div>
-        ) : (
-          <div
-            className={`transition-opacity duration-200 ${
-              isModeContentVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div className="mb-8 text-center">
-              <div
-                className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${
-                  mode === 'forgot'
+              <div className="mb-8 text-center">
+                <div
+                  className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${mode === 'forgot'
                     ? 'bg-[rgba(251,191,36,0.12)] text-[#92400e]'
                     : 'bg-[var(--electric)] text-[var(--cream)]'
-                }`}
-              >
-                {mode === 'forgot' ? (
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                ) : (
-                  <BrandMark className="w-9 h-9 text-[var(--cream)]" />
-                )}
-              </div>
-              <h1 className="mb-2 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl">
-                {mode === 'signup'
-                  ? 'Create account'
-                  : mode === 'forgot'
-                    ? 'Reset your password'
-                    : 'Sign in'}
-              </h1>
-              <p className="text-[var(--ink-soft)]">
-                {mode === 'signup'
-                  ? 'Create your account'
-                  : mode === 'forgot'
-                    ? "Enter your email and we'll send you a reset link"
-                    : 'Sign in to your account'}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)] cursor-none">
-                  EMAIL ADDRESS
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="user@example.com"
-                  className="w-full rounded-[8px] border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-[var(--ink)] placeholder:text-[var(--ink-soft)] focus:border-[var(--electric)] focus:outline-none focus:ring-1 focus:ring-[var(--electric-dim)] cursor-none"
-                />
-                {emailError ? (
-                  <p className="mt-1 text-sm text-[#c0392b]">
-                    {emailError}{' '}
-                    {mode === 'signup' && emailError.includes('exists') ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          requestModeChange('signin')
-                        }}
-                        className="text-[var(--electric)] hover:opacity-80 underline cursor-none"
-                      >
-                        Sign in instead?
-                      </button>
-                    ) : null}
-                  </p>
-                ) : null}
+                    }`}
+                >
+                  {mode === 'forgot' ? (
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  ) : (
+                    <BrandMark className="w-9 h-9 text-[var(--cream)]" />
+                  )}
+                </div>
+                <h1 className="mb-2 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl">
+                  {mode === 'signup'
+                    ? 'Create account'
+                    : mode === 'forgot'
+                      ? 'Reset your password'
+                      : 'Sign in'}
+                </h1>
+                <p className="text-[var(--ink-soft)]">
+                  {mode === 'signup'
+                    ? 'Create your account'
+                    : mode === 'forgot'
+                      ? "Enter your email and we'll send you a reset link"
+                      : 'Sign in to your account'}
+                </p>
               </div>
 
-              {mode !== 'forgot' ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <label className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)] cursor-none">PASSWORD</label>
-                    {mode === 'signin' ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          requestModeChange('forgot')
-                        }}
-                        className="text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.08em] text-[var(--electric)] hover:opacity-80 cursor-none"
-                      >
-                        Forgot password?
-                      </button>
-                    ) : null}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="••••••••"
-                      className="w-full rounded-[8px] border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-[var(--ink)] placeholder:text-[var(--ink-soft)] focus:border-[var(--electric)] focus:outline-none focus:ring-1 focus:ring-[var(--electric-dim)] cursor-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
-                    >
-                      <EyeIcon open={showPassword} />
-                    </button>
-                  </div>
-                  {mode === 'signup' ? (
-                    <p className="mt-2 text-xs text-[var(--ink-soft)]">Min 8 chars, 1 uppercase, 1 number</p>
-                  ) : null}
-                  {passwordError ? <p className="mt-1 text-sm text-[#c0392b]">{passwordError}</p> : null}
-                </div>
-              ) : null}
-
-              {mode === 'signin' ? (
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex cursor-none items-center gap-2 text-[var(--ink-soft)]">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(event) => setRememberMe(event.target.checked)}
-                      className="h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--bg)] text-[var(--electric)] focus:ring-[var(--electric-dim)] cursor-none"
-                    />
-                    Remember me
+                  <label className="mb-2 block text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)] cursor-none">
+                    EMAIL ADDRESS
                   </label>
-                </div>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 py-3.5 text-base rounded-[8px] font-bold bg-[var(--electric)] text-[var(--cream)] hover:opacity-90 cursor-none disabled:opacity-50 transition-opacity"
-              >
-                {isSubmitting ? <SpinnerIcon className="w-5 h-5" /> : null}
-                {isSubmitting ? submittingLabel : submitLabel}
-              </button>
-
-              {mode === 'signin' && formError ? (
-                <div className="rounded-[8px] border border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] px-4 py-3 text-sm text-[#c0392b]">
-                  <p>{formError}</p>
-                  {formErrorCode === 'ACCOUNT_SUSPENDED' ? (
-                    <p className="mt-2">
-                      If you believe this is a mistake, contact support at{' '}
-                      <a
-                        href={`mailto:${SUPPORT_EMAIL}`}
-                        className="font-semibold text-[var(--electric)] hover:opacity-80 cursor-none"
-                      >
-                        {SUPPORT_EMAIL}
-                      </a>
-                      .
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="user@example.com"
+                    className="w-full rounded-[8px] border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-[var(--ink)] placeholder:text-[var(--ink-soft)] focus:border-[var(--electric)] focus:outline-none focus:ring-1 focus:ring-[var(--electric-dim)] cursor-none"
+                  />
+                  {emailError ? (
+                    <p className="mt-1 text-sm text-[#c0392b]">
+                      {emailError}{' '}
+                      {mode === 'signup' && emailError.includes('exists') ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            requestModeChange('signin')
+                          }}
+                          className="text-[var(--electric)] hover:opacity-80 underline cursor-none"
+                        >
+                          Sign in instead?
+                        </button>
+                      ) : null}
                     </p>
                   ) : null}
                 </div>
-              ) : null}
 
-              {mode !== 'signin' && formError ? (
-                <p className="text-sm text-[#c0392b] mt-2">{formError}</p>
-              ) : null}
-
-              {mode !== 'forgot' ? (
-                <>
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[var(--border)]" />
+                {mode !== 'forgot' ? (
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)] cursor-none">PASSWORD</label>
+                      {mode === 'signin' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            requestModeChange('forgot')
+                          }}
+                          className="text-sm font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.08em] text-[var(--electric)] hover:opacity-80 cursor-none"
+                        >
+                          Forgot password?
+                        </button>
+                      ) : null}
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="bg-[var(--cream)] px-4 text-[var(--ink-soft)]">OR</span>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="••••••••"
+                        className="w-full rounded-[8px] border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-[var(--ink)] placeholder:text-[var(--ink-soft)] focus:border-[var(--electric)] focus:outline-none focus:ring-1 focus:ring-[var(--electric-dim)] cursor-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
+                      >
+                        <EyeIcon open={showPassword} />
+                      </button>
                     </div>
+                    {mode === 'signup' ? (
+                      <p className="mt-2 text-xs text-[var(--ink-soft)]">Min 8 chars, 1 uppercase, 1 number</p>
+                    ) : null}
+                    {passwordError ? <p className="mt-1 text-sm text-[#c0392b]">{passwordError}</p> : null}
                   </div>
+                ) : null}
 
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    disabled={isGoogleLoading}
-                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--bg-light)] cursor-none disabled:opacity-60"
-                  >
-                    {isGoogleLoading ? (
-                      <SpinnerIcon className="h-5 w-5" />
-                    ) : (
-                      <GoogleIcon className="h-5 w-5" />
-                    )}
-                    Continue with Google
-                  </button>
+                {mode === 'signin' ? (
+                  <div className="flex items-center justify-between text-sm">
+                    <label className="flex cursor-none items-center gap-2 text-[var(--ink-soft)]">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(event) => setRememberMe(event.target.checked)}
+                        className="h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--bg)] text-[var(--electric)] focus:ring-[var(--electric-dim)] cursor-none"
+                      />
+                      Remember me
+                    </label>
+                  </div>
+                ) : null}
 
-                  <p className="text-center text-sm text-[var(--ink-soft)] mt-4">
-                    {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex w-full items-center justify-center gap-2 py-3.5 text-base rounded-[8px] font-bold bg-[var(--electric)] text-[var(--cream)] hover:opacity-90 cursor-none disabled:opacity-50 transition-opacity"
+                >
+                  {isSubmitting ? <SpinnerIcon className="w-5 h-5" /> : null}
+                  {isSubmitting ? submittingLabel : submitLabel}
+                </button>
+
+                {mode === 'signin' && formError ? (
+                  <div className="rounded-[8px] border border-[rgba(192,57,43,0.18)] bg-[rgba(192,57,43,0.04)] px-4 py-3 text-sm text-[#c0392b]">
+                    <p>{formError}</p>
+                    {formErrorCode === 'ACCOUNT_SUSPENDED' ? (
+                      <p className="mt-2">
+                        If you believe this is a mistake, contact support at{' '}
+                        <a
+                          href={`mailto:${SUPPORT_EMAIL}`}
+                          className="font-semibold text-[var(--electric)] hover:opacity-80 cursor-none"
+                        >
+                          {SUPPORT_EMAIL}
+                        </a>
+                        .
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {mode !== 'signin' && formError ? (
+                  <p className="text-sm text-[#c0392b] mt-2">{formError}</p>
+                ) : null}
+
+                {mode !== 'forgot' ? (
+                  <>
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-[var(--border)]" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-[var(--cream)] px-4 text-[var(--ink-soft)]">OR</span>
+                      </div>
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => {
-                        requestModeChange(mode === 'signup' ? 'signin' : 'signup')
-                      }}
-                      className="font-semibold text-[var(--electric)] hover:opacity-80 hover:underline cursor-none"
+                      onClick={handleGoogleSignIn}
+                      disabled={isGoogleLoading}
+                      className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-strong)] bg-[var(--bg)] px-4 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--bg-light)] cursor-none disabled:opacity-60"
                     >
-                      {mode === 'signup' ? 'Sign in' : 'Sign up'}
+                      {isGoogleLoading ? (
+                        <SpinnerIcon className="h-5 w-5" />
+                      ) : (
+                        <GoogleIcon className="h-5 w-5" />
+                      )}
+                      Continue with Google
                     </button>
-                  </p>
-                </>
-              ) : null}
 
-              {mode === 'forgot' && forgotSuccess ? (
-                <div className="rounded-[8px] border border-[rgba(56,189,248,0.18)] bg-[rgba(56,189,248,0.06)] p-4">
-                  <p className="text-sm text-[#0369a1]">
-                    <strong>Security notice:</strong> If that email exists, a reset link is on its way.
+                    <p className="text-center text-sm text-[var(--ink-soft)] mt-4">
+                      {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          requestModeChange(mode === 'signup' ? 'signin' : 'signup')
+                        }}
+                        className="font-semibold text-[var(--electric)] hover:opacity-80 hover:underline cursor-none"
+                      >
+                        {mode === 'signup' ? 'Sign in' : 'Sign up'}
+                      </button>
+                    </p>
+                  </>
+                ) : null}
+
+                {mode === 'forgot' && forgotSuccess ? (
+                  <div className="rounded-[8px] border border-[rgba(56,189,248,0.18)] bg-[rgba(56,189,248,0.06)] p-4">
+                    <p className="text-sm text-[#0369a1]">
+                      <strong>Security notice:</strong> If that email exists, a reset link is on its way.
+                    </p>
+                  </div>
+                ) : null}
+              </form>
+
+              {mode === 'forgot' ? (
+                <div className="mt-8 border-t border-[var(--border)] pt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      requestModeChange('signin')
+                    }}
+                    className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
+                  >
+                    ← Back to sign in
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-8 border-t border-[var(--border)] pt-6 text-center">
+                  <p className="text-xs text-[var(--ink-soft)] flex items-center justify-center gap-2">
+                    <span aria-hidden="true">🔒</span>
+                    Secure, encrypted authentication
                   </p>
                 </div>
-              ) : null}
-            </form>
-
-            {mode === 'forgot' ? (
-              <div className="mt-8 border-t border-[var(--border)] pt-6 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    requestModeChange('signin')
-                  }}
-                  className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
-                >
-                  ← Back to sign in
-                </button>
-              </div>
-            ) : (
-              <div className="mt-8 border-t border-[var(--border)] pt-6 text-center">
-                <p className="text-xs text-[var(--ink-soft)] flex items-center justify-center gap-2">
-                  <span aria-hidden="true">🔒</span>
-                  Secure, encrypted authentication
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   )
