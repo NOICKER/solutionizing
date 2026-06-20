@@ -61,7 +61,7 @@ function WithdrawalModal({
             <p className="mt-1 font-[family-name:var(--font-dm-mono)] text-[0.72rem] uppercase tracking-widest text-[var(--ink-soft)]">CONVERT COINS TO RUPEES</p>
           </div>
           <button onClick={onClose} className="p-2 text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
           </button>
         </div>
 
@@ -103,9 +103,8 @@ function WithdrawalModal({
               onClick={() => onQuickPick(val)}
               disabled={i === 2 && !canUseAllAmount}
               title={i === 2 && !canUseAllAmount ? 'Minimum withdrawal is 5,000 coins' : undefined}
-              className={`cursor-none rounded-lg border border-[var(--border)] bg-[var(--bg-light)] p-2.5 font-[family-name:var(--font-dm-mono)] text-[0.78rem] text-[var(--ink)] transition-colors hover:border-[var(--electric)] ${
-                i === 2 && !canUseAllAmount ? 'opacity-50' : 'opacity-100'
-              }`}
+              className={`cursor-none rounded-lg border border-[var(--border)] bg-[var(--bg-light)] p-2.5 font-[family-name:var(--font-dm-mono)] text-[0.78rem] text-[var(--ink)] transition-colors hover:border-[var(--electric)] ${i === 2 && !canUseAllAmount ? 'opacity-50' : 'opacity-100'
+                }`}
             >
               {i === 2 ? 'All' : formatCoins(val)}
             </button>
@@ -116,7 +115,7 @@ function WithdrawalModal({
         ) : null}
 
         <div className="mb-5 flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-light)] px-4 py-3 text-[0.8rem] text-[var(--ink-soft)]">
-          <svg className="mt-0.5 h-4 w-4 shrink-0 text-[var(--electric)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <svg className="mt-0.5 h-4 w-4 shrink-0 text-[var(--electric)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
           <div>Withdrawals process within 3-5 business days. You&apos;ll get a confirmation email once complete.</div>
         </div>
 
@@ -126,9 +125,8 @@ function WithdrawalModal({
           type="button"
           disabled={isSubmitting}
           onClick={onSubmit}
-          className={`cursor-none flex w-full items-center justify-center gap-2 rounded-full bg-[var(--electric)] p-4 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 ${
-            isSubmitting ? 'opacity-70' : 'opacity-100'
-          }`}
+          className={`cursor-none flex w-full items-center justify-center gap-2 rounded-full bg-[var(--electric)] p-4 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 ${isSubmitting ? 'opacity-70' : 'opacity-100'
+            }`}
         >
           {isSubmitting ? <SpinnerIcon className="h-4 w-4" /> : null}
           request payout →
@@ -344,7 +342,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     try {
       await deleteAccount()
       toast.success('Your account has been deleted.')
-      await signOut()
+      window.location.href = '/auth'
     } catch (error) {
       setDeleteError(
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
@@ -386,11 +384,10 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveTab(item.id)}
-                className={`cursor-none flex w-full items-center gap-3 border-l-2 px-6 py-3 text-left font-['Satoshi'] text-[0.9rem] font-medium transition-all ${
-                  isActive
+                className={`cursor-none flex w-full items-center gap-3 border-l-2 px-6 py-3 text-left font-['Satoshi'] text-[0.9rem] font-medium transition-all ${isActive
                     ? 'border-[var(--electric)] bg-[rgba(250,247,242,0.06)] text-[var(--cream)]'
                     : 'border-transparent text-[rgba(250,247,242,0.5)] hover:bg-[rgba(250,247,242,0.03)] hover:text-[rgba(250,247,242,0.7)]'
-                }`}
+                  }`}
               >
                 <Icon className="h-4 w-4 shrink-0" strokeWidth={1.8} />
                 {item.label}
@@ -464,9 +461,8 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
           const Icon = item.icon
           const isActive = activeTab === item.id
           return (
-            <button key={item.id} type="button" onClick={() => setActiveTab(item.id)} className={`flex flex-1 flex-col items-center justify-center p-2 transition-colors ${
-              isActive ? 'text-[var(--electric)]' : 'text-[rgba(250,247,242,0.4)]'
-            }`}>
+            <button key={item.id} type="button" onClick={() => setActiveTab(item.id)} className={`flex flex-1 flex-col items-center justify-center p-2 transition-colors ${isActive ? 'text-[var(--electric)]' : 'text-[rgba(250,247,242,0.4)]'
+              }`}>
               <Icon className="h-5 w-5" strokeWidth={2} />
             </button>
           )

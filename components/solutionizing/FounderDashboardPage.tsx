@@ -319,8 +319,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
 
       if (response.success) {
         toast.success('Your account has been deleted.')
-        await signOut()
-        router.push('/')
+        window.location.href = '/auth'
       } else {
         setDeleteError(response.message || 'Failed to delete account')
       }
@@ -612,9 +611,9 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
           <div className="flex flex-col">
             <h1 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.6rem', color: 'var(--ink)', fontWeight: 400 }}>
               {activeTab === 'dashboard' ? `good to see you, ${userName.split(' ')[0]}.` :
-               activeTab === 'missions' ? 'your missions.' :
-               activeTab === 'settings' ? 'account settings.' :
-               'how can we help?'}
+                activeTab === 'missions' ? 'your missions.' :
+                  activeTab === 'settings' ? 'account settings.' :
+                    'how can we help?'}
             </h1>
             <div className="w-10 h-[3px] rounded-full bg-[var(--electric)] mt-1.5" />
           </div>
