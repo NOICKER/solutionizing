@@ -141,6 +141,9 @@ export async function POST(request: Request) {
           },
         })
       }
+    }, {
+      maxWait: 10000,
+      timeout: 15000,
     })
 
     await syncRoleMetadata(
