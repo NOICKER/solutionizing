@@ -14,6 +14,17 @@ export async function GET(request: Request) {
   
   await supabase.auth.signOut().catch(() => {})
   
-  const response = NextResponse.redirect(new URL(next, request.url))
-  return applySupabaseCookies(response)
+  const response = applySupabaseCookies(NextResponse.redirect(new URL(next, request.url)))
+  
+  // Force clear cookies because signOut() might fail if the user was deleted,
+  // leaving stale auth cookies behind and causing a redirect loop.
+  request.headers.get('cookie')?.split(';').forEach((cookie) => {
+    const [name] = cookie.split('=')
+    const trimmedName = name.trim()
+    if (trimmedName.includes('-auth-token')) {
+      response.cookies.set(trimmedName, '', { maxAge: 0, path: '/' })
+    }
+  })
+
+  return response
 }
