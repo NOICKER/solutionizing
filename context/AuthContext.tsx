@@ -44,6 +44,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   signOut: () => Promise<void>
+  hardSignOut: () => void
   refetch: () => Promise<User | null>
   applyRoleSelection: (role: Exclude<UserRole, 'ADMIN' | null>, displayName: string) => void
 }
@@ -327,16 +328,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [applyUser, router])
 
+  const hardSignOut = useCallback(() => {
+    writeCachedAuthUser(null)
+    window.sessionStorage.clear()
+    window.location.href = '/auth/logout?next=/auth'
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isAuthenticated,
       isLoading,
       signOut,
+      hardSignOut,
       refetch,
       applyRoleSelection,
     }),
-    [applyRoleSelection, isAuthenticated, isLoading, refetch, signOut, user]
+    [applyRoleSelection, hardSignOut, isAuthenticated, isLoading, refetch, signOut, user]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

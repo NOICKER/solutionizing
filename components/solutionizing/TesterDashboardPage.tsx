@@ -137,7 +137,7 @@ function WithdrawalModal({
 }
 function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
   const router = useRouter()
-  const { user, refetch, signOut } = useAuth()
+  const { user, refetch, signOut, hardSignOut } = useAuth()
   const hasInitialDashboardData = Boolean(initialData)
   const [stats, setStats] = useState<ApiTesterStats | null>(initialData?.stats ?? null)
   const [assignments, setAssignments] = useState<ApiTesterAssignmentSummary[]>(initialData?.assignments ?? [])
@@ -342,7 +342,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     try {
       await deleteAccount()
       toast.success('Your account has been deleted.')
-      window.location.href = '/auth/logout?next=/auth'
+      hardSignOut()
     } catch (error) {
       setDeleteError(
         isApiClientError(error) && error.code === 'NETWORK_ERROR'

@@ -192,7 +192,7 @@ const dashboardLoadingMessages = [
 
 function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
   const router = useRouter()
-  const { user, refetch, signOut } = useAuth()
+  const { user, refetch, signOut, hardSignOut } = useAuth()
   const hasInitialDashboardData = Boolean(initialData)
   const [missions, setMissions] = useState<ApiMission[]>(initialData?.missions ?? [])
   const [coinBalance, setCoinBalance] = useState(initialData?.coinBalance ?? user?.founderProfile?.coinBalance ?? 0)
@@ -319,7 +319,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
 
       if (response.success) {
         toast.success('Your account has been deleted.')
-        window.location.href = '/auth/logout?next=/auth'
+        hardSignOut()
       } else {
         setDeleteError(response.message || 'Failed to delete account')
       }
