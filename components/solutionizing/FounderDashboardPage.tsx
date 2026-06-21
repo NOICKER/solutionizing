@@ -319,7 +319,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
 
       if (response.success) {
         toast.success('Your account has been deleted.')
-        window.location.href = '/auth'
+        window.location.href = '/auth/logout?next=/auth'
       } else {
         setDeleteError(response.message || 'Failed to delete account')
       }

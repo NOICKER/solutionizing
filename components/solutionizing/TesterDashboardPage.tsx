@@ -342,7 +342,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     try {
       await deleteAccount()
       toast.success('Your account has been deleted.')
-      window.location.href = '/auth'
+      window.location.href = '/auth/logout?next=/auth'
     } catch (error) {
       setDeleteError(
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
@@ -385,8 +385,8 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
                 type="button"
                 onClick={() => setActiveTab(item.id)}
                 className={`cursor-none flex w-full items-center gap-3 border-l-2 px-6 py-3 text-left font-['Satoshi'] text-[0.9rem] font-medium transition-all ${isActive
-                    ? 'border-[var(--electric)] bg-[rgba(250,247,242,0.06)] text-[var(--cream)]'
-                    : 'border-transparent text-[rgba(250,247,242,0.5)] hover:bg-[rgba(250,247,242,0.03)] hover:text-[rgba(250,247,242,0.7)]'
+                  ? 'border-[var(--electric)] bg-[rgba(250,247,242,0.06)] text-[var(--cream)]'
+                  : 'border-transparent text-[rgba(250,247,242,0.5)] hover:bg-[rgba(250,247,242,0.03)] hover:text-[rgba(250,247,242,0.7)]'
                   }`}
               >
                 <Icon className="h-4 w-4 shrink-0" strokeWidth={1.8} />
