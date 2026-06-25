@@ -1884,5 +1884,5 @@
 
    #hero-title-1,
    #hero-title-2 {
-       font-family: 'Fraunces', serif;
+       font-family: monospace !important;
    }
