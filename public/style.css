@@ -25,7 +25,7 @@
    body {
        background-color: var(--bg);
        color: var(--ink);
-       font-family: 'Satoshi', sans-serif;
+       font-family: 'Fraunces', sans-serif;
        cursor: none !important;
        overflow-x: hidden;
        -webkit-font-smoothing: antialiased;
