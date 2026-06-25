@@ -1,3 +1,5 @@
+   @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@100..900&display=swap');
+
    :root {
        --bg: #e8e0d4;
        --bg-light: #f0e8dc;
@@ -1878,4 +1880,9 @@
        .tester-whisper {
            display: none;
        }
+   }
+
+   #hero-title-1,
+   #hero-title-2 {
+       font-family: 'Fraunces', serif;
    }
