@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         return ok({ message: 'Already captured' })
       }
 
-      // If we reach here, the frontend didn't verify it in time. We must create the mission!
+      // If we reach here, the frontend didn't verify it in time. We must create the mission safely!
       const missionPayload = payment.missionPayload as any
       const testersRequired = missionPayload?.testersRequired
       const missionData = missionPayload?.missionData
@@ -63,8 +63,25 @@ export async function POST(request: NextRequest) {
         return serverError()
       }
 
-      const [mission, updatedPayment] = await prisma.$transaction([
-        prisma.mission.create({
+      // Process in an interactive transaction to prevent race conditions
+      const result = await prisma.$transaction(async (tx) => {
+        // Try to mark the payment as captured only if it's still "created"
+        const updateResult = await tx.payment.updateMany({
+          where: { id: payment.id, status: 'created' },
+          data: {
+            status: 'captured',
+            razorpayPaymentId,
+          },
+        })
+
+        if (updateResult.count === 0) {
+          // Another request (e.g., synchronous verify) beat us to it
+          const currentPayment = await tx.payment.findUnique({ where: { id: payment.id } })
+          return { success: true, missionId: currentPayment?.missionId, alreadyCaptured: true }
+        }
+
+        // We won the race! Create the mission safely.
+        const mission = await tx.mission.create({
           data: {
             founderId: payment.founderId,
             title: missionData.title.trim(),
@@ -96,22 +113,26 @@ export async function POST(request: NextRequest) {
               })),
             },
           },
-        }),
-        prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: 'captured',
-            razorpayPaymentId,
-          },
-        }),
-      ])
+        })
 
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: { missionId: mission.id },
+        // Link the mission to the payment
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: { missionId: mission.id },
+        })
+
+        return { success: true, missionId: mission.id, alreadyCaptured: false, mission }
       })
 
-      console.log(`Webhook: Successfully created mission ${mission.id} from payment ${payment.id}`)
+      if (result.alreadyCaptured) {
+        console.log(`Webhook: Payment ${razorpayOrderId} already captured by concurrent request.`)
+        return ok({ message: 'Already captured' })
+      }
+
+      if (result.mission) {
+        console.log(`Webhook: Successfully created mission ${result.mission.id} from payment ${payment.id}`)
+      }
+
     } else if (eventType === 'payment.failed') {
       const paymentEntity = payload.payment.entity
       const razorpayOrderId = paymentEntity.order_id

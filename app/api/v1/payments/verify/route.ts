@@ -75,9 +75,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Payment verified — create mission with paidAt timestamp
-    // Payment verified — process in a transaction
-    const [mission, updatedPayment] = await prisma.$transaction([
-      prisma.mission.create({
+    // Payment verified — process in an interactive transaction to prevent race conditions
+    const result = await prisma.$transaction(async (tx) => {
+      // Try to mark the payment as captured only if it's still "created"
+      const updateResult = await tx.payment.updateMany({
+        where: { id: payment.id, status: 'created' },
+        data: {
+          status: 'captured',
+          razorpayPaymentId: razorpay_payment_id,
+        },
+      })
+
+      if (updateResult.count === 0) {
+        // Another request (e.g., webhook) beat us to it
+        const currentPayment = await tx.payment.findUnique({ where: { id: payment.id } })
+        return { success: true, missionId: currentPayment?.missionId, alreadyCaptured: true }
+      }
+
+      // We won the race! Create the mission safely.
+      const mission = await tx.mission.create({
         data: {
           founderId: founderProfile.id,
           title: missionData.title.trim(),
@@ -109,25 +125,22 @@ export async function POST(request: NextRequest) {
             })),
           },
         },
-      }),
-      prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: 'captured',
-          razorpayPaymentId: razorpay_payment_id,
-        },
-      }),
-    ])
+      })
 
-    // Link the mission to the payment
-    await prisma.payment.update({
-      where: { id: payment.id },
-      data: { missionId: mission.id },
+      // Link the mission to the payment
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: { missionId: mission.id },
+      })
+
+      return { success: true, missionId: mission.id, alreadyCaptured: false, mission }
     })
+
+
 
     return ok({
       success: true,
-      missionId: mission.id,
+      missionId: result.missionId,
     })
   } catch (error) {
     // requireRole throws NextResponse on auth failure — rethrow it
