@@ -1450,15 +1450,15 @@ function MissionWizardContent() {
   <input
   type="range"
   min={1}
-  max={3}
+  max={4}
   step={1}
-  value={state.testersRequired > 3 ? 1 : state.testersRequired}
+  value={state.testersRequired > 4 ? 1 : state.testersRequired}
   onChange={(event) => updateState((current) => ({ ...current, testersRequired: Number(event.target.value) }))}
   className="w-full accent-[var(--electric)] cursor-none"
   />
   <div className="mt-4 text-center">
-  <div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] ">{state.testersRequired > 3 ? 1 : state.testersRequired} testers</div>
-  <p className="mt-1 text-sm text-[var(--ink-soft)] ">Only 3 tester slots available right now — more coming soon.</p>
+  <div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] ">{state.testersRequired > 4 ? 1 : state.testersRequired} testers</div>
+  <p className="mt-1 text-sm text-[var(--ink-soft)] ">Only 4 tester slots available right now — more coming soon.</p>
   </div>
   </div>
   </div>
