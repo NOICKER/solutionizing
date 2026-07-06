@@ -11,6 +11,7 @@ import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { RequireAuth } from '@/components/RequireAuth'
 import { ApiMissionDetail, WizardAsset, WizardQuestion } from '@/types/api'
 import { SpinnerIcon, StarRow, WizardStepSkeleton, formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { INTERNAL_TEST_ALLOWLIST } from '@/lib/internal-test-allowlist'
 
 type Difficulty = 'EASY' | 'MEDIUM' | 'HARD'
 
@@ -981,6 +982,44 @@ function MissionWizardContent() {
     setSubmitError('')
 
     try {
+      // Temporary internal testing bypass gated by an environment variable.
+      // MUST BE REMOVED before any public or paying founders use the platform.
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
+
+      if (userId && INTERNAL_TEST_ALLOWLIST.includes(userId)) {
+        const bypassRes = await fetch('/api/v1/test-bypass/create-mission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            testersRequired: payload.testersRequired,
+            missionData: payload,
+          }),
+        })
+
+        if (bypassRes.ok) {
+          if (!isEditMode) {
+            posthog.capture('mission_created', {
+              difficulty: payload.difficulty,
+              testersRequired: payload.testersRequired,
+              timeoutDuration: payload.timeoutDuration,
+              isBypass: true,
+            })
+          }
+          clearLocalDraft()
+          dirtyRef.current = false
+          toast.success('Test mission submitted for review (Bypass Active).')
+          router.push('/dashboard/founder')
+          return
+        }
+
+        if (bypassRes.status === 403) {
+          setSubmitError('Bypass route forbidden. Is ENABLE_FOUNDER_TEST_BYPASS set to true?')
+          setPendingAction(null)
+          return
+        }
+      }
+
       const isRazorpayLoaded = await loadRazorpay()
       if (!isRazorpayLoaded) {
         setSubmitError('Failed to load payment gateway. Please check your internet connection.')
