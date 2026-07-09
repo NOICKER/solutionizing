@@ -51,6 +51,7 @@ export default function LandingPage() {
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
     
     body {
       background-color: var(--bg);
@@ -1911,7 +1912,7 @@ export default function LandingPage() {
   </div>
 
   <nav>
-    <a href="#" className="nav-logo">
+    <a href="#hero" className="nav-logo">
       <svg viewBox="0 0 28 28" fill="none" strokeWidth="2">
         <circle cx="14" cy="14" r="12" />
         <circle cx="14" cy="14" r="6" />
@@ -1921,9 +1922,9 @@ export default function LandingPage() {
       solutionizing
     </a>
     <div className="nav-center" id="nav-center">
-      <a href="#">Founders ▾</a>
-      <a href="#">Testers ▾</a>
-      <a href="#">Pricing</a>
+      <a href="#problem">Founders ▾</a>
+      <a href="#tester-section">Testers ▾</a>
+      <a href="#pricing">Pricing</a>
       <div className="nav-indicator" id="nav-indicator"></div>
     </div>
     <div className="nav-right">
@@ -1933,7 +1934,7 @@ export default function LandingPage() {
     <div className="hamburger">☰</div>
   </nav>
 
-  <section className="hero">
+  <section className="hero" id="hero">
     <div className="hero-tag anim-fade-up h-delay-0" id="hero-tag" data-original="● USABILITY INTELLIGENCE">● USABILITY INTELLIGENCE</div>
     <h1>
       <span className="hero-line anim-clip h-delay-1" id="hero-title-1" data-original="find out exactly">find out exactly</span>
@@ -1958,7 +1959,7 @@ export default function LandingPage() {
           </svg>
         </div>
       </div>
-      <a href="#" className="btn-secondary">see how it works</a>
+      <a href="#how-it-works" className="btn-secondary">see how it works</a>
     </div>
     <div className="hero-stats anim-fade-up h-delay-5">
       avg. turnaround: 48hrs  ·  min. 3 testers  ·  AI report included  ·  UPI payouts
@@ -1988,7 +1989,7 @@ export default function LandingPage() {
     </div>
   </div>
 
-  <section className="problem-section">
+  <section className="problem-section" id="problem">
     <div className="section-label anim-fade-up">THE SIGNAL PROBLEM</div>
     <h2 className="section-title anim-clip"><span className="hero-line">traditional feedback</span><span className="hero-line">is noise.</span></h2>
     
@@ -2014,7 +2015,7 @@ export default function LandingPage() {
     </div>
   </section>
 
-  <section className="how-it-works">
+  <section className="how-it-works" id="how-it-works">
     <div className="section-label anim-fade-up">THE MECHANISM</div>
     <h2 className="section-title anim-clip"><span className="hero-line">distilling noise</span><span className="hero-line">into reports.</span></h2>
     
@@ -2082,7 +2083,7 @@ export default function LandingPage() {
     </div>
   </section>
 
-  <section className="proof-section">
+  <section className="proof-section" id="proof">
     <div className="section-label anim-fade-up">REAL SIGNAL OUTPUT</div>
     <h2 className="section-title anim-clip"><span className="hero-line">see what founders</span><span className="hero-line">actually receive.</span></h2>
     
@@ -2169,7 +2170,7 @@ export default function LandingPage() {
     </div>
   </section>
 
-  <section className="final-cta">
+  <section className="final-cta" id="pricing">
     <h2 className="anim-fade-up" style={{ fontFamily: "'Fraunces', serif", fontStyle: "italic", fontSize: "clamp(2.5rem, 5vw, 4rem)", color: "var(--cream)", marginBottom: "0.5rem", lineHeight: 1.15 }}>see your product&apos;s<br />first diagnosis.</h2>
     <p className="anim-fade-up delay-1" style={{ fontFamily: "'Satoshi', sans-serif", fontSize: "1rem", color: "rgba(250,247,242,0.5)", marginTop: "0.75rem", marginBottom: "2rem" }}>takes 30 seconds. no signup needed.</p>
     
@@ -2255,18 +2256,18 @@ export default function LandingPage() {
       <div className="footer-col">
         <h4>Product</h4>
         <ul>
-          <li><a href="#">Founders</a></li>
-          <li><a href="#">Testers</a></li>
-          <li><a href="#">Pricing</a></li>
-          <li><a href="#">Case Studies</a></li>
+          <li><a href="#problem">Founders</a></li>
+          <li><a href="#tester-section">Testers</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#proof">Case Studies</a></li>
         </ul>
       </div>
       <div className="footer-col">
         <h4>Company</h4>
         <ul>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Terms</a></li>
+          <li><a href="#hero">About</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
         </ul>
       </div>
     </div>
