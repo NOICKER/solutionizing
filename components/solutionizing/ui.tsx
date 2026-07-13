@@ -373,6 +373,7 @@ export function ConfirmationDialog({
   isLoading,
   errorMessage,
   cancelLabel = 'CANCEL',
+  requireTypeToConfirm,
   children,
 }: {
   title: string
@@ -384,12 +385,28 @@ export function ConfirmationDialog({
   isLoading?: boolean
   errorMessage?: string
   cancelLabel?: string
+  requireTypeToConfirm?: string
   children?: ReactNode
 }) {
-  const confirmClass =
-    confirmStyle === 'danger'
-      ? 'bg-red-600 text-[var(--cream)]'
-      : 'bg-[var(--electric)] text-[var(--cream)]'
+  const [step, setStep] = useState<1 | 2>(1)
+  const [typedText, setTypedText] = useState('')
+
+  const isDanger = confirmStyle === 'danger'
+  const confirmClass = isDanger
+    ? 'bg-red-600 text-[var(--cream)]'
+    : 'bg-[var(--electric)] text-[var(--cream)]'
+
+  const handlePrimaryClick = () => {
+    if (requireTypeToConfirm && step === 1) {
+      setStep(2)
+      return
+    }
+    onConfirm()
+  }
+
+  const isConfirmDisabled = Boolean(
+    isLoading || (step === 2 && requireTypeToConfirm && typedText !== requireTypeToConfirm)
+  )
 
   return (
     <ModalShell onClose={onCancel}>
@@ -400,29 +417,47 @@ export function ConfirmationDialog({
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="mb-2 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">{title}</h2>
-          <p className="text-[var(--ink-soft)]">{body}</p>
+          {step === 1 ? (
+            <>
+              <h2 className="mb-2 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">{title}</h2>
+              <p className="text-[var(--ink-soft)]">{body}</p>
+            </>
+          ) : (
+            <>
+              <h2 className="mb-2 text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)]">Are you sure?</h2>
+              <p className="text-[var(--ink-soft)] mb-4">This cannot be undone. Type <strong>{requireTypeToConfirm}</strong> to confirm.</p>
+              <input 
+                type="text" 
+                className={textFieldClass}
+                placeholder={requireTypeToConfirm}
+                value={typedText}
+                onChange={(e) => setTypedText(e.target.value)}
+                autoFocus
+                style={{ textAlign: 'center' }}
+              />
+            </>
+          )}
         </div>
-        {children ? <div className="mb-4">{children}</div> : null}
-        {errorMessage ? <p className="mb-4 text-sm text-red-400">{errorMessage}</p> : null}
+        {children && step === 1 ? <div className="mb-4">{children}</div> : null}
+        {errorMessage ? <p className="mb-4 text-sm text-red-400 text-center">{errorMessage}</p> : null}
         <div className="flex items-center gap-3">
           <button className="flex-1 rounded-[2rem] border border-[var(--border)] bg-[var(--bg-light)] py-3.5 font-bold text-[var(--ink)] transition-all hover:bg-[var(--cream)] cursor-none" onClick={onCancel}>
             {cancelLabel}
           </button>
           <button
             className={`flex flex-1 items-center justify-center gap-2 rounded-full py-3.5 font-bold transition-all hover:shadow-[0_8px_24px_var(--electric-dim)] disabled:pointer-events-none disabled:opacity-70 cursor-none ${confirmClass}`}
-            onClick={onConfirm}
-            disabled={isLoading}
+            onClick={handlePrimaryClick}
+            disabled={isConfirmDisabled}
           >
             {isLoading ? <SpinnerIcon /> : null}
-            {confirmLabel}
+            {step === 2 ? 'CONFIRM' : confirmLabel}
           </button>
         </div>
       </div>
     </ModalShell>
   )
 }
- 
+
 export function StarRow({
   value,
   onChange,

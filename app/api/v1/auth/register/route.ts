@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error('[register] Supabase error:', error)
+      console.error('[register][auth.signUp] Supabase error:', error)
       if (error.status === 429 || error.message.toLowerCase().includes('rate limit')) {
         return apiError(
           'Too many sign up attempts. Please wait a few minutes and try again.',
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       })
 
       if (signInError) {
-        console.warn('[register] Auto sign-in after signup failed:', signInError.message)
+        console.error('[register][auth.signInWithPassword] Auto sign-in after signup failed:', { error: signInError, email: body.email })
       } else {
         session = signInData.session
       }
@@ -67,43 +67,54 @@ export async function POST(request: Request) {
     if (data?.user) {
       // Sync initial role to app_metadata
       try {
+        if (!supabaseAdmin || !supabaseAdmin.auth || !supabaseAdmin.auth.admin) {
+          throw new Error('supabaseAdmin is not fully initialized');
+        }
         await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
           app_metadata: { role: null },
         })
       } catch (error) {
-        console.error('[register] Failed to sync Supabase metadata:', error)
+        console.error('[register][supabaseAdmin.updateUserById] Failed to sync Supabase metadata:', error)
+      }
+
+      if (!data.user.email) {
+        const noEmailErr = new Error('Supabase returned user without email');
+        console.error('[register][Validation] Critical data missing:', noEmailErr, { user: data.user });
+        throw noEmailErr;
       }
 
       let dbUser;
       try {
         dbUser = await prisma.user.upsert({
-          where: { email: data.user.email! },
+          where: { email: data.user.email },
           update: {
             emailVerified: !!data.user.email_confirmed_at,
           },
           create: {
             id: data.user.id,
-            email: data.user.email!,
+            email: data.user.email,
             emailVerified: !!data.user.email_confirmed_at,
           },
         })
       } catch (err) {
-        console.error('[register] Primary DB operation failed, retrying:', err)
+        console.error('[register][prisma.user.upsert] Primary DB operation failed, retrying:', err, { userId: data.user.id, email: data.user.email })
         try {
           dbUser = await prisma.user.upsert({
-            where: { email: data.user.email! },
+            where: { email: data.user.email },
             update: {
               emailVerified: !!data.user.email_confirmed_at,
             },
             create: {
               id: data.user.id,
-              email: data.user.email!,
+              email: data.user.email,
               emailVerified: !!data.user.email_confirmed_at,
             },
           })
         } catch (retryErr) {
-          console.error('[register] Retry failed:', retryErr)
-          await supabase.auth.signOut().catch(() => {})
+          console.error('[register][prisma.user.upsert] Retry failed:', retryErr, { userId: data.user.id, email: data.user.email })
+          await supabase.auth.signOut().catch((signOutErr) => {
+            console.error('[register][supabase.auth.signOut] Failed to sign out user after DB fail:', signOutErr);
+          })
           return applySupabaseCookies(serverError())
         }
       }
@@ -114,9 +125,11 @@ export async function POST(request: Request) {
         message: session
           ? 'Account created and signed in.'
           : 'Account created. Please check your inbox to verify your email.',
+        sessionCreated: !!session,
       })
     )
   } catch (err) {
+    console.error('[register][OuterCatch] Unhandled outer catch block triggered:', err)
     if (err instanceof Response) return err
     logApiRouteError(request, err)
     return serverError()

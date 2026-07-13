@@ -44,7 +44,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   signOut: () => Promise<void>
-  hardSignOut: () => void
+  hardSignOut: (nextUrl?: string) => void
   refetch: () => Promise<User | null>
   applyRoleSelection: (role: Exclude<UserRole, 'ADMIN' | null>, displayName: string) => void
 }
@@ -328,10 +328,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [applyUser, router])
 
-  const hardSignOut = useCallback(() => {
+  const hardSignOut = useCallback((nextUrl: string = '/auth') => {
     writeCachedAuthUser(null)
     window.sessionStorage.clear()
-    window.location.href = '/auth/logout?next=/auth'
+    window.location.href = `/auth/logout?next=${encodeURIComponent(nextUrl)}`
   }, [])
 
   const value = useMemo<AuthContextValue>(

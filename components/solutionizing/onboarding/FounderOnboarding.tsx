@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, CheckCircle2, Coins, FlaskConical, Lightbulb, Rocket, SquarePen, User } from 'lucide-react'
+import { Building2, CheckCircle2, FlaskConical, Lightbulb, Rocket, SquarePen, User } from 'lucide-react'
 import posthog from 'posthog-js'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -8,15 +8,13 @@ import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
 import { SpinnerIcon } from '@/components/solutionizing/ui'
 import {
-  ComingSoonPill,
   OnboardingShell,
   OnboardingStepIcon,
   onboardingGhostButtonClass,
   onboardingPrimaryButtonClass,
 } from '@/components/solutionizing/onboarding/OnboardingShell'
 
-type FounderOnboardingStep = 1 | 2 | 3 | 4 | 5
-type CoinPackId = 'starter' | 'growth' | 'scale'
+type FounderOnboardingStep = 1 | 2 | 3 | 4
 
 interface FounderOnboardingProps {
   initialDisplayName: string
@@ -24,11 +22,6 @@ interface FounderOnboardingProps {
 }
 
 const founderHowItWorks = [
-  {
-    icon: <Coins className="h-5 w-5" />,
-    title: 'Buy coins',
-    description: 'Top up your workspace so each mission is funded before it goes live.',
-  },
   {
     icon: <SquarePen className="h-5 w-5" />,
     title: 'Create a mission',
@@ -46,15 +39,7 @@ const founderHowItWorks = [
   },
 ] as const
 
-const coinPacks = [
-  { id: 'starter', name: 'Starter', coins: '14900 coins' },
-  { id: 'growth', name: 'Growth', coins: '34900 coins' },
-  { id: 'scale', name: 'Scale', coins: '79900 coins' },
-] as const satisfies ReadonlyArray<{
-  id: CoinPackId
-  name: string
-  coins: string
-}>
+
 
 function getRequestErrorMessage(error: unknown) {
   if (isApiClientError(error) && error.code === 'NETWORK_ERROR') {
@@ -77,7 +62,6 @@ export function FounderOnboarding({
   const [step, setStep] = useState<FounderOnboardingStep>(1)
   const [displayName, setDisplayName] = useState(initialDisplayName)
   const [companyName, setCompanyName] = useState(initialCompanyName ?? '')
-  const [selectedPack, setSelectedPack] = useState<CoinPackId | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
@@ -85,7 +69,7 @@ export function FounderOnboarding({
   async function handleNext() {
     setErrorMessage('')
 
-    if (step === 1 || step === 2 || step === 4) {
+    if (step === 1 || step === 2) {
       setStep((currentStep) => (currentStep + 1) as FounderOnboardingStep)
       return
     }
@@ -153,7 +137,7 @@ export function FounderOnboarding({
         Back
       </button>
 
-      {step === 5 ? (
+      {step === 4 ? (
         <button
           type="button"
           onClick={() => void handleComplete()}
@@ -178,7 +162,7 @@ export function FounderOnboarding({
   )
 
   return (
-    <OnboardingShell step={step} totalSteps={5}>
+    <OnboardingShell step={step} totalSteps={4}>
       {step === 1 ? (
         <div className="space-y-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-[var(--electric-dim)] px-4 py-2 text-[0.72rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--electric)]">
@@ -298,76 +282,6 @@ export function FounderOnboarding({
       ) : null}
 
       {step === 4 ? (
-        <div>
-          <div className="max-w-2xl">
-            <h1 className="font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-2xl sm:text-4xl">Fund your first mission</h1>
-            <p className="mt-3 text-lg leading-8 text-[var(--ink-soft)]">
-              Pick a coin pack so you know how funding will work once payments go live.
-            </p>
-          </div>
-
-          <div className="mt-6 rounded-[8px] border border-[rgba(251,191,36,0.3)] bg-[rgba(251,191,36,0.12)] px-4 py-3 text-sm text-[#92400e]">
-            Coin purchases will be available soon. You can skip this step and buy coins from your dashboard later.
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 lg:grid-cols-3">
-            {coinPacks.map((pack) => {
-              const isSelected = selectedPack === pack.id
-
-              return (
-                <div
-                  key={pack.id}
-                  className={`rounded-[12px] p-4 sm:p-6 transition-all cursor-none ${
-                    isSelected
-                      ? 'border-2 border-[var(--electric)] bg-[var(--electric-dim)] shadow-[0_16px_48px_-24px_rgba(255,107,26,0.2)]'
-                      : 'border border-[var(--border)] bg-[var(--cream)] hover:border-[var(--electric)]'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[0.68rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--ink-soft)]">
-                        {pack.name}
-                      </div>
-                      <div className="mt-4 text-3xl font-[family-name:var(--font-fraunces)] font-bold text-[var(--ink)]">{pack.coins}</div>
-                    </div>
-                    <ComingSoonPill />
-                  </div>
-
-                  <p className="mt-4 text-sm leading-7 text-[var(--ink-soft)]">
-                    This pack will be available once wallet funding goes live.
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPack(pack.id)}
-                    className={`mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold transition-colors cursor-none ${
-                      isSelected
-                        ? 'bg-[var(--electric)] text-[var(--cream)] hover:opacity-90'
-                        : 'border border-[var(--border-strong)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--electric)] hover:text-[var(--electric)]'
-                    }`}
-                  >
-                    {isSelected ? 'Selected' : 'Select'}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void handleComplete()}
-            disabled={isCompleting}
-            className={`mt-5 ${onboardingGhostButtonClass} cursor-none`}
-          >
-            Continue without bank details
-          </button>
-
-          {errorMessage ? <p className="mt-6 text-sm text-[#c0392b]">{errorMessage}</p> : null}
-          {footer}
-        </div>
-      ) : null}
-
-      {step === 5 ? (
         <div className="space-y-8 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[var(--electric-dim)] text-[var(--electric)]">
             <CheckCircle2 className="h-10 w-10" />
@@ -378,11 +292,7 @@ export function FounderOnboarding({
               Your profile is ready. Create your first mission and start collecting feedback.
             </p>
           </div>
-          {selectedPack ? (
-            <div className="mx-auto inline-flex rounded-full border border-[var(--electric-mid)] bg-[var(--electric-dim)] px-4 py-2 font-[family-name:var(--font-dm-mono)] uppercase tracking-[0.1em] text-[var(--electric)]">
-              {coinPacks.find((pack) => pack.id === selectedPack)?.name} pack selected for later.
-            </div>
-          ) : null}
+
           {errorMessage ? <p className="text-sm text-[#c0392b]">{errorMessage}</p> : null}
           <div className="flex justify-center">
             <button

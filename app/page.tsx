@@ -5,6 +5,7 @@ export default function LandingPage() {
   const [showScrollChip, setShowScrollChip] = useState(false);
   const hasTriggeredChip = useRef(false);
   const chipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -382,6 +383,8 @@ export default function LandingPage() {
       .tester-left, .tester-right { max-width: 100%; }
       .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
       
+      nav { position: fixed; top: 0; left: 0; width: 100%; z-index: 10000; }
+      .hero { padding-top: 64px; }
       .nav-center, .nav-right { display: none; }
       .hamburger { display: block; font-size: 1.5rem; cursor: none; }
       
@@ -523,12 +526,24 @@ export default function LandingPage() {
     }
     .broken-hero-hint {
       font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      color: rgba(250,247,242,0.4);
+      font-size: 1.1rem;
+      color: var(--electric);
       margin-bottom: 1.5rem;
       transition: opacity 0.4s ease;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      text-align: center;
+    }
+    .broken-hero-hint .scroll-arrow {
+      display: inline-block;
+      animation: bounce-arrow 1.2s ease-in-out infinite;
+      font-size: 1.4rem;
+      margin-left: 0.5rem;
+    }
+    @keyframes bounce-arrow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
     }
     @media (max-width: 768px) {
       .btn-primary.hero-cta-primary.is-broken {
@@ -862,6 +877,99 @@ export default function LandingPage() {
       .subtext-swap { height: auto; min-height: 3.5em; }
       .marquee-tooltip { display: none; }
       .proof-read-bar, .tester-whisper { display: none; }
+    }
+
+    /* MOBILE MENU */
+    .mobile-menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 16, 8, 0.5);
+      z-index: 8998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .mobile-menu-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-menu {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      z-index: 8999;
+      transform: translateY(-110%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      padding: 1.5rem 2rem 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+    }
+    body.is-dark .mobile-menu {
+      background: var(--dark-surface);
+      border-bottom-color: rgba(250,247,242,0.08);
+    }
+    .mobile-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-menu a {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--ink);
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: color 0.2s ease;
+    }
+    body.is-dark .mobile-menu a {
+      color: rgba(250,247,242,0.8);
+      border-bottom-color: rgba(250,247,242,0.06);
+    }
+    .mobile-menu a:active {
+      color: var(--electric);
+    }
+    .mobile-menu .mobile-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.2rem;
+      background: var(--ink);
+      color: var(--cream);
+      border-radius: 100px;
+      padding: 0.8rem 1.5rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-bottom: none;
+      font-family: 'Satoshi', sans-serif;
+    }
+    body.is-dark .mobile-menu .mobile-cta {
+      background: var(--cream);
+      color: var(--ink);
+    }
+    @media (max-width: 768px) {
+      .mobile-menu {
+        display: flex;
+      }
+    }
+    @media (min-width: 769px) {
+      .mobile-menu,
+      .mobile-menu-overlay {
+        display: none !important;
+      }
+    }
+    button.hamburger {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0.25rem;
+      line-height: 1;
     }
 
   `;
@@ -1788,7 +1896,7 @@ export default function LandingPage() {
         if (t2) t2.textContent = 'exactly you find out';
         if (navSupport) navSupport.textContent = '????';
         if (tagPill) {
-          tagPill.textContent = '● BROKEN BY DEFAULT';
+          tagPill.textContent = '● your users see this';
           tagPill.classList.add('is-broken-tag');
         }
         if (ctaBtn) {
@@ -1828,7 +1936,7 @@ export default function LandingPage() {
       if (t2) t2.textContent = 'exactly you find out';
       if (navSupport) navSupport.textContent = '????';
       if (tagPill) {
-        tagPill.textContent = '● BROKEN BY DEFAULT';
+        tagPill.textContent = '● your users see this';
         tagPill.classList.add('is-broken-tag');
       }
       if (ctaBtn) ctaBtn.classList.add('is-broken');
@@ -1905,10 +2013,12 @@ export default function LandingPage() {
   {/* Notification Chip */}
   <div 
     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-    className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2 rounded-full bg-[var(--cream)] px-4 py-2 text-xs font-medium text-[var(--ink)] shadow-[0_8px_30px_rgba(28,16,8,0.12)] ring-1 ring-[var(--border)] transition-all duration-300 cursor-pointer hover:scale-105 ${showScrollChip ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0 pointer-events-none'}`}
+    className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 rounded-full px-6 py-3 text-sm font-semibold shadow-[0_8px_40px_rgba(255,107,26,0.25)] transition-all duration-300 cursor-pointer hover:scale-105 ${showScrollChip ? 'translate-y-0 opacity-100' : '-translate-y-16 opacity-0 pointer-events-none'}`}
+    style={{ background: 'var(--electric)', color: '#fff', animation: showScrollChip ? 'chip-pulse 2s ease-in-out 1' : 'none' }}
   >
-    <div className="w-2 h-2 rounded-full bg-[var(--electric)]" />
-    <span className="mono">↑ something just changed</span>
+    <style>{`@keyframes chip-pulse { 0% { transform: translateX(-50%) scale(1); } 15% { transform: translateX(-50%) scale(1.12); } 30% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.08); } 60% { transform: translateX(-50%) scale(1); } }`}</style>
+    <div className="w-3 h-3 rounded-full bg-white" style={{ animation: 'pulse 1.5s ease-in-out infinite' }} />
+    <span style={{ fontFamily: "'DM Mono', monospace", letterSpacing: '0.03em' }}>↑ scroll back up — something just changed</span>
   </div>
 
   <nav>
@@ -1931,8 +2041,18 @@ export default function LandingPage() {
       <a href="/auth?mode=signin" className="sign-in">Sign in</a>
       <a href="/auth?mode=signup" className="btn-pill">try solutionizing</a>
     </div>
-    <div className="hamburger">☰</div>
+    <button className="hamburger" onClick={() => setMobileMenuOpen(prev => !prev)} aria-label="Toggle mobile menu">{mobileMenuOpen ? '✕' : '☰'}</button>
   </nav>
+
+  {/* MOBILE MENU */}
+  <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+  <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+    <a href="#problem" onClick={() => setMobileMenuOpen(false)}>Founders</a>
+    <a href="#tester-section" onClick={() => setMobileMenuOpen(false)}>Testers</a>
+    <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+    <a href="/auth?mode=signin" onClick={() => setMobileMenuOpen(false)}>Sign in</a>
+    <a href="/auth?mode=signup" className="mobile-cta" onClick={() => setMobileMenuOpen(false)}>try solutionizing</a>
+  </div>
 
   <section className="hero" id="hero">
     <div className="hero-tag anim-fade-up h-delay-0" id="hero-tag" data-original="● USABILITY INTELLIGENCE">● USABILITY INTELLIGENCE</div>
@@ -1940,14 +2060,14 @@ export default function LandingPage() {
       <span className="hero-line anim-clip h-delay-1" id="hero-title-1" data-original="find out exactly">find out exactly</span>
       <span className="hero-line anim-clip h-delay-2" id="hero-title-2" data-original="where you &lt;em&gt;lost&lt;/em&gt; them.">where you <em>lost</em> them.</span>
     </h1>
-    <div className="hero-experience-label" id="hero-experience-label" style={{ opacity: 0, transition: "opacity 0.4s var(--ease)", fontFamily: "'DM Mono', monospace", fontSize: "0.72rem", color: "var(--ink-soft)", fontStyle: "italic", marginTop: "1rem", marginBottom: "-0.5rem", height: "16px" }}></div>
+    <div className="hero-experience-label" id="hero-experience-label" style={{ opacity: 0, transition: "opacity 0.6s var(--ease)", fontFamily: "'Fraunces', serif", fontSize: "clamp(1.2rem, 2.5vw, 1.6rem)", color: "var(--electric)", fontStyle: "italic", fontWeight: 500, marginTop: "1.5rem", marginBottom: "0.5rem", textAlign: "center", lineHeight: 1.4, letterSpacing: '0.01em' }}></div>
     <div className="subtext-swap anim-fade-up h-delay-3" id="hero-subtext">
       <p className="subtext-line active">real strangers use your product. solutionizing turns their honest reactions into a prioritized list of exactly what to fix.</p>
       <p className="subtext-line">71% of users who get stuck never tell you. they just leave. solutionizing tells you.</p>
       <p className="subtext-line">your next user is already confused. find out where before they disappear.</p>
     </div>
-    <div className="broken-hero-hint is-broken-hint anim-fade-up h-delay-4" style={{ marginTop: '2rem', marginBottom: '-1.5rem' }}>
-      scroll down to run a diagnosis →
+    <div className="broken-hero-hint is-broken-hint anim-fade-up h-delay-4" style={{ marginTop: '2rem', marginBottom: '-1rem' }}>
+      scroll down to see it fixed <span className="scroll-arrow">↓</span>
     </div>
     <div className="hero-ctas anim-fade-up h-delay-4">
       <div style={{ position: "relative", display: "inline-block" }} className="hero-cta-wrapper">
@@ -1962,7 +2082,7 @@ export default function LandingPage() {
       <a href="#how-it-works" className="btn-secondary">see how it works</a>
     </div>
     <div className="hero-stats anim-fade-up h-delay-5">
-      avg. turnaround: 48hrs  ·  min. 3 testers  ·  AI report included  ·  UPI payouts
+      fast, structured feedback  ·  min. 3 testers  ·  AI report included  ·  UPI payouts
     </div>
   </section>
 
@@ -2045,7 +2165,7 @@ export default function LandingPage() {
         <div className="step-circle">3</div>
         <div className="step-content">
           <h3>AI synthesizes the report</h3>
-          <p>Transcripts processed, noise filtered, fixes ranked by severity. Delivered in 48 hours.</p>
+          <p>Transcripts processed, noise filtered, fixes ranked by severity. Delivered once every tester completes their mission.</p>
         </div>
         <div className="step-terminal" id="terminal-step-3"></div>
       </div>
@@ -2056,8 +2176,7 @@ export default function LandingPage() {
     <div className="tester-inner">
       <div className="tester-feed-col anim-slide-left">
         <div className="feed-header">
-          <span className="pulse-dot"></span>
-          LIVE MISSION ACTIVITY
+          EXAMPLE MISSION ACTIVITY
         </div>
         <div className="feed-container">
           <div className="feed-list" id="feed-list">
@@ -2073,7 +2192,7 @@ export default function LandingPage() {
         <h2>not here to build.<br />here to earn?</h2>
         <p style={{ fontSize: "1rem", color: "rgba(250,247,242,0.55)", lineHeight: 1.5, marginBottom: "1.5rem" }}>we pay real people to break things.<br />no experience needed.</p>
         <ul className="tester-list">
-          <li><span className="check">✓</span> <span>Earn ₹800–₹2,500 per session</span></li>
+          <li><span className="check">✓</span> <span>Earn ₹80 per mission completed</span></li>
           <li><span className="check">✓</span> <span>Work on your own schedule</span></li>
           <li><span className="check">✓</span> <span>Shape products people actually use</span></li>
         </ul>
@@ -2084,8 +2203,8 @@ export default function LandingPage() {
   </section>
 
   <section className="proof-section" id="proof">
-    <div className="section-label anim-fade-up">REAL SIGNAL OUTPUT</div>
-    <h2 className="section-title anim-clip"><span className="hero-line">see what founders</span><span className="hero-line">actually receive.</span></h2>
+    <div className="section-label anim-fade-up">EXAMPLE REPORT OUTPUT</div>
+    <h2 className="section-title anim-clip"><span className="hero-line">what founders</span><span className="hero-line">get back.</span></h2>
     
     <div className="heatmap-toggle-row">
       <span className="heatmap-label">view as founder</span>
@@ -2100,7 +2219,6 @@ export default function LandingPage() {
     <div className="proof-deck" id="proof-deck">
       <div className="proof-grid">
         <div className="proof-card">
-          <div className="tester-whisper">*real user, verified by UPI payout</div>
           <div className="proof-header">
             <div className="proof-initials">TL</div>
             <div className="proof-name">Thomas L.</div>
@@ -2117,7 +2235,6 @@ export default function LandingPage() {
         </div>
         
         <div className="proof-card">
-          <div className="tester-whisper">*real user, verified by UPI payout</div>
           <div className="proof-header">
             <div className="proof-initials">SK</div>
             <div className="proof-name">Sarah K.</div>
@@ -2134,7 +2251,6 @@ export default function LandingPage() {
         </div>
 
         <div className="proof-card">
-          <div className="tester-whisper">*real user, verified by UPI payout</div>
           <div className="proof-header">
             <div className="proof-initials">MR</div>
             <div className="proof-name">Marcus R.</div>
@@ -2151,7 +2267,6 @@ export default function LandingPage() {
         </div>
 
         <div className="proof-card">
-          <div className="tester-whisper">*real user, verified by UPI payout</div>
           <div className="proof-header">
             <div className="proof-initials">EM</div>
             <div className="proof-name">Elena M.</div>

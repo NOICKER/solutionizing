@@ -81,7 +81,6 @@ function AuthForm() {
   const [formError, setFormError] = useState('')
   const [formErrorCode, setFormErrorCode] = useState<string | null>(null)
   const [forgotSuccess, setForgotSuccess] = useState(false)
-  const [signupSuccess, setSignupSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [isModeContentVisible, setIsModeContentVisible] = useState(true)
@@ -120,7 +119,6 @@ function AuthForm() {
       setEmailError('')
       setPasswordError('')
       setForgotSuccess(false)
-      setSignupSuccess(false)
       setIsModeContentVisible(true)
     }, 150)
 
@@ -175,7 +173,7 @@ function AuthForm() {
     setIsSubmitting(true)
 
     try {
-      await apiFetch('/api/v1/auth/register', {
+      const response = await apiFetch<{ message: string; sessionCreated: boolean }>('/api/v1/auth/register', {
         method: 'POST',
         body: {
           email: normalizedEmail,
@@ -184,7 +182,16 @@ function AuthForm() {
         skipSessionHandling: true,
       })
 
-      setSignupSuccess(true)
+      if (response.sessionCreated) {
+        await refetch()
+        const redirectTarget = nextPath ?? getFallbackPath(null)
+        router.push(redirectTarget)
+      } else {
+        setFormError('Account created successfully, but automatic sign-in failed. Please sign in manually.')
+        setMode('signin')
+        setPendingMode('signin')
+        setPassword('')
+      }
     } catch (error) {
       if (isApiClientError(error) && error.status === 409) {
         setEmailError('An account with this email already exists.')
@@ -302,6 +309,9 @@ function AuthForm() {
         provider: 'google',
         options: {
           redirectTo: 'https://solutionizing.vercel.app/auth/callback',
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       })
 
@@ -352,31 +362,6 @@ function AuthForm() {
           ← back to home
         </a>
         <div className="w-full max-w-md rounded-[16px] border border-[var(--border)] bg-[var(--cream)] p-8 sm:p-10">
-          {signupSuccess ? (
-            <div className="text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(74,197,128,0.12)]">
-                <svg className="w-10 h-10 text-[#1e7a47]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h2 className="mb-4 font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] text-3xl">Check your inbox</h2>
-              <p className="mb-8 text-lg text-[var(--ink-soft)]">
-                Check your inbox — we sent you a verification link.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('signin')
-                  setPendingMode('signin')
-                  setSignupSuccess(false)
-                  setPassword('')
-                }}
-                className="text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] cursor-none"
-              >
-                ← Back to sign in
-              </button>
-            </div>
-          ) : (
             <div
               className={`transition-opacity duration-200 ${isModeContentVisible ? 'opacity-100' : 'opacity-0'
                 }`}
@@ -596,7 +581,6 @@ function AuthForm() {
                 </div>
               )}
             </div>
-          )}
         </div>
       </div>
     </main>

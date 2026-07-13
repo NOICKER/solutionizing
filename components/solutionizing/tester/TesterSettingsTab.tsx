@@ -15,10 +15,7 @@ import {
 } from '@/lib/payout-details'
 import {
   formatCoins,
-  outlineButtonClass,
-  primaryButtonClass,
   ReputationTierBadge,
-  textFieldClass,
 } from '@/components/solutionizing/ui'
 import {
   expertiseTagOptions,
@@ -27,7 +24,6 @@ import {
   type PreferredDevice,
 } from '@/components/solutionizing/tester/profileOptions'
 
-const settingsFieldClass = `${textFieldClass} disabled:cursor-none disabled:border-[var(--border)] disabled:bg-[var(--bg-light)] disabled:text-[var(--ink-soft)] disabled:opacity-100`
 type TesterReputationTier = 'NEWCOMER' | 'RELIABLE' | 'TRUSTED' | 'ELITE'
 
 interface TesterProfileResponse {
@@ -512,7 +508,7 @@ export function TesterSettingsTab({
         </div>
 
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] px-3 py-2.5 sm:px-4 sm:py-3">
+          <div className="hidden rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--ink-soft)]">Coin Balance</div>
             <div className="mt-1 font-[family-name:var(--font-fraunces)] text-base font-bold text-[var(--ink)] sm:mt-2 sm:text-lg">{formatCoins(coinBalance)} coins</div>
           </div>

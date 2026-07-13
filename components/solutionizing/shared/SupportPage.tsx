@@ -3,7 +3,6 @@
 import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode, useState } from 'react'
-import { outlineButtonClass, primaryButtonClass } from '@/components/solutionizing/ui'
 
 type SupportRole = 'FOUNDER' | 'TESTER'
 
@@ -198,10 +197,10 @@ export function SupportPage({ role }: { role: SupportRole }) {
           <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'rgba(250,247,242,0.5)', margin: '0.3rem 0 0 0' }}>Our team usually responds within one business day.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <a href="mailto:hello@solutionizing.com" className={primaryButtonClass} style={{ textDecoration: 'none' }}>
+          <a href="mailto:hello@solutionizing.com" style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.4rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.88rem', cursor: 'none', textDecoration: 'none', display: 'inline-flex' }}>
             Email Support
           </a>
-          <Link href="/contact" className={outlineButtonClass} style={{ color: 'var(--cream)', borderColor: 'rgba(250,247,242,0.25)', textDecoration: 'none' }}>
+          <Link href="/contact" style={{ background: 'transparent', border: '1.5px solid rgba(250,247,242,0.25)', color: 'var(--cream)', borderRadius: '100px', padding: '0.6rem 1.4rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.88rem', cursor: 'none', textDecoration: 'none', display: 'inline-flex' }}>
             Visit Contact Page
           </Link>
         </div>

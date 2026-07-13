@@ -71,6 +71,7 @@ const MissionQuestionSchema = z.object({
   order: z.number().int().min(1).max(6),
   type: z.nativeEnum(QuestionType),
   text: z.string().min(5).max(300),
+  taskInstruction: z.string().max(200).optional(),
   options: z.array(z.string().min(1)).min(2).max(5).optional(),
   isRequired: z.boolean().default(true),
 }).superRefine((value, ctx) => {
@@ -243,6 +244,7 @@ export async function POST(request: Request) {
               order: question.order,
               type: question.type,
               text: question.text,
+              taskInstruction: question.taskInstruction,
               options: question.options ?? [],
               isRequired: question.isRequired,
             })),

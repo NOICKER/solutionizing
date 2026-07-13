@@ -18,7 +18,7 @@ export const REP_DELTA = {
   LOW_EFFORT_FLAG: -5.0,
   ABANDON: -4.0,
   TIMEOUT: -2.0,
-  SHORT_TEXT_RESPONSE: -1.0,
+  SHORT_TEXT_RESPONSE: -2.0,
 } as const
 
 type ReputationEvent = keyof typeof REP_DELTA

@@ -38,7 +38,7 @@ type SubmitAssignmentResult =
       missionCompleted: boolean
       founderUserId: string | null
       missionId: string
-      shortTextPenaltyApplied: boolean
+      shortTextPenaltyCount: number
     }
 
 function hasMeaningfulResponse(
@@ -337,24 +337,28 @@ export async function POST(
         })),
       })
 
-      const textResponses = body.responses.filter((response) => {
+      let shortTextPenaltyCount = 0
+      for (const response of body.responses) {
         const question = questionMap.get(response.questionId)
-        if (!question) {
-          return false
+        if (!question) continue
+
+        if (
+          question.type === QuestionType.TEXT_SHORT ||
+          question.type === QuestionType.TEXT_LONG
+        ) {
+          const trimmed = response.responseText?.trim() ?? ''
+          if (trimmed.length > 0 && trimmed.length < 20) {
+            shortTextPenaltyCount++
+          }
         }
 
-        return (
-          (question.type === QuestionType.TEXT_SHORT || question.type === QuestionType.TEXT_LONG) &&
-          (response.responseText?.trim().length ?? 0) > 0
-        )
-      })
-      const shortTextResponses = textResponses.filter((response) => {
-        const trimmedResponse = response.responseText?.trim() ?? ''
-        return trimmedResponse.length < 20
-      })
-      const shortTextPenaltyApplied =
-        textResponses.length > 0 &&
-        shortTextResponses.length > textResponses.length / 2
+        if (question.type === QuestionType.MULTIPLE_CHOICE) {
+          const choice = response.responseChoice?.trim() ?? ''
+          if (choice.length > 0 && !question.options.includes(choice) && choice.length < 20) {
+            shortTextPenaltyCount++
+          }
+        }
+      }
 
       await tx.missionAssignment.update({
         where: { id: assignment.id },
@@ -422,7 +426,7 @@ export async function POST(
         missionCompleted: missionReachedQuotaNow,
         founderUserId: mission.founder.userId,
         missionId: mission.id,
-        shortTextPenaltyApplied,
+        shortTextPenaltyCount,
       }
     })
 
@@ -454,11 +458,15 @@ export async function POST(
       })
     }
 
-    if (result.shortTextPenaltyApplied) {
+    const penaltyCalls = Math.min(result.shortTextPenaltyCount, 2)
+    for (let i = 0; i < penaltyCalls; i++) {
       await updateReputation(tester.testerProfile.id, 'SHORT_TEXT_RESPONSE', { missionId: result.missionId })
+    }
+    if (result.shortTextPenaltyCount > 0) {
       console.info('Applied SHORT_TEXT_RESPONSE penalty', {
         assignmentId: context.params.assignmentId,
         testerId: tester.testerProfile.id,
+        penaltyCount: result.shortTextPenaltyCount,
       })
     }
 

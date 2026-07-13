@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRightLeft, ClipboardList, HelpCircle, Settings } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -342,7 +343,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
     try {
       await deleteAccount()
       toast.success('Your account has been deleted.')
-      hardSignOut()
+      hardSignOut('/')
     } catch (error) {
       setDeleteError(
         isApiClientError(error) && error.code === 'NETWORK_ERROR'
@@ -397,7 +398,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
         </nav>
 
         <div className="mt-auto flex flex-col gap-4 border-t border-[rgba(250,247,242,0.04)] p-6">
-          <div className="rounded-[10px] border border-[rgba(255,107,26,0.2)] bg-[var(--dark-surface)] px-4 py-3">
+          <div className="hidden rounded-[10px] border border-[rgba(255,107,26,0.2)] bg-[var(--dark-surface)] px-4 py-3">
             <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.68rem] uppercase tracking-[0.1em] text-[var(--electric)]">TOTAL EARNED</div>
             <div className="mb-1 font-[family-name:var(--font-fraunces)] text-[1.8rem] font-bold leading-none text-[var(--cream)]">
               {formatRupeesFromCoins(balance)}
@@ -440,10 +441,23 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
             </h1>
             <div className="w-10 h-[3px] rounded-full bg-[var(--electric)] mt-1.5" />
           </div>
-          <button type="button" onClick={() => setWithdrawalOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 font-['Satoshi'] text-[0.88rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 cursor-none">
+          <button type="button" onClick={() => setWithdrawalOpen(true)} className="hidden inline-flex items-center gap-2 rounded-full bg-[var(--electric)] px-5 py-2.5 font-['Satoshi'] text-[0.88rem] font-bold text-[var(--cream)] transition-all hover:-translate-y-px hover:opacity-90 cursor-none">
             get payout →
           </button>
         </div>
+
+        {activeTab === 'missions' ? (
+          <Link
+            href="/mission/demo"
+            className="mb-6 flex items-center justify-between rounded-[14px] border border-[var(--electric-mid)] bg-[var(--electric-dim)] px-5 py-4 transition-all hover:-translate-y-px hover:shadow-lg cursor-none"
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="font-['Satoshi'] text-[0.95rem] font-bold text-[var(--ink)]">Try a demo mission</span>
+              <span className="font-[family-name:var(--font-dm-mono)] text-[0.72rem] text-[var(--ink-soft)]">See how missions work before doing a real one</span>
+            </div>
+            <span className="shrink-0 rounded-full bg-[var(--electric)] px-4 py-2 font-['Satoshi'] text-[0.82rem] font-bold text-[var(--cream)]">Try now &rarr;</span>
+          </Link>
+        ) : null}
 
         <div key={activeTab} className="animate-[tabEnter_0.22s_ease_forwards]">
           {activeTab === 'missions' ? (
@@ -504,6 +518,7 @@ function TesterDashboardContent({ initialData }: TesterDashboardPageProps) {
           body="This action is irreversible. All your coins, missions, and profile data will be permanently deleted."
           confirmLabel="DELETE ACCOUNT"
           confirmStyle="danger"
+          requireTypeToConfirm="DELETE"
           onCancel={() => {
             setDeleteModalOpen(false)
             setDeleteError('')
