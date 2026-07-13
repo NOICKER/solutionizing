@@ -1236,14 +1236,14 @@ export default function LandingPage() {
         initMagneticHeadline();
       }, 700);
       
-      // 900ms: experience label fades in below headline, stays 3s then fades out
+      // 900ms: experience label fades in below headline, stays 8s then fades out
       setTimeout(() => {
         if (experienceLabel) {
           experienceLabel.textContent = "*that's what your users experience.";
           experienceLabel.style.opacity = '1';
           setTimeout(() => {
             experienceLabel.style.opacity = '0';
-          }, 3000);
+          }, 8000);
         }
       }, 900);
     }
