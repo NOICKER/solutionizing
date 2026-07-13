@@ -4,9 +4,8 @@ import { ReactNode, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/sonner'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
-import { formatCoins, outlineButtonClass, primaryButtonClass, textFieldClass } from '@/components/solutionizing/ui'
+import { formatCoins } from '@/components/solutionizing/ui'
 
-const settingsFieldClass = `${textFieldClass} disabled:cursor-not-allowed disabled:border-[var(--border)] disabled:bg-[var(--bg-light)] disabled:text-[var(--ink-soft)] disabled:opacity-100`
 const transactionDateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',

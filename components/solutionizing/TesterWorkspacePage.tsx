@@ -339,6 +339,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
   const [timeoutAutoSubmitLoading, setTimeoutAutoSubmitLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [outboundWarningUrl, setOutboundWarningUrl] = useState<string | null>(null)
+  const [localStartedAt, setLocalStartedAt] = useState<string | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0)
   const autosaveKey = `tester-workspace-autosave:${assignmentId}`
   const autosaveLoadedRef = useRef(false)
   const timeoutWarningShownRef = useRef(false)
@@ -398,6 +400,21 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
     return () => clearInterval(interval)
   }, [assignment?.timeoutAt])
 
+  // --- Elapsed Timer ---
+  useEffect(() => {
+    if (phase !== 'questions' && phase !== 'review') return;
+    const effectiveStartedAt = assignment?.startedAt ?? localStartedAt;
+    if (!effectiveStartedAt) return;
+
+    const computeElapsed = () => Math.max(0, differenceInSeconds(new Date(), new Date(effectiveStartedAt)));
+    setElapsedSeconds(computeElapsed());
+    
+    const interval = setInterval(() => {
+      setElapsedSeconds(computeElapsed());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [phase, assignment?.startedAt, localStartedAt])
+
   // --- Autosave: load from localStorage on mount ---
   useEffect(() => {
     if (autosaveLoadedRef.current) return
@@ -440,6 +457,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
     try {
       await apiFetch(`/api/v1/tester/assignments/${activeAssignment.id}/start`, { method: 'POST' })
+      setLocalStartedAt(new Date().toISOString())
       setPhase('questions')
     } catch (error) {
       if (isApiClientError(error) && error.code === 'ASSIGNMENT_EXPIRED') {
@@ -461,7 +479,10 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
     if (current.isRequired && (answer === undefined || answer === '')) {
       if (current.type === 'RATING_1_5') return 'Please select a star rating to continue.'
-      if (current.type === 'MULTIPLE_CHOICE') return 'Please pick one of the choices before continuing.'
+      if (current.type === 'MULTIPLE_CHOICE') {
+        if (answer === '') return 'Please specify your answer.'
+        return 'Please pick one of the choices before continuing.'
+      }
       if (current.type === 'YES_NO') return 'Please choose Yes or No to continue.'
       return 'Please answer this question to continue.'
     }
@@ -707,8 +728,8 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <p className="mx-auto max-w-3xl text-sm leading-7 text-[var(--cream)] opacity-70 sm:text-base">{assignment.mission.goal}</p>
           </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-            <div className={`${workspaceSectionClass} p-5 text-center sm:p-6`}>
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+            <div className="hidden">
               <div className="mb-3 text-[0.68rem] font-[\'DM_Mono\'] uppercase tracking-[0.1em] text-[var(--cream)] opacity-50">Reward</div>
               <div className="mb-1 text-3xl font-[\'Fraunces\'] font-bold text-[var(--cream)]">{formatCoins(assignment.mission.coinPerTester)}</div>
               <div className="text-sm text-[var(--cream)] opacity-60">coins (≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</div>
@@ -770,12 +791,30 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
           {startError ? <p className="mb-4 text-sm text-red-400">{startError}</p> : null}
 
-          <div className="flex flex-col-reverse items-center justify-between gap-6 sm:flex-row">
-            <Link href="/dashboard/tester" className={workspaceBackLinkClass}>← Back to dashboard</Link>
-            <button className={`cursor-none flex w-full items-center justify-center gap-2 px-12 py-4 text-lg sm:w-auto ${primaryButtonClass}`} disabled={startLoading} onClick={() => void handleStart()}>
-              {startLoading ? <SpinnerIcon className="w-5 h-5" /> : null}
+          <div className="mt-12 mb-8 flex flex-col items-center justify-center gap-5 border-t border-[rgba(255,255,255,0.08)] pt-12">
+            <style>{`
+              @keyframes begin-pulse {
+                0% { box-shadow: 0 0 0 0 rgba(255,107,26, 0.5); }
+                70% { box-shadow: 0 0 0 25px rgba(255,107,26, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(255,107,26, 0); }
+              }
+            `}</style>
+            <p className="font-['DM_Mono'] text-sm uppercase tracking-[0.15em] text-[var(--electric)] font-semibold text-center">
+              Ready? Your mission begins when you click below
+            </p>
+            <button 
+              className={`cursor-none flex w-full items-center justify-center gap-3 px-14 py-5 text-xl font-bold sm:w-auto sm:text-2xl transition-transform hover:scale-105 ${primaryButtonClass}`} 
+              style={{ animation: 'begin-pulse 2s infinite' }}
+              disabled={startLoading} 
+              onClick={() => void handleStart()}
+            >
+              {startLoading ? <SpinnerIcon className="w-6 h-6" /> : null}
               BEGIN MISSION →
             </button>
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <Link href="/dashboard/tester" className={workspaceBackLinkClass}>← Back to dashboard</Link>
           </div>
 
           <div className="mt-8 text-center">
@@ -832,7 +871,13 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             <div className="relative z-10">
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-[var(--cream)] opacity-60">Question {currentQuestion + 1} of {questions.length}</span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-[var(--cream)] opacity-60">Question {currentQuestion + 1} of {questions.length}</span>
+                <span className="flex items-center gap-1.5 rounded-full bg-[rgba(255,255,255,0.04)] px-3 py-1 text-sm font-bold text-[var(--cream)] opacity-60">
+                  <Clock className="h-3.5 w-3.5" />
+                  {formatTimeLeft(elapsedSeconds)}
+                </span>
+              </div>
               {secondsLeft !== null ? (
                 <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold ${
                   secondsLeft < 300
@@ -857,7 +902,17 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
           </div>
 
           <div className={`${workspaceSectionClass} mb-6 p-6 sm:p-8`}>
+            {current.taskInstruction ? (
+              <div className="mb-6 rounded-xl bg-primary/10 border border-primary/20 p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ExternalLink className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-primary uppercase tracking-wider">Before answering:</span>
+                </div>
+                <p className="text-sm text-primary/90">{current.taskInstruction}</p>
+              </div>
+            ) : null}
             <h2 className="mb-2 text-center text-xl font-[\'Fraunces\'] italic font-normal text-[var(--cream)]">{current.text}</h2>
+            <p className="mb-6 text-center text-sm text-[var(--cream)] opacity-40">Tip: explain your reasoning before your answer. Vague or one-word responses won&apos;t help the founder.</p>
 
             {(current.type === 'TEXT_SHORT' || current.type === 'TEXT_LONG') ? (
               <div>
@@ -901,30 +956,69 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
               </div>
             ) : null}
 
-            {current.type === 'MULTIPLE_CHOICE' ? (
-              <div className="space-y-3">
-                {(current.options ?? []).map((option) => (
+            {current.type === 'MULTIPLE_CHOICE' ? (() => {
+              const isOther = answer !== undefined && !current.options?.includes(answer as string);
+              return (
+                <div className="space-y-3">
+                  {(current.options ?? []).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))
+                        setCurrentError('')
+                      }}
+                      className={`flex w-full items-start gap-4 rounded-[1.75rem] border-2 p-4 text-left transition-colors ${
+                        answer === option ? selectedChoiceClass : unselectedChoiceClass
+                      }`}
+                    >
+                      <span className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                        answer === option ? 'border-primary bg-primary' : 'border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
+                      }`}>
+                        {answer === option ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--dark-surface)]" /> : null}
+                      </span>
+                      <span className="flex-1 break-words text-base font-semibold leading-6">{option}</span>
+                    </button>
+                  ))}
+
                   <button
-                    key={option}
                     type="button"
                     onClick={() => {
-                      setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))
-                      setCurrentError('')
+                      if (!isOther) {
+                        setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: '' }))
+                        setCurrentError('')
+                      }
                     }}
                     className={`flex w-full items-start gap-4 rounded-[1.75rem] border-2 p-4 text-left transition-colors ${
-                      answer === option ? selectedChoiceClass : unselectedChoiceClass
+                      isOther ? selectedChoiceClass : unselectedChoiceClass
                     }`}
                   >
                     <span className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      answer === option ? 'border-primary bg-primary' : 'border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
+                      isOther ? 'border-primary bg-primary' : 'border-[rgba(255,255,255,0.08)] bg-[var(--dark-surface)]'
                     }`}>
-                      {answer === option ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--dark-surface)]" /> : null}
+                      {isOther ? <span className="h-2.5 w-2.5 rounded-full bg-[var(--dark-surface)]" /> : null}
                     </span>
-                    <span className="flex-1 break-words text-base font-semibold leading-6">{option}</span>
+                    <span className="flex-1 break-words text-base font-semibold leading-6">Other (please specify)</span>
                   </button>
-                ))}
-              </div>
-            ) : null}
+
+                  {isOther ? (
+                    <div className="mt-3 pl-4 pr-1">
+                      <input
+                        type="text"
+                        value={answer as string}
+                        onChange={(e) => {
+                          setAnswers((curr) => ({ ...curr, [currentQuestion]: e.target.value }))
+                          setCurrentError('')
+                        }}
+                        placeholder="Type your answer here..."
+                        autoFocus
+                        className="w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-[var(--cream)] placeholder-[var(--cream)] placeholder-opacity-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })() : null}
 
             {current.type === 'YES_NO' ? (
               <div className="grid gap-4 md:grid-cols-2">
@@ -995,6 +1089,12 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             
             
             <div className="relative z-10">
+          <div className="absolute right-0 top-0">
+            <span className="flex items-center gap-1.5 rounded-full bg-[rgba(255,255,255,0.04)] px-3 py-1 text-sm font-bold text-[var(--cream)] opacity-60">
+              <Clock className="h-3.5 w-3.5" />
+              {formatTimeLeft(elapsedSeconds)}
+            </span>
+          </div>
           <div className="mb-8 text-center">
             <div className={`${workspaceEyebrowClass} mb-4`}>
               <BrandMark className="h-3.5 w-3.5 text-[var(--cream)]" />
@@ -1027,7 +1127,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
             ))}
           </div>
 
-          <div className="mb-8 rounded-card border border-primary/25 bg-[var(--electric)] p-8">
+          <div className="hidden mb-8 rounded-card border border-primary/25 bg-[var(--electric)] p-8">
             <h3 className="mb-1 text-xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">You&apos;re about to earn</h3>
             <p className="text-3xl font-[family-name:var(--font-fraunces)] italic font-normal text-primary">
               {formatCoins(assignment.mission.coinPerTester)} coins <span className="text-lg text-[var(--cream)] opacity-60">(≈ {formatRupeesFromCoins(assignment.mission.coinPerTester)})</span>
@@ -1104,7 +1204,7 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
         <h1 className="mb-3 text-4xl font-[family-name:var(--font-fraunces)] italic font-normal tracking-tight text-[var(--cream)]">Mission complete!</h1>
         <p className="mb-8 text-lg text-[var(--cream)] opacity-60">Thank you for your feedback. Your reward is ready.</p>
 
-        <div className="mx-auto mb-8 max-w-md rounded-card border border-primary/25 bg-[var(--electric)] p-8">
+        <div className="hidden mx-auto mb-8 max-w-md rounded-card border border-primary/25 bg-[var(--electric)] p-8">
           <div className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[var(--cream)] opacity-60">You earned</div>
           <div className="text-4xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{formatCoins(successState?.coinsEarned ?? 0)} coins</div>
           <div className="mt-2 text-sm text-[var(--cream)] opacity-60">≈ {formatRupeesFromCoins(successState?.coinsEarned ?? 0)}</div>
@@ -1112,9 +1212,9 @@ export function TesterWorkspacePage({ assignmentId }: { assignmentId: string }) 
 
         {successState?.newTier ? <div className="mx-auto mb-8 max-w-md rounded-[1.75rem] border border-primary/25 bg-primary/10 p-6 text-sm font-bold text-primary">You&apos;re now a {successState.newTier} tester!</div> : null}
 
-        <div className="mx-auto mb-8 grid max-w-2xl gap-4 md:grid-cols-3">
+        <div className="mx-auto mb-8 grid max-w-2xl gap-4 md:grid-cols-2">
           <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{successState?.stats?.totalCompleted ?? 0}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Total missions</div></div>
-          <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Total coins</div></div>
+          <div className="hidden rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--cream)]">{formatCoins(successState?.stats?.coinBalance ?? 0)}</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Total coins</div></div>
           <div className="rounded-[1.5rem] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] p-4"><div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-primary">{successState?.stats?.completionRate ?? 0}%</div><div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--cream)] opacity-60">Success rate</div></div>
         </div>
 

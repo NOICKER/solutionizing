@@ -315,17 +315,15 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
     setDeleteError('')
 
     try {
-      const response = await deleteAccount()
-
-      if (response.success) {
-        toast.success('Your account has been deleted.')
-        hardSignOut()
-      } else {
-        setDeleteError(response.message || 'Failed to delete account')
-      }
+      await deleteAccount()
+      toast.success('Your account has been deleted.')
+      hardSignOut('/')
     } catch (error) {
-      setDeleteError('An unexpected error occurred')
-      console.error(error)
+      setDeleteError(
+        isApiClientError(error) && error.code === 'NETWORK_ERROR'
+          ? 'Check your internet connection'
+          : 'Failed to delete account. Please try again later.'
+      )
     } finally {
       setIsDeleting(false)
     }
@@ -740,6 +738,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
           body="Once you delete your account, there is no going back. All your missions and coin balance will be permanently lost."
           confirmLabel="DELETE MY ACCOUNT"
           confirmStyle="danger"
+          requireTypeToConfirm="DELETE"
           onCancel={() => {
             setDeleteModalOpen(false)
             setDeleteError('')

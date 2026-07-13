@@ -78,7 +78,7 @@ const initialState: WizardState = {
   testersRequired: 1,
   timeoutDuration: 168,
   assets: [{ type: 'LINK', url: '', label: '' }],
-  questions: [{ text: '', type: 'TEXT_SHORT', required: true, order: 0 }],
+  questions: [{ text: '', type: 'TEXT_SHORT', required: true, order: 0, taskInstruction: '' }],
 }
 
 function loadRazorpay(): Promise<boolean> {
@@ -425,6 +425,7 @@ function toFrontendMission(mission: ApiMissionDetail): WizardState {
  ),
  questions: mission.questions.map((question) => ({
  text: question.text,
+ taskInstruction: question.taskInstruction || undefined,
  type: question.type,
  required: question.isRequired,
  options: question.options,
@@ -928,6 +929,7 @@ function MissionWizardContent() {
           order: index + 1,
           type: question.type,
           text: question.text.trim(),
+          taskInstruction: question.taskInstruction?.trim() || undefined,
           options: question.type === 'MULTIPLE_CHOICE' ? (question.options ?? []).map((option) => option.trim()).filter(Boolean) : undefined,
           isRequired: question.required,
         })),
@@ -982,8 +984,6 @@ function MissionWizardContent() {
     setSubmitError('')
 
     try {
-      // Temporary internal testing bypass gated by an environment variable.
-      // MUST BE REMOVED before any public or paying founders use the platform.
       const { data: { session } } = await supabase.auth.getSession()
       const userId = session?.user?.id
 
@@ -1184,7 +1184,7 @@ function MissionWizardContent() {
   function applyQuestionPack(packId: string) {
     const pack = questionPacks.find((p) => p.id === packId)
     if (!pack) return
-    const questions = pack.questions.map((q, i) => ({ ...q, order: i }))
+    const questions = pack.questions.map((q, i) => ({ ...q, order: i, taskInstruction: '' }))
     updateState((current) => ({ ...current, questions }))
   }
 
@@ -1192,6 +1192,7 @@ function MissionWizardContent() {
     updateState((current) => {
       const nextQuestion: WizardQuestion = {
         ...template.question,
+        taskInstruction: '',
         options: template.question.options ? [...template.question.options] : undefined,
         order: current.questions.length,
       }
@@ -1747,7 +1748,16 @@ function MissionWizardContent() {
  <div className="text-sm font-bold text-[var(--electric)]">QUESTION {index + 1}</div>
  {state.questions.length > 1 ? <button type="button" className="text-[var(--ink-soft)]  cursor-none" onClick={() => updateState((current) => ({ ...current, questions: current.questions.filter((_, questionIndex) => questionIndex !== index) }))}>×</button> : null}
  </div>
- <input value={question.text} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, text: event.target.value } : currentQuestion) }))} placeholder="e.g. What was your first impression?" className={textFieldClass} />
+ <div className="space-y-4">
+  <div className="space-y-1">
+   <label className="text-sm font-semibold text-[var(--ink)]">Task Instruction (Optional)</label>
+   <input value={question.taskInstruction || ''} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((q, i) => i === index ? { ...q, taskInstruction: event.target.value } : q) }))} placeholder="e.g. Go to the checkout page and try adding an item." className={textFieldClass} />
+  </div>
+  <div className="space-y-1">
+   <label className="text-sm font-semibold text-[var(--ink)]">Question <span className="text-red-500">*</span></label>
+   <input value={question.text} onChange={(event) => updateState((current) => ({ ...current, questions: current.questions.map((currentQuestion, questionIndex) => questionIndex === index ? { ...currentQuestion, text: event.target.value } : currentQuestion) }))} placeholder="e.g. What was your first impression?" className={textFieldClass} />
+  </div>
+ </div>
  <p className="mt-1 text-sm text-[#c0392b] ">{errors[`question-${index}`]}</p>
  <p className="mt-2 text-xs text-[var(--ink-soft)] ">Ask one specific thing. Vague questions like &quot;What do you think?&quot; produce vague answers. Better: &quot;Did the pricing feel too high, too low, or about right?&quot;</p>
  <div className="mt-4 flex flex-wrap gap-2">
@@ -1787,7 +1797,7 @@ function MissionWizardContent() {
  </div>
  ))}
 
- {state.questions.length < 6 ? <button type="button" className={`px-6 py-3 ${primaryButtonClass} cursor-none`} onClick={() => updateState((current) => ({ ...current, questions: [...current.questions, { text: '', type: 'TEXT_SHORT', required: true, order: current.questions.length }] }))}>+ ADD QUESTION</button> : null}
+ {state.questions.length < 6 ? <button type="button" className={`px-6 py-3 ${primaryButtonClass} cursor-none`} onClick={() => updateState((current) => ({ ...current, questions: [...current.questions, { text: '', taskInstruction: '', type: 'TEXT_SHORT', required: true, order: current.questions.length }] }))}>+ ADD QUESTION</button> : null}
  </div>
             </>
           )}

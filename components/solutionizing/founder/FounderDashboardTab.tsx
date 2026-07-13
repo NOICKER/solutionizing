@@ -18,7 +18,7 @@ import {
   formatCoins,
 } from '@/components/solutionizing/ui'
 
-type MissionPulseFilter = 'current' | 'completed'
+type MissionPulseFilter = 'active' | 'completed' | 'drafts'
 
 function getMissionRecencyTimestamp(mission: ApiMission) {
   const timestamp = Date.parse(mission.completedAt ?? mission.updatedAt ?? mission.createdAt)
@@ -167,18 +167,33 @@ function RecentMissionCard({
 
 function EmptyMissionPulseState({ filter }: { filter: MissionPulseFilter }) {
   const router = useRouter()
-  const isCurrentView = filter === 'current'
+  
+  let title = ''
+  let description = ''
+  let showButton = false
+  
+  if (filter === 'active') {
+    title = 'no active missions right now.'
+    description = 'Start a fresh mission to gather insights.'
+    showButton = true
+  } else if (filter === 'completed') {
+    title = 'no completed missions yet.'
+    description = 'Completed missions stay here once testers finish the full run.'
+  } else {
+    title = 'no drafts yet.'
+    description = 'Saved missions will appear here until you launch them.'
+  }
 
   return (
     <div style={{ background: 'var(--bg-light)', border: '1px dashed var(--border-strong)', borderRadius: '12px', padding: '2.5rem', textAlign: 'center' }}>
       <ClipboardList style={{ width: 40, height: 40, color: 'var(--ink-soft)', margin: '0 auto 1rem' }} />
       <h3 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.2rem', color: 'var(--ink)', fontWeight: 400, marginBottom: '0.5rem' }}>
-        {isCurrentView ? 'no running missions right now.' : 'no completed missions yet.'}
+        {title}
       </h3>
       <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.88rem', color: 'var(--ink-soft)', maxWidth: '32rem', margin: '0 auto 1.5rem' }}>
-        {isCurrentView ? 'Start a fresh mission, or switch to completed missions for archived reports.' : 'Completed missions stay here once testers finish the full run.'}
+        {description}
       </p>
-      {isCurrentView ? (
+      {showButton ? (
         <button className="cursor-none" type="button" onClick={() => router.push('/mission/wizard')} style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.65rem 1.4rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.88rem', cursor: 'none' }}>
           + new mission
         </button>
@@ -270,7 +285,7 @@ export function FounderDashboardTab({
   onViewAllMissions,
 }: FounderDashboardTabProps) {
   const router = useRouter()
-  const [missionPulseFilter, setMissionPulseFilter] = useState<MissionPulseFilter>('current')
+  const [missionPulseFilter, setMissionPulseFilter] = useState<MissionPulseFilter>('active')
 
   const missionStats = useMemo(
     () => ({
@@ -282,10 +297,10 @@ export function FounderDashboardTab({
     [missions]
   )
 
-  const currentMissions = useMemo(
+  const activeMissions = useMemo(
     () =>
       [...missions]
-        .filter((mission) => mission.status !== 'COMPLETED')
+        .filter((mission) => ['PENDING_REVIEW', 'APPROVED', 'ACTIVE'].includes(mission.status))
         .sort((leftMission, rightMission) => getMissionRecencyTimestamp(rightMission) - getMissionRecencyTimestamp(leftMission))
         .slice(0, 3),
     [missions]
@@ -299,10 +314,26 @@ export function FounderDashboardTab({
         .slice(0, 3),
     [missions]
   )
+  
+  const draftMissions = useMemo(
+    () =>
+      [...missions]
+        .filter((mission) => mission.status === 'DRAFT')
+        .sort((leftMission, rightMission) => getMissionRecencyTimestamp(rightMission) - getMissionRecencyTimestamp(leftMission))
+        .slice(0, 3),
+    [missions]
+  )
 
-  const visiblePulseMissions = missionPulseFilter === 'completed'
-    ? completedMissions
-    : currentMissions
+  const visiblePulseMissions = 
+    missionPulseFilter === 'completed' ? completedMissions :
+    missionPulseFilter === 'drafts' ? draftMissions :
+    activeMissions
+
+  const missionStatsCounts = useMemo(() => ({
+    active: missions.filter(m => ['PENDING_REVIEW', 'APPROVED', 'ACTIVE'].includes(m.status)).length,
+    completed: missions.filter(m => m.status === 'COMPLETED').length,
+    drafts: missions.filter(m => m.status === 'DRAFT').length
+  }), [missions])
 
   const statsCards = [
     { label: 'ACTIVE MISSIONS', value: missionStats.active, glyph: 'A', className: 'bg-[rgba(74,197,128,0.12)] text-[#1e7a47]' },
@@ -376,29 +407,57 @@ export function FounderDashboardTab({
       </div>
 
       <section id="missions-section" style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.5rem 2rem' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-          <div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.68rem', color: 'var(--ink-soft)', letterSpacing: '0.12em' }}>MISSION PULSE</div>
-            <h2 style={{ fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '1.3rem', color: 'var(--ink)', fontWeight: 400, marginTop: '0.35rem' }}>
-              {missionPulseFilter === 'completed' ? 'completed missions.' : 'current missions.'}
-            </h2>
-            <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '0.5rem', maxWidth: '36rem' }}>
-              {missionPulseFilter === 'completed' ? 'Completed missions stay here for review without competing with live work.' : 'A quick look at your active, draft, review, and approved missions.'}
-            </p>
-          </div>
-
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '12rem' }}>
-            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--ink-soft)', letterSpacing: '0.12em' }}>SHOW</span>
-            <select className="cursor-none"
-              aria-label="Choose mission pulse list"
-              value={missionPulseFilter}
-              onChange={(event) => setMissionPulseFilter(event.target.value as MissionPulseFilter)}
-              style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.8rem', fontFamily: 'DM Mono, monospace', fontSize: '0.75rem', color: 'var(--ink)', cursor: 'none', outline: 'none' }}
-            >
-              <option value="current">Current Missions</option>
-              <option value="completed">Completed Missions</option>
-            </select>
-          </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+          <button
+            type="button"
+            className="cursor-none"
+            onClick={() => setMissionPulseFilter('active')}
+            style={{ 
+              background: 'none', border: 'none', cursor: 'none', 
+              fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.95rem', 
+              padding: '0.75rem 0.5rem', position: 'relative',
+              color: missionPulseFilter === 'active' ? 'var(--electric)' : 'var(--ink-soft)'
+            }}
+          >
+            Active ({missionStatsCounts.active})
+            {missionPulseFilter === 'active' && (
+              <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: '2px', background: 'var(--electric)' }} />
+            )}
+          </button>
+          
+          <button
+            type="button"
+            className="cursor-none"
+            onClick={() => setMissionPulseFilter('completed')}
+            style={{ 
+              background: 'none', border: 'none', cursor: 'none', 
+              fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.95rem', 
+              padding: '0.75rem 0.5rem', position: 'relative',
+              color: missionPulseFilter === 'completed' ? 'var(--electric)' : 'var(--ink-soft)'
+            }}
+          >
+            Completed ({missionStatsCounts.completed})
+            {missionPulseFilter === 'completed' && (
+              <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: '2px', background: 'var(--electric)' }} />
+            )}
+          </button>
+          
+          <button
+            type="button"
+            className="cursor-none"
+            onClick={() => setMissionPulseFilter('drafts')}
+            style={{ 
+              background: 'none', border: 'none', cursor: 'none', 
+              fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.95rem', 
+              padding: '0.75rem 0.5rem', position: 'relative',
+              color: missionPulseFilter === 'drafts' ? 'var(--electric)' : 'var(--ink-soft)'
+            }}
+          >
+            Drafts ({missionStatsCounts.drafts})
+            {missionPulseFilter === 'drafts' && (
+              <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: '2px', background: 'var(--electric)' }} />
+            )}
+          </button>
         </div>
 
         {content}

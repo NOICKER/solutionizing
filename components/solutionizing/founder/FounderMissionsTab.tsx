@@ -15,9 +15,6 @@ import {
   RetestCountChip,
   SpinnerIcon,
   clampPercent,
-  mutedButtonClass,
-  outlineButtonClass,
-  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 
 type MissionFilterId = 'ALL' | Extract<MissionStatus, 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'PENDING_REVIEW' | 'COMPLETED' | 'REJECTED'>
@@ -133,7 +130,7 @@ export function FounderMissionsTab({
           return (
             <div
               key={mission.id}
-              className={`group block transition-all ${isCardClickable ? 'rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5 cursor-none hover:border-[var(--electric)] hover:shadow-[0_8px_24px_rgba(28,16,8,0.08)] focus:outline-none focus:ring-2 focus:ring-[var(--electric-dim)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]' : 'rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4 sm:p-5'}`}
+              className={`group block transition-all ${isCardClickable ? 'rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-5 cursor-none hover:border-[var(--border-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--electric-dim)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]' : 'rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-5'}`}
               onClick={isCardClickable ? openMissionCard : undefined}
               onKeyDown={
                 isCardClickable
@@ -191,8 +188,8 @@ export function FounderMissionsTab({
                     </span>
                     <span className="font-bold text-[var(--ink)]">{Math.round(progress)}%</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
-                    <div className="h-full rounded-full bg-[var(--electric)] transition-all duration-500" style={{ width: `${progress}%` }} />
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--bg)]">
+                    <div className="h-1 rounded-full bg-[var(--electric)] transition-all duration-500" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               ) : null}
@@ -329,11 +326,8 @@ export function FounderMissionsTab({
   return (
     <section
       id="missions-section"
-      className="rounded-[1.9rem] border border-[var(--border)] bg-[var(--bg-light)] p-4 sm:p-5 animate-[tabEnter_0.22s_ease_forwards]"
+      className="rounded-[14px] border border-[var(--border)] bg-[var(--cream)] p-6 animate-[tabEnter_0.22s_ease_forwards]"
     >
-      <div className="mb-6 rounded-[12px] border border-[var(--border)] bg-[var(--cream)] p-4">
-        <p className="text-sm font-semibold text-[var(--ink)]">Pricing update: Missions now cost ₹80 per tester slot directly. Coin packs are disabled for now while we simplify the payment flow.</p>
-      </div>
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -344,7 +338,7 @@ export function FounderMissionsTab({
       </div>
 
       {!isLoading && !loadError && missions.length > 0 ? (
-        <div className="mb-5 flex flex-wrap gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--cream)] p-2">
+        <div className="mb-5 flex flex-wrap gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--bg)] p-2">
           {missionFilters.map((filter) => {
             const isActive = selectedFilter === filter.id
 
@@ -354,7 +348,7 @@ export function FounderMissionsTab({
                 type="button"
                 className={`cursor-none rounded-full px-4 py-1.5 text-[0.7rem] font-[family-name:var(--font-dm-mono)] uppercase tracking-wide transition-colors ${
                   isActive
-                    ? 'border border-[var(--electric-mid)] bg-[var(--electric-dim)] text-[var(--electric)]'
+                    ? 'border border-[var(--electric)] bg-[var(--electric)] text-[var(--cream)]'
                     : 'border border-transparent text-[var(--ink-soft)] hover:bg-[var(--bg-light)] hover:text-[var(--ink)]'
                 }`}
                 onClick={() => setSelectedFilter(filter.id)}

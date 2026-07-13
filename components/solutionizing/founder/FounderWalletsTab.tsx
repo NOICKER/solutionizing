@@ -1,7 +1,7 @@
 "use client"
 
 import { AlertTriangle, CheckCircle2, LifeBuoy, RotateCcw, Wallet } from 'lucide-react'
-import { SpinnerIcon, formatCoins, primaryButtonClass } from '@/components/solutionizing/ui'
+import { SpinnerIcon, formatCoins } from '@/components/solutionizing/ui'
 
 const coinPacks = [
   { packId: 'starter', name: 'Starter', coins: 14900, priceLabel: '₹149', discount: '10% OFF', popular: false },
@@ -42,58 +42,51 @@ function CoinPackCard({
   const purchaseDisabled = loadingPackId !== null
 
   return (
-    <div
-      style={{ background: 'var(--bg-light)', border: pack.popular ? '1px solid var(--electric)' : '1px solid var(--border)', borderRadius: '12px', padding: '1.2rem 1.4rem', position: 'relative' }}
-    >
+    <div style={{
+      position: 'relative',
+      background: pack.popular ? 'var(--ink)' : 'var(--bg-light)',
+      border: pack.popular ? '2px solid var(--electric)' : '1px solid var(--border)',
+      borderRadius: '14px', padding: '1.5rem',
+      transition: 'border-color 0.2s',
+    }}>
       {pack.popular ? (
-        <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--electric)', color: 'var(--cream)', borderRadius: '100px', padding: '0.2rem 0.6rem', fontSize: '0.6rem', fontFamily: 'DM Mono, monospace', letterSpacing: '0.1em' }}>
-          Most Recommended
+        <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--electric)', color: 'var(--cream)', borderRadius: '100px', padding: '0.25rem 0.9rem', fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+          MOST POPULAR
         </div>
       ) : null}
 
-      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.1em', color: 'var(--ink-soft)', marginBottom: '1rem' }}>
-        {pack.popular ? 'Mid Tier' : pack.packId === 'starter' ? 'Entry Tier' : 'Alpha Tier'}
+      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: pack.popular ? 'rgba(250,247,242,0.5)' : 'var(--ink-soft)', letterSpacing: '0.12em', marginBottom: '1rem' }}>
+        {pack.packId === 'starter' ? 'ENTRY TIER' : pack.packId === 'growth' ? 'MID TIER' : 'ALPHA TIER'}
       </div>
 
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-        <span className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal ">C</span>
+      <h3 style={{ fontFamily: 'Fraunces, serif', fontSize: '1.2rem', fontWeight: 700, color: pack.popular ? 'var(--cream)' : 'var(--ink)', marginBottom: '0.3rem' }}>
+        {pack.name}
+      </h3>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1rem' }}>
+        <span style={{ fontFamily: 'Fraunces, serif', fontSize: '2rem', fontWeight: 700, color: 'var(--electric)' }}>{formatCoins(pack.coins)}</span>
+        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: pack.popular ? 'rgba(250,247,242,0.4)' : 'var(--ink-soft)' }}>COINS</span>
       </div>
 
-      <div className="mt-6">
-        <h3 style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '1.2rem', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>{pack.name}</h3>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '1.8rem', fontWeight: 700, color: 'var(--ink)' }}>{formatCoins(pack.coins)}</span>
-          <span className="text-sm font-bold uppercase tracking-wider ">COINS</span>
-        </div>
-        <div className="mt-5 space-y-2 text-sm ">
-          {pack.packId === 'starter' && (
-            <>
-              <p>✓ Standard Mission Capacity</p>
-              <p>✓ Basic Architecture Tools</p>
-              <p className="opacity-50">✗ Priority Support</p>
-            </>
-          )}
-          {pack.packId === 'growth' && (
-            <>
-              <p>✓ Expanded Mission Logic</p>
-              <p>✓ Advanced Neural Clusters</p>
-              <p>✓ Priority Node Access</p>
-            </>
-          )}
-          {pack.packId === 'scale' && (
-            <>
-              <p>✓ Unlimited Mission Architect</p>
-              <p>✓ Global Deployment Cluster</p>
-              <p>✓ Dedicated Concierge</p>
-            </>
-          )}
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1.5rem', fontSize: '0.83rem', color: pack.popular ? 'rgba(250,247,242,0.6)' : 'var(--ink-soft)', fontFamily: 'Satoshi, sans-serif' }}>
+        {pack.packId === 'starter' && (<><div>✓ Standard Mission Capacity</div><div>✓ Basic Architecture Tools</div><div style={{ opacity: 0.4 }}>✗ Priority Support</div></>)}
+        {pack.packId === 'growth' && (<><div>✓ Expanded Mission Logic</div><div>✓ Advanced Neural Clusters</div><div>✓ Priority Node Access</div></>)}
+        {pack.packId === 'scale' && (<><div>✓ Unlimited Mission Architect</div><div>✓ Global Deployment Cluster</div><div>✓ Dedicated Concierge</div></>)}
       </div>
 
-      <button className="cursor-none"
-        style={pack.popular ? { background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.55rem 1.2rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.82rem', cursor: 'none', width: '100%', marginTop: '2rem' } : { background: 'transparent', border: '1px solid var(--border-strong)', color: 'var(--ink)', borderRadius: '100px', padding: '0.5rem 1.1rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 600, fontSize: '0.82rem', cursor: 'none', width: '100%', marginTop: '2rem' }}
+      <button
         disabled={purchaseDisabled}
         onClick={() => onPurchase(pack.packId)}
+        style={{
+          width: '100%', padding: '0.75rem',
+          background: pack.popular ? 'var(--electric)' : 'transparent',
+          color: pack.popular ? 'var(--cream)' : 'var(--ink)',
+          border: pack.popular ? 'none' : '1.5px solid var(--border-strong)',
+          borderRadius: '100px', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.88rem',
+          cursor: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+          transition: 'background 0.2s, border-color 0.2s',
+          opacity: purchaseDisabled ? 0.7 : 1,
+        }}
       >
         {isLoading ? <SpinnerIcon className="h-4 w-4" /> : null}
         Buy for {pack.priceLabel}
@@ -101,7 +94,6 @@ function CoinPackCard({
     </div>
   )
 }
-
 function PurchaseOutcomePanel({
   purchaseResult,
   loadingPackId,
@@ -249,7 +241,7 @@ export function FounderWalletsTab({
         </p>
       </div>
 
-      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <div className="mb-6">
         <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.2rem 1.4rem' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 ">
@@ -267,25 +259,13 @@ export function FounderWalletsTab({
             Use your coin balance to launch missions, fill tester slots, and keep studies moving without delays.
           </p>
         </div>
-
-        <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.2rem 1.4rem' }}>
-          <h3 style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>Instant Power Refresh</h3>
-          <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.88rem', color: 'var(--ink-soft)', margin: '0.2rem 0 0 0' }}>Auto-refill triggered at 5,000 coins.</p>
-          <button className="cursor-none" style={{ background: 'var(--electric)', color: 'var(--cream)', border: 'none', borderRadius: '100px', padding: '0.55rem 1.2rem', fontFamily: 'Satoshi, sans-serif', fontWeight: 700, fontSize: '0.82rem', cursor: 'none' }}>
-            MANAGE AUTO-PAY
-          </button>
-        </div>
       </div>
 
       <div className="mb-6">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4">
           <div>
-            <h3 className="text-lg font-bold ">Acquire More Power</h3>
+            <h3 style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.78rem', color: 'var(--ink-soft)', letterSpacing: '0.1em', marginBottom: '1.2rem' }}>TOP UP YOUR BALANCE</h3>
             <p className="text-sm ">Scale your architectural precision with high-density coin bundles.</p>
-          </div>
-          <div className="flex rounded-xl border border-border-subtle overflow-hidden">
-            <button className="px-4 py-1.5 text-xs font-bold bg-primary/10  cursor-none">ONE-TIME</button>
-            <button className="px-4 py-1.5 text-xs font-bold  hover:text-text-main cursor-none">MONTHLY</button>
           </div>
         </div>
       </div>

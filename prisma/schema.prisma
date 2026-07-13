@@ -205,10 +205,11 @@ model MissionQuestion {
   mission    Mission      @relation(fields: [missionId], references: [id], onDelete: Cascade)
   order      Int
   type       QuestionType
-  text       String
-  options    String[]
-  isRequired Boolean      @default(true)
-  createdAt  DateTime     @default(now())
+  text            String
+  taskInstruction String?
+  options         String[]
+  isRequired      Boolean      @default(true)
+  createdAt       DateTime     @default(now())
   responses MissionResponse[]
   @@index([missionId])
   @@map("mission_questions")

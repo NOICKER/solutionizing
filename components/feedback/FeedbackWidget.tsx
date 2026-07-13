@@ -40,6 +40,7 @@ export default function FeedbackWidget() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const resetState = useCallback(() => {
     setIsOpen(false)
@@ -122,6 +123,19 @@ export default function FeedbackWidget() {
       setIsOpen(true)
     } finally {
       setIsCapturing(false)
+    }
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setScreenshotDataUrl(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -343,18 +357,43 @@ export default function FeedbackWidget() {
               </button>
             </div>
 
-            {screenshotDataUrl && (
-              <div className="mb-4 relative rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--bg)] group h-32 flex items-center justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={screenshotDataUrl} alt="Screenshot preview" className="max-h-full max-w-full object-cover" />
+            {screenshotDataUrl ? (
+              <div className="mb-4 flex flex-col gap-2">
+                <div className="relative rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--bg)] group h-32 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={screenshotDataUrl} alt="Screenshot preview" className="max-h-full max-w-full object-cover" />
+                  <button 
+                    onClick={() => setScreenshotDataUrl(null)}
+                    className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-none"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
                 <button 
-                  onClick={() => setScreenshotDataUrl(null)}
-                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-none"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs text-[var(--ink-soft)] hover:text-[var(--electric)] transition-colors self-start cursor-none"
                 >
-                  <Trash2 size={14} />
+                  replace with your own screenshot
+                </button>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-24 rounded-lg border-2 border-dashed border-[var(--border)] bg-[var(--bg)] hover:bg-[var(--cream)] hover:border-[var(--electric)] text-[var(--ink-soft)] hover:text-[var(--electric)] transition-colors flex items-center justify-center text-sm font-medium cursor-none"
+                >
+                  attach a screenshot
                 </button>
               </div>
             )}
+
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/jpeg, image/png" 
+              onChange={handleFileUpload}
+            />
 
             <div className="mb-4 flex flex-wrap gap-2">
               {CATEGORIES.map(cat => (

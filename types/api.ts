@@ -46,6 +46,7 @@ export interface ApiMissionQuestion {
   order: number
   type: QuestionType
   text: string
+  taskInstruction?: string | null
   options: string[]
   isRequired: boolean
 }
@@ -247,6 +248,7 @@ export interface WizardAsset {
 
 export interface WizardQuestion {
   text: string
+  taskInstruction?: string
   type: QuestionType
   required: boolean
   options?: string[]

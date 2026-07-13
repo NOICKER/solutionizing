@@ -16,7 +16,6 @@ import {
   SpinnerIcon,
   formatCoins,
   formatRupeesFromCoins,
-  primaryButtonClass,
 } from '@/components/solutionizing/ui'
 import { minimumWithdrawalCoins } from '@/components/solutionizing/tester/constants'
 import { WelcomeBanner } from '@/components/solutionizing/shared/WelcomeBanner'
@@ -288,8 +287,8 @@ export function TesterMissionsTab({
                 </div>
               </div>
 
-              <div className="mb-6 grid grid-cols-3 gap-4">
-                <div>
+              <div className="mb-6 grid grid-cols-2 gap-4">
+                <div className="hidden">
                   <div className="mb-1 font-[family-name:var(--font-dm-mono)] text-[0.65rem] tracking-[0.12em] text-[var(--ink-soft)]">REWARD</div>
                   <div className="font-['Satoshi'] text-[1.1rem] font-bold text-[var(--ink)]">
                     {formatCoins(assignment.mission.coinPerTester)}
@@ -356,8 +355,8 @@ export function TesterMissionsTab({
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="hidden rounded-[12px] border border-[var(--border)] bg-[var(--bg-light)] p-5 transition-colors">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[rgba(74,197,128,0.12)] text-[#1e7a47]">
               <Coins className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -420,7 +419,7 @@ export function TesterMissionsTab({
         </div>
       </div>
 
-      <div className="relative mb-8 overflow-hidden rounded-[24px] bg-[var(--electric)] p-8 text-[var(--cream)]">
+      <div className="hidden relative mb-8 overflow-hidden rounded-[24px] bg-[var(--electric)] p-8 text-[var(--cream)]">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div className="flex-1">
             <h3 className="mb-2 font-[family-name:var(--font-fraunces)] text-[1.6rem] italic font-normal text-[var(--cream)]">Ready for payout?</h3>
