@@ -2055,7 +2055,6 @@ export default function LandingPage() {
   </div>
 
   <section className="hero" id="hero">
-    <div className="hero-tag anim-fade-up h-delay-0" id="hero-tag" data-original="● USABILITY INTELLIGENCE">● USABILITY INTELLIGENCE</div>
     <h1>
       <span className="hero-line anim-clip h-delay-1" id="hero-title-1" data-original="find out exactly">find out exactly</span>
       <span className="hero-line anim-clip h-delay-2" id="hero-title-2" data-original="where you &lt;em&gt;lost&lt;/em&gt; them.">where you <em>lost</em> them.</span>
