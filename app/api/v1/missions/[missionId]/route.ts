@@ -88,7 +88,7 @@ const UpdateMissionSchema = z.object({
   title: z.string().min(5).max(100).optional(),
   goal: z.string().min(10).max(300).optional(),
   difficulty: z.nativeEnum(Difficulty).optional(),
-  estimatedMinutes: z.number().int().min(2).max(4).optional(),
+  estimatedMinutes: z.number().int().min(2).max(20).optional(),
   testersRequired: z.number().int().min(1).max(3).optional(),
   timeoutDuration: TimeoutDurationSchema.optional(),
   assets: z.array(MissionAssetSchema).min(1).max(3).optional(),

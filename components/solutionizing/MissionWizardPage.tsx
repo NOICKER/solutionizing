@@ -1485,7 +1485,7 @@ function MissionWizardContent() {
  <div className="pt-6 border-t border-[var(--border)] ">
  <label className="mb-6 block text-sm font-bold uppercase tracking-wider text-[var(--ink-soft)] ">ESTIMATED MINUTES</label>
  <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 ">
- <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[var(--electric)] cursor-none" />
+ <input type="range" min={2} max={20} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[var(--electric)] cursor-none" />
  <div className="mt-4 text-center">
  <div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] ">{state.estimatedMinutes} minutes</div>
  <p className="mt-1 text-sm text-[var(--ink-soft)] ">Per tester — how long one person needs to complete your mission</p>
