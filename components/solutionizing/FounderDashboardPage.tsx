@@ -679,6 +679,8 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
               userName={userName}
               userEmail={userEmail}
               onOpenDeleteModal={() => setDeleteModalOpen(true)}
+              onSwitchToTester={() => void handleSwitchToTester()}
+              isSwitchingToTester={isSwitchingToTester}
             />
           )}
         </div>

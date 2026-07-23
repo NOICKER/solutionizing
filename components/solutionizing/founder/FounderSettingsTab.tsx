@@ -1,6 +1,7 @@
 "use client"
 
 import { ReactNode, useEffect, useState } from 'react'
+import { ArrowRightLeft } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
 import { useAuth } from '@/context/AuthContext'
 import { apiFetch, isApiClientError } from '@/lib/api/client'
@@ -129,14 +130,18 @@ interface FounderSettingsTabProps {
   userName: string
   userEmail: string
   onOpenDeleteModal: () => void
+  onSwitchToTester?: () => void
+  isSwitchingToTester?: boolean
 }
 
 export function FounderSettingsTab({
   userName,
   userEmail,
   onOpenDeleteModal,
+  onSwitchToTester,
+  isSwitchingToTester = false,
 }: FounderSettingsTabProps) {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const [displayName, setDisplayName] = useState(user?.founderProfile?.displayName ?? userName)
   const [companyName, setCompanyName] = useState('')
   const [defaultDifficulty, setDefaultDifficulty] = useState<FounderDifficulty>('MEDIUM')
@@ -620,6 +625,33 @@ export function FounderSettingsTab({
               disabled={isLoadingProfile || savingNotificationField !== null || !hasLoadedProfile}
               onToggle={() => void handleNotificationToggle('notifyTesterFeedback')}
             />
+          </div>
+        </SettingsSectionCard>
+
+        <SettingsSectionCard
+          title="Session"
+          description="Manage your current session and role switching."
+          className="md:hidden xl:col-span-2"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {onSwitchToTester && (
+              <button
+                type="button"
+                onClick={onSwitchToTester}
+                disabled={isSwitchingToTester}
+                className="cursor-none w-full rounded-full bg-[var(--electric-dim)] border border-[var(--electric-mid)] py-3 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--electric)] transition-all hover:opacity-90 text-center flex items-center justify-center gap-2"
+              >
+                <ArrowRightLeft style={{ width: 14, height: 14 }} />
+                {isSwitchingToTester ? 'Switching to tester...' : 'Switch to tester'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="cursor-none w-full rounded-full bg-[var(--electric)] py-3 font-['Satoshi'] text-[0.95rem] font-bold text-[var(--cream)] transition-all hover:opacity-90 text-center"
+            >
+              Sign Out
+            </button>
           </div>
         </SettingsSectionCard>
 
