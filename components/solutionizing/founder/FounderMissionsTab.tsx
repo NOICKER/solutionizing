@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { useState } from 'react'
+import { toast } from '@/components/ui/sonner'
 import { ApiMission, MissionStatus } from '@/types/api'
 import {
   DashboardCardSkeleton,
@@ -60,6 +61,7 @@ interface FounderMissionsTabProps {
   onLaunchMission: (mission: ApiMission) => void
   onResumeMission: (mission: ApiMission) => void
   onOpenDialog: (type: 'pause' | 'close', mission: ApiMission) => void
+  onDeleteMission?: (missionId: string) => Promise<void>
 }
 
 export function FounderMissionsTab({
@@ -73,9 +75,12 @@ export function FounderMissionsTab({
   onLaunchMission,
   onResumeMission,
   onOpenDialog,
+  onDeleteMission,
 }: FounderMissionsTabProps) {
   const router = useRouter()
   const [selectedFilter, setSelectedFilter] = useState<MissionFilterId>('ALL')
+  const [deletingMissionId, setDeletingMissionId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const selectedFilterLabel = missionFilters.find((filter) => filter.id === selectedFilter)?.label ?? 'All'
   const filteredMissions =
     selectedFilter === 'ALL' ? missions : missions.filter((mission) => mission.status === selectedFilter)
@@ -312,6 +317,48 @@ export function FounderMissionsTab({
                   >
                     EDIT & RESUBMIT {'->'}
                   </Link>
+                  {onDeleteMission && (
+                    confirmDeleteId === mission.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[var(--ink-soft)]">Are you sure?</span>
+                        <button
+                          type="button"
+                          disabled={deletingMissionId === mission.id}
+                          onClick={async (event) => {
+                            event.stopPropagation()
+                            setDeletingMissionId(mission.id)
+                            try {
+                              await onDeleteMission(mission.id)
+                              toast.success('Mission deleted')
+                            } catch {
+                              toast.error('Failed to delete mission')
+                            } finally {
+                              setDeletingMissionId(null)
+                              setConfirmDeleteId(null)
+                            }
+                          }}
+                          className="rounded-full bg-[#c0392b] px-4 py-1.5 text-xs font-bold text-white hover:opacity-90 cursor-none disabled:opacity-50"
+                        >
+                          {deletingMissionId === mission.id ? 'Deleting...' : 'Yes, delete'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(event) => { event.stopPropagation(); setConfirmDeleteId(null) }}
+                          className="rounded-full border border-[var(--border)] px-4 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--cream)] cursor-none"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(event) => { event.stopPropagation(); setConfirmDeleteId(mission.id) }}
+                        className="text-sm font-semibold text-[#c0392b] hover:underline cursor-none"
+                      >
+                        Delete mission
+                      </button>
+                    )
+                  )}
                 </div>
               ) : null}
 

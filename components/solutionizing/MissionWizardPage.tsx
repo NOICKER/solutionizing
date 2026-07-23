@@ -599,7 +599,15 @@ function MissionWizardContent() {
  const [pendingMissionPayload, setPendingMissionPayload] = useState<any>(null)
   const [pendingAction, setPendingAction] = useState<'draft' | 'submit' | null>(null)
   const [submitError, setSubmitError] = useState('')
+  const [referralCode, setReferralCode] = useState('')
+  const [referralInput, setReferralInput] = useState('')
+  const [referralDiscount, setReferralDiscount] = useState(0)
+  const [referralError, setReferralError] = useState('')
+  const [referralLoading, setReferralLoading] = useState(false)
+  const [showReferralInput, setShowReferralInput] = useState(false)
 
+  const BASE_PRICE_PER_SLOT = 140
+  const effectivePricePerSlot = referralCode ? BASE_PRICE_PER_SLOT - referralDiscount : BASE_PRICE_PER_SLOT
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
   const [templates, setTemplates] = useState<WizardTemplate[]>([])
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
@@ -1033,6 +1041,7 @@ function MissionWizardContent() {
         body: JSON.stringify({ 
           testersRequired: payload.testersRequired,
           missionData: payload,
+          referralCode: referralCode || undefined,
         }),
       })
       
@@ -1479,7 +1488,8 @@ function MissionWizardContent() {
  <input type="range" min={2} max={4} step={1} value={state.estimatedMinutes} onChange={(event) => updateState((current) => ({ ...current, estimatedMinutes: Number(event.target.value) }))} className="w-full accent-[var(--electric)] cursor-none" />
  <div className="mt-4 text-center">
  <div className="text-2xl font-[family-name:var(--font-fraunces)] italic font-normal text-[var(--ink)] ">{state.estimatedMinutes} minutes</div>
- <p className="mt-1 text-sm text-[var(--ink-soft)] ">Missions must be 2–4 minutes</p>
+ <p className="mt-1 text-sm text-[var(--ink-soft)] ">Per tester — how long one person needs to complete your mission</p>
+ <p className="mt-1 text-xs text-[var(--ink-soft)] ">All testers work in parallel. Most missions are fully completed within ~1 day.</p>
  </div>
  </div>
  </div>
@@ -1847,19 +1857,95 @@ function MissionWizardContent() {
  </div>
  </div>
  <div className="rounded-3xl bg-[var(--electric)] p-6 text-[var(--ink)]">
-              <div className="mb-4 text-xs font-bold uppercase tracking-wide text-[var(--ink)]/50">PAYMENT SUMMARY</div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[var(--cream)]">
-                  <span>₹80 × {state.testersRequired} testers</span>
-                  <span className="font-bold">₹{80 * state.testersRequired}</span>
-                </div>
-                <div className="my-3 border-t border-white/20" />
-                <div className="flex items-center justify-between text-[var(--cream)]">
-                  <span className="text-xl font-bold">TOTAL</span>
-                  <span className="text-xl font-bold">₹{80 * state.testersRequired}</span>
-                </div>
-              </div>
-            </div>
+               <div className="mb-4 text-xs font-bold uppercase tracking-wide text-[var(--ink)]/50">PAYMENT SUMMARY</div>
+               <div className="space-y-3">
+                 <div className="flex items-center justify-between text-[var(--cream)]">
+                   <span>₹{BASE_PRICE_PER_SLOT} × {state.testersRequired} testers</span>
+                   <span className="font-bold">₹{BASE_PRICE_PER_SLOT * state.testersRequired}</span>
+                 </div>
+                 {referralCode && (
+                   <div className="flex items-center justify-between text-emerald-200">
+                     <span>Referral discount ({referralCode})</span>
+                     <span className="font-bold">−₹{referralDiscount * state.testersRequired}</span>
+                   </div>
+                 )}
+                 <div className="my-3 border-t border-white/20" />
+                 <div className="flex items-center justify-between text-[var(--cream)]">
+                   <span className="text-xl font-bold">TOTAL</span>
+                   <span className="text-xl font-bold">₹{effectivePricePerSlot * state.testersRequired}</span>
+                 </div>
+               </div>
+             </div>
+
+             {/* Referral Code Section */}
+             <div className="rounded-card border border-[var(--border)] bg-[var(--cream)] p-6 mt-4">
+               {!showReferralInput && !referralCode && (
+                 <button
+                   type="button"
+                   onClick={() => setShowReferralInput(true)}
+                   className="text-sm font-semibold text-[var(--electric)] hover:underline cursor-none"
+                 >
+                   Have a referral code?
+                 </button>
+               )}
+               {showReferralInput && !referralCode && (
+                 <div>
+                   <label className="mb-2 block text-sm font-bold uppercase tracking-wider text-[var(--ink-soft)]">REFERRAL CODE</label>
+                   <div className="flex gap-2">
+                     <input
+                       type="text"
+                       value={referralInput}
+                       onChange={(e) => { setReferralInput(e.target.value.toUpperCase()); setReferralError('') }}
+                       placeholder="Enter code"
+                       className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/50 focus:border-[var(--electric)] focus:outline-none"
+                     />
+                     <button
+                       type="button"
+                       disabled={!referralInput.trim() || referralLoading}
+                       onClick={async () => {
+                         setReferralLoading(true)
+                         setReferralError('')
+                         try {
+                           const res = await fetch(`/api/v1/payments/validate-referral?code=${encodeURIComponent(referralInput.trim())}`)
+                           const data = await res.json()
+                           if (data.data?.valid) {
+                             setReferralCode(referralInput.trim().toUpperCase())
+                             setReferralDiscount(data.data.discountAmount)
+                             setReferralError('')
+                           } else {
+                             setReferralError(data.data?.message || "This code isn't valid")
+                           }
+                         } catch {
+                           setReferralError('Could not verify code. Please try again.')
+                         } finally {
+                           setReferralLoading(false)
+                         }
+                       }}
+                       className="rounded-xl bg-[var(--electric)] px-4 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 cursor-none"
+                     >
+                       {referralLoading ? 'Checking...' : 'Apply'}
+                     </button>
+                   </div>
+                   {referralError && <p className="mt-2 text-sm text-[#c0392b]">{referralError}</p>}
+                 </div>
+               )}
+               {referralCode && (
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                     <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
+                       {referralCode} — ₹{referralDiscount} off/slot
+                     </span>
+                   </div>
+                   <button
+                     type="button"
+                     onClick={() => { setReferralCode(''); setReferralDiscount(0); setReferralInput(''); setShowReferralInput(false) }}
+                     className="text-sm text-[#c0392b] hover:underline cursor-none"
+                   >
+                     Remove
+                   </button>
+                 </div>
+               )}
+             </div>
  {reviewAssets}
  {reviewQuestions}
  {submitError ? <p className="text-sm text-[#c0392b] ">{submitError}</p> : null}
@@ -2028,15 +2114,21 @@ function MissionWizardContent() {
         <p className="font-semibold text-[var(--ink)] mb-4">{pendingMissionPayload.title || 'Untitled Mission'}</p>
         
         <div className="flex justify-between items-center text-sm text-[var(--ink-soft)] mb-2">
-          <span>Tester Slots ({pendingMissionPayload.testersRequired} × ₹80)</span>
-          <span>₹{pendingMissionPayload.testersRequired * 80}</span>
+          <span>Tester Slots ({pendingMissionPayload.testersRequired} × ₹{BASE_PRICE_PER_SLOT})</span>
+          <span>₹{pendingMissionPayload.testersRequired * BASE_PRICE_PER_SLOT}</span>
         </div>
+        {referralCode && (
+           <div className="flex justify-between items-center text-sm text-emerald-600 mb-2">
+             <span>Referral discount ({referralCode})</span>
+             <span>−₹{referralDiscount * pendingMissionPayload.testersRequired}</span>
+           </div>
+         )}
         
         <div className="my-4 border-t border-[var(--border)]" />
         
         <div className="flex justify-between items-center text-lg font-bold text-[var(--ink)] mb-6">
           <span>Total</span>
-          <span>₹{pendingMissionPayload.testersRequired * 80}</span>
+          <span>₹{effectivePricePerSlot * pendingMissionPayload.testersRequired}</span>
         </div>
 
         <div className="flex gap-3">

@@ -376,6 +376,11 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
     }
   }
 
+  async function handleDeleteMission(missionId: string) {
+    await apiFetch(`/api/v1/missions/${missionId}`, { method: 'DELETE' })
+    setMissions((current) => current.filter((m) => m.id !== missionId))
+  }
+
   async function handleDialogConfirm() {
     if (!dialogMission) {
       return
@@ -671,6 +676,7 @@ function FounderDashboardContent({ initialData }: FounderDashboardPageProps) {
               onLaunchMission={(mission) => void handleMissionAction(mission, 'launch')}
               onResumeMission={(mission) => void handleMissionAction(mission, 'resume')}
               onOpenDialog={(type, mission) => setDialogMission({ type, mission })}
+              onDeleteMission={handleDeleteMission}
             />
           ) : activeTab === 'support' ? (
             <SupportPage role="FOUNDER" />

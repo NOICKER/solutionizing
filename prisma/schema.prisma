@@ -168,6 +168,7 @@ model Mission {
   completedAt       DateTime?
   paidAt            DateTime?
   pausedAt          DateTime?
+  referralCode      String?   @map("referral_code")
   reportCount       Int @default(0)
   healthScore       Int?
   createdAt         DateTime @default(now())
@@ -385,10 +386,23 @@ model Payment {
   missionPayload      Json?
   missionId           String?  @unique
   mission             Mission? @relation(fields: [missionId], references: [id])
+  referralCode        String?  @map("referral_code")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
   @@index([razorpayOrderId])
   @@index([founderId])
   @@map("payments")
+}
+
+model ReferralCode {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  referrerName   String   @map("referrer_name")
+  discountAmount Int      @default(40) @map("discount_amount")
+  active         Boolean  @default(true)
+  timesUsed      Int      @default(0) @map("times_used")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("referral_codes")
 }

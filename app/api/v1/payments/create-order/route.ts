@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { testersRequired, missionData } = body
+    const { testersRequired, missionData, referralCode: rawReferralCode } = body
 
     if (
       typeof testersRequired !== 'number' ||
@@ -28,8 +28,26 @@ export async function POST(request: NextRequest) {
       return badRequest('Missing mission data')
     }
 
-    // ₹80 per tester, converted to paise (₹1 = 100 paise)
-    const amount = testersRequired * 80 * 100
+    // Base price: ₹140 per tester slot
+    let pricePerSlot = 140
+    let validatedReferralCode: string | null = null
+
+    // Validate referral code if provided
+    if (rawReferralCode && typeof rawReferralCode === 'string') {
+      const code = rawReferralCode.trim().toUpperCase()
+      const referral = await prisma.referralCode.findUnique({
+        where: { code },
+      })
+
+      if (referral && referral.active) {
+        pricePerSlot = Math.max(0, pricePerSlot - referral.discountAmount)
+        validatedReferralCode = referral.code
+      }
+      // If invalid/inactive, silently ignore — price stays at ₹140
+    }
+
+    // Convert to paise (₹1 = 100 paise)
+    const amount = testersRequired * pricePerSlot * 100
 
     const keyId = process.env.RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET
@@ -74,6 +92,7 @@ export async function POST(request: NextRequest) {
         currency: order.currency,
         status: 'created',
         founderId: founderProfile.id,
+        referralCode: validatedReferralCode,
         missionPayload: body, // Snapshot of exactly what was requested
       },
     })

@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
           coinCostTotal: 0,
           status: 'PENDING_REVIEW',
           paidAt: new Date(),
+          referralCode: payment.referralCode,
           assets: {
             create: missionData.assets.map((asset: any) => ({
               type: asset.type === 'TEXT' ? 'TEXT_DESCRIPTION' : asset.type === 'VIDEO' ? 'SHORT_VIDEO' : asset.type,
@@ -132,6 +133,13 @@ export async function POST(request: NextRequest) {
         where: { id: payment.id },
         data: { missionId: mission.id },
       })
+
+      if (payment.referralCode) {
+        await tx.referralCode.update({
+          where: { code: payment.referralCode },
+          data: { timesUsed: { increment: 1 } },
+        })
+      }
 
       return { success: true, missionId: mission.id, alreadyCaptured: false, mission }
     })
