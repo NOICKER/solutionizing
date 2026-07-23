@@ -402,6 +402,7 @@ model ReferralCode {
   discountAmount Int      @default(40) @map("discount_amount")
   active         Boolean  @default(true)
   timesUsed      Int      @default(0) @map("times_used")
+  maxUses        Int?     @map("max_uses")
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@map("referral_codes")

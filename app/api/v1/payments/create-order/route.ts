@@ -40,10 +40,25 @@ export async function POST(request: NextRequest) {
       })
 
       if (referral && referral.active) {
-        pricePerSlot = Math.max(0, pricePerSlot - referral.discountAmount)
-        validatedReferralCode = referral.code
+        // Check usage cap
+        const withinCap = referral.maxUses === null || referral.timesUsed < referral.maxUses
+
+        // Check if this founder already used any referral code
+        const previousReferralUse = await prisma.mission.findFirst({
+          where: {
+            founderId: founderProfile.id,
+            referralCode: { not: null },
+            paidAt: { not: null },
+          },
+          select: { id: true },
+        })
+
+        if (withinCap && !previousReferralUse) {
+          pricePerSlot = Math.max(0, pricePerSlot - referral.discountAmount)
+          validatedReferralCode = referral.code
+        }
       }
-      // If invalid/inactive, silently ignore — price stays at ₹140
+      // If invalid/inactive/capped/already-used, silently ignore — price stays at ₹140
     }
 
     // Convert to paise (₹1 = 100 paise)
