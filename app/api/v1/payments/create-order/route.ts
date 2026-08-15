@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
       typeof testersRequired !== 'number' ||
       !Number.isInteger(testersRequired) ||
       testersRequired < 1 ||
-      testersRequired > 3
+      testersRequired > 4
     ) {
-      return badRequest('testersRequired must be an integer between 1 and 3')
+      return badRequest('testersRequired must be an integer between 1 and 4')
     }
 
     if (!missionData || !missionData.title || !missionData.goal) {

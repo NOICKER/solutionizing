@@ -8,9 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "workers": "node -r sucrase/register -r tsconfig-paths/register scripts/start-workers.ts",
-    "promote-admin": "ts-node scripts/promote-to-admin.ts"
+    "promote-admin": "ts-node scripts/promote-to-admin.ts",
+    "astryx": "astryx"
   },
   "dependencies": {
+    "@astryxdesign/core": "^0.1.9",
+    "@astryxdesign/theme-neutral": "^0.1.9",
     "@prisma/client": "5.10.2",
     "@sentry/nextjs": "^10.44.0",
     "@stripe/stripe-js": "3.0.6",
@@ -40,6 +43,7 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
+    "@astryxdesign/cli": "^0.1.9",
     "@types/node": "20.11.16",
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
